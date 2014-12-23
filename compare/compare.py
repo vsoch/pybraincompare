@@ -7,18 +7,17 @@ import os
 
 # Unbiased visual comparison with scatterplot
 "Generate a d3 scatterplot for two registered, standardized images."
-def scatterplot_compare(image1,image2,table_file,software="FSL",voxdim=[8,8,8]):
+def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8]):
 
   # Get the reference brain mask
   reference = get_standard_mask(software)
-  
-  if not os.path.isfile(table_file):
-    masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim)
-    masked = pandas.DataFrame(numpy.transpose(masked))
-    masked.to_csv(table_file,index=False,float_format='%.3f')
+  masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim)
+  masked = pandas.DataFrame(numpy.transpose(masked))
+  # The column names MUST correspond to the replacement text in the file
+  masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]
 
   # Get template with data path
-  template = get_template("scatter",table_file)
+  template = get_template("scatter",masked)
   
   # Return complete html!
   return template

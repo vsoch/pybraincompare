@@ -68,9 +68,9 @@ def do_mask(images,mask,resample_dim):
   images_resamp = []
   for image in images:
     im = _load_image(image)
-    image_resamp.append(_resample_img_ref(im,reference_resamp))
+    images_resamp.append(_resample_img_ref(im,reference_resamp))
 
   # Assume needs to be binarized to be mask [FREESURFER IM LOOKING AT YOU]
   reference = compute_epi_mask(reference_resamp)
 
-  return apply_mask(images_resamp, reference_resamp, dtype='f', smoothing_fwhm=None, ensure_finite=True)
+  return apply_mask(images_resamp, reference, dtype='f', smoothing_fwhm=None, ensure_finite=True)

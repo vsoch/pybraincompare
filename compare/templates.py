@@ -1,9 +1,15 @@
 import os
 from futils import get_package_dir
+import pandas
 
-def get_template(html_name,table_file):
+def get_template(html_name,data_frame):
   template = read_template(html_name)
-  template = [t.replace("INPUT_DATA_PATH",table_file) for t in template]
+  replacements = data_frame.columns
+  for rep in replacements:
+    dat = data_frame[rep]
+    dat = [str(d) for d in dat]
+    dat = ",".join(dat)
+    template = [t.replace(rep,dat) for t in template]
   return template
 
 def read_template(html_name):

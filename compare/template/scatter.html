@@ -26,10 +26,9 @@ body {
   pointer-events: none;
 }
 </style>
-<body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
-<script>
+<script type="text/javascript">
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
@@ -69,14 +68,14 @@ var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-// load data
-d3.csv("[INPUT_DATA_PATH]", function(error, data) {
+// the data will be appended here
+raw = {"val1":[INPUT_DATA_ONE],
+        "val2":[INPUT_DATA_TWO]};
 
-  // change string (from CSV) into number format
-  data.forEach(function(d) {
-    d.val1 = +d.val1;
-    d.val2 = +d.val2;
-  });
+  data = []
+  for (i = 0; i < raw.val1.length; i++) { 
+    data.push({"val1":raw.val1[i],"val2":raw.val2[i]});    
+  }
 
   // don't want dots overlapping axis, so add in buffer to data domain
   xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
@@ -137,6 +136,5 @@ d3.csv("[INPUT_DATA_PATH]", function(error, data) {
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text(function(d) { return d;})
-});
 
 </script>
