@@ -12,7 +12,7 @@ setup(
     author_email="vsochat@stanford.edu",
 
     # Packages
-    packages=["brain"],
+    packages=["compare"],
 
     # Include additional files into the package
     include_package_data=True,
