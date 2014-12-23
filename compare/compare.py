@@ -1,5 +1,5 @@
 import nibabel
-from mrutils import do_mask, get_standard_mask
+from mrutils import get_standard_mask, do_mask
 from templates import get_template
 import pandas
 import numpy
@@ -11,7 +11,7 @@ def scatterplot_compare(image1,image2,table_file,software="FSL",voxdim=[8,8,8]):
 
   # Get the reference brain mask
   reference = get_standard_mask(software)
-
+  
   if not os.path.isfile(table_file):
     masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim)
     masked = pandas.DataFrame(numpy.transpose(masked))

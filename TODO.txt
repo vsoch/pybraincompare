@@ -2,5 +2,8 @@
 - add error handling for mrutils.get_standard_mask if no FSL or FREESURFER
 - need to add option to register images to standard spaces (if not)
 - add error handling to template.get_template if it doesn't exist!
+ I think I can do like this: raise RuntimeError("Meaninging ERRRRRRORR Message!")
 - right now returns the html text - need to add option to open up directly in browser
 - right now returns (part) of html page (for django insertion) - need option to return entirety
+- need to add registration with FSL, output error when software not available
+- support for FSL registration to MNI

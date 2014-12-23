@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     # Application name:
@@ -14,8 +14,8 @@ setup(
     # Packages
     packages=["compare"],
 
-    # Include additional files into the package
-    include_package_data=True,
+    # Data
+    package_data = {'compare':['template/*.html']},
 
     # Details
     url="http://www.vbmis.com/blog",
@@ -23,13 +23,5 @@ setup(
     license="LICENSE.txt",
     description="Content-aware image comparison",
 
-    # long_description=open("README.txt").read(),
-
-    # Dependent packages (distributions)
-    install_requires=[
-        "nibabel",
-        "numpy",
-        "pandas",
-        "nilearn",
-    ],
+    install_requires = ['nibabel','nilearn','pandas']
 )
