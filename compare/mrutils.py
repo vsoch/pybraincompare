@@ -46,18 +46,17 @@ def _load_image_data(image):
 
 # RESAMPLING -----------------------------------------------------------------------------
 '''Resample image to specified voxel dimension'''
-def _resample_img(image,affine):
+def _resample_img(image,affine,interpolation="continuous"):
   return resample_img(image, target_affine=affine)
 
+# stopped here - need function to resample an atlas!
+
 '''Resample image to match some other reference'''
-def _resample_img_ref(image,reference):
-  return resample_img(image, target_affine=reference.get_affine(), target_shape=reference.get_shape())
+def _resample_img_ref(image,reference,interpolation):
+  return resample_img(image, target_affine=reference.get_affine(), target_shape=reference.get_shape(),interpolation=interpolation)
 
-
-# MASKING --------------------------------------------------------------------------------
-'''Mask and resample registered images'''
-def do_mask(images,mask,resample_dim):
-  
+'''Resample many images to single reference'''
+def _resample_images_ref(images,mask,resample_dim,interpolation):
   affine = numpy.diag(resample_dim)
 
   # Prepare the reference
@@ -65,12 +64,37 @@ def do_mask(images,mask,resample_dim):
   reference_resamp = _resample_img(reference,affine)  
 
   # Resample images to match reference
+  if isinstance(images,str): images = [images]
   images_resamp = []
   for image in images:
     im = _load_image(image)
-    images_resamp.append(_resample_img_ref(im,reference_resamp))
+    images_resamp.append(_resample_img_ref(im,reference_resamp,interpolation))
 
+  return images_resamp, reference_resamp
+
+
+# MASKING --------------------------------------------------------------------------------
+'''Mask and resample registered images'''
+def do_mask(images,mask,resample_dim,interpolation="continuous"):
+
+  # Resample images to reference and new voxel size
+  images_resamp, reference_resamp = _resample_images_ref(images,mask,resample_dim,interpolation)  
+  
   # Assume needs to be binarized to be mask [FREESURFER IM LOOKING AT YOU]
   reference = compute_epi_mask(reference_resamp)
 
+  if isinstance(images_resamp,str): images_resamp = [images_resamp]
   return apply_mask(images_resamp, reference, dtype='f', smoothing_fwhm=None, ensure_finite=True)
+
+# ATLAS --------------------------------------------------------------------------------
+#'''Apply atlas object to set of images'''
+#def apply_atlas(images,atlas,reference,resample_dim):
+  
+  # First resample images to reference with new voxel size
+  #images_resamp, reference_resamp = _resample_images_ref(images.append(atlas.file),reference,resample_dim)  
+  #atlas_resamp = images_resamp.pop(-1)
+
+  # For each region in the atlas, apply the mask to get the values
+  #for label in atlas.labels:
+    # This will (I think) get mean signal for each image based on label
+    # nilearn.region.img_to_signals_labels(images_resamp, atlas_resamp, mask_img=reference, background_label=0, order='F')
