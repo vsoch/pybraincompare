@@ -5,5 +5,6 @@
 - right now returns the html text - need to add option to open up directly in browser
 - right now returns (part) of html page (for django insertion) - need option to return entirety
 - need to add registration with FSL, output error when software not available
-- figure out how to get svg slices of atlas to render in d3
-- finish scatter.html, and scatter_atlas.html
+- finish scatter.html, and scatter_atlas.html (NEED TO ADD ATLASES!)
+- rotate atlas images
+- give user option to export svg with all three together

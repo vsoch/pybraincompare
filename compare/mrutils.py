@@ -5,9 +5,6 @@ import numpy
 from nilearn.image import resample_img
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.masking import compute_epi_mask
-from futils import make_tmp_folder
-import tempfile
-import shutil
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
 '''Returns reference mask from FSL or FREESURFER'''
@@ -85,6 +82,10 @@ def do_mask(images,mask,resample_dim,interpolation="continuous"):
 
   if isinstance(images_resamp,str): images_resamp = [images_resamp]
   return apply_mask(images_resamp, reference, dtype='f', smoothing_fwhm=None, ensure_finite=True)
+
+# WORKING WITH NUMBERS -------------------------------------------------------------------
+def percent_to_float(x):
+  return float(x.strip('%'))/100
 
 # ATLAS --------------------------------------------------------------------------------
 #'''Apply atlas object to set of images'''

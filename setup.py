@@ -23,5 +23,5 @@ setup(
     license="LICENSE.txt",
     description="Content-aware image comparison",
 
-    install_requires = ['nibabel','nilearn','pandas']
+    install_requires = ['nibabel','nilearn','pandas','matplotlib']
 )

@@ -23,6 +23,7 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None):
     masked["ATLAS_LABELS"] = labels
     # The column names MUST correspond to the replacement text in the file
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS"]
+    # ADD HERE - svg images for atlas
     template = get_template("scatter_atlas",masked)
   else:
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]

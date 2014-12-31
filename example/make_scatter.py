@@ -12,8 +12,10 @@ html_snippet,data_table = compare.scatterplot_compare(image1=image1,image2=image
 # Color based on atlas labels
 atlas_file = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI-maxprob-thr25-2mm.nii"
 atlas_xml = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI.xml"
-mni_atlas = Atlas.atlas(atlas_xml,atlas_file)
+atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
+atlas = Atlas.atlas(atlas_xml,atlas_file,views=["coronal"]) # custom set of views
 
-html_snippet,data_table = compare.scatterplot_compare(image1=image1,image2=image2,software="FREESURFER",voxdim=voxel_resample,atlas=mni_atlas)
+# NEXT: will implement adding svg to d3!
+# html_snippet,data_table = compare.scatterplot_compare(image1=image1,image2=image2,software="FREESURFER",voxdim=voxel_resample,atlas=mni_atlas)
 
 
