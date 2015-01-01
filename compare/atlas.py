@@ -81,9 +81,9 @@ class atlas:
       slices = dict()
       for v in views:
         # Generate each of the views
-        if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],1)
-        elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],1)
-        elif v == "coronal" : slices[v] = numpy.rot90(mr[:,middles[2],:],1)
+        if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],2)
+        elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],2)
+        elif v == "coronal" : slices[v] = numpy.rot90(mr[:,middles[2],:],2)
 
         # For each region in the view, but not 0
         regions = [ x for x in numpy.unique(slices[v]) if x != 0]
@@ -94,8 +94,12 @@ class atlas:
 
         # Set up the "context" - what cairo calls a canvas
         width, height  = numpy.shape(slices[v])
-        surface = cairo.SVGSurface (fo, width, height)
-        ctx = cairo.Context (surface)    
+        surface = cairo.SVGSurface (fo, width*3, height*3)
+        ctx = cairo.Context (surface)
+        ctx.scale(3.,3.)    
+
+        # 90 degree rotation matrix
+        rotation_matrix = cairo.Matrix.init_rotate(numpy.pi/2)
     
         for rr in range(0,len(regions)):
           index_value = regions[rr]
@@ -140,12 +144,16 @@ class atlas:
               nexty = next[1]
               # If the distance is more than N pixels, close the path
               # This resolves some of the rough edges too
-              if min(distance_lookup) > 10:
+              if min(distance_lookup) > 70:
                 ctx.line_to(fp[0],fp[1])
+                #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+                #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
                 ctx.set_line_width(1)
                 ctx.close_path()
                 fp = next
               else:    
+                #cp = [(current[0]+nextx)/2,(current[1]+nexty)/2] 
+                #ctx.curve_to(nextx,nexty,cp[0],cp[1],cp[0],cp[1])
                 ctx.line_to(nextx, nexty)
                 # Set next point to be current
               visited.append(row)
@@ -153,6 +161,8 @@ class atlas:
     
             # Go back to the first point
             ctx.move_to(current[0],current[1])
+            #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+            #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
             ctx.line_to(fp[0],fp[1])
             # Close the path
             ctx.set_line_width (1)
@@ -170,11 +180,14 @@ class atlas:
           group.setAttribute("class",v)
         expression = re.compile("stroke:rgb")
         for path in dom.getElementsByTagName("path"):
-          color = [x for x in path.getAttribute("style").split(";") if expression.search(x)][0]
+          style = path.getAttribute("style")
+          color = [x for x in style.split(";") if expression.search(x)][0]
+          style = style.replace("none",color.replace("stroke:",""))
           color = [percent_to_float(x) for x in color.replace("stroke:rgb(","").replace(")","").split(",")]
           region_index = [x for x in range(0,len(colors)) if numpy.equal(colors[x],color).all()][0]+1
           region_label = self.labels[str(region_index)].label
           path.setAttribute("id",region_label)
+          path.setAttribute("style",style)
         svg_data[v] = dom.toxml()
         svg_data_partial[v] = "/n".join(dom.toxml().split("\n")[1:-1])
     return svg_data, svg_data_partial
