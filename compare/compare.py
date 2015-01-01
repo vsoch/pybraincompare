@@ -1,6 +1,6 @@
 import nibabel
 from mrutils import get_standard_mask, do_mask
-from templates import get_template
+from templates import get_template, add_svg
 import pandas
 import numpy
 import os
@@ -19,12 +19,14 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None):
     masked_atlas = do_mask(images = atlas.file,mask=reference,resample_dim=voxdim,interpolation="nearest")
     masked["ATLAS_DATA"] = numpy.transpose(masked_atlas)
     # Prepare label (names)
-    labels = [atlas.labels[str(int(x))].label for x in masked_atlas[0]]
+    labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
     masked["ATLAS_LABELS"] = labels
     # The column names MUST correspond to the replacement text in the file
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS"]
-    # ADD HERE - svg images for atlas
+    # Get template
     template = get_template("scatter_atlas",masked)
+    # Add SVGs - key value of svgs == text substitution in template, eg atlas_key["coronal"] replaces [coronal]
+    template = add_svg(atlas.svg,template)
   else:
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]
     template = get_template("scatter",masked)

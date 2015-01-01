@@ -30,7 +30,7 @@ class atlas:
     self.xml = atlas_xml
     self.mr = nibabel.load(atlas_file)
     self.labels = self.read_xml(atlas_xml)
-    self.svg, self.paths = self.make_svg(views)
+    self.svg, self.paths, self.svg_file = self.make_svg(views)
 
   def read_xml(self,atlas_xml):
     dom = minidom.parse(atlas_xml)
@@ -62,8 +62,8 @@ class atlas:
 
   '''Generate path-based svg of atlas (paths we can manipulate in d3)'''
   def make_svg(self,views):
-    # We will save complete and partial svg data
-    svg_data = dict(); svg_data_partial = dict();
+    # We will save complete svg (for file), partial (for embedding), and paths
+    svg_data = dict(); svg_data_partial = dict(); svg_data_file = dict();
     if isinstance(views,str): views = [views]
     views = [v.lower() for v in views]
     self.views = views
@@ -179,6 +179,8 @@ class atlas:
           group.setAttribute("id",os.path.split(self.file)[-1])
           group.setAttribute("class",v)
         expression = re.compile("stroke:rgb")
+        # Add class to svg - important so can manipulate in d3
+        dom.getElementsByTagName("svg")[0].setAttribute("class",v)
         for path in dom.getElementsByTagName("path"):
           style = path.getAttribute("style")
           color = [x for x in style.split(";") if expression.search(x)][0]
@@ -188,9 +190,10 @@ class atlas:
           region_label = self.labels[str(region_index)].label
           path.setAttribute("id",region_label)
           path.setAttribute("style",style)
-        svg_data[v] = dom.toxml()
+        svg_data_file[v] = dom.toxml()
+        svg_data[v] = dom.toxml().replace("<?xml version=\"1.0\" ?>","") # get rid of just xml tag
         svg_data_partial[v] = "/n".join(dom.toxml().split("\n")[1:-1])
-    return svg_data, svg_data_partial
+    return svg_data, svg_data_partial, svg_data_file
 
   '''Save svg data to file'''
   def save_svg(self,output_folder,views=None):
@@ -201,5 +204,22 @@ class atlas:
       atlas_name = os.path.split(self.file)[-1].replace("[.]","-")
       for v in views:
         filey = open( "%s/%s-%s.svg" %(output_folder,atlas_name,v) ,"wb")
-        filey.writelines(self.svg[v])
+        filey.writelines(self.svg_file[v])
         filey.close()
+
+  '''Internal function to change color of svg xml'''
+  def set_color(self,new_color):
+    new_svg_xml = dict()
+    for tag, svg in self.svg_file.iteritems():
+      dom = minidom.parseString(svg)
+      for path in dom.getElementsByTagName("path"):
+        expression = re.compile("stroke:rgb")
+        #TODO: turn this into a function
+        style = path.getAttribute("style")
+        color = [x for x in style.split(";") if expression.search(x)][0]
+        style = style.replace(color,"stroke:%s" %(new_color))
+        path.setAttribute("style",style)
+      new_svg_xml[tag] = dom.toxml()
+      self.svg[tag] = dom.toxml().replace("<?xml version=\"1.0\" ?>","")
+      self.paths[tag] = "/n".join(dom.toxml().split("\n")[1:-1])
+    self.svg_file = new_svg_xml

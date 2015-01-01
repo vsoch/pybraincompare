@@ -19,3 +19,11 @@ def read_template(html_name):
   html_name = html_name + ".html"
   template_file = os.path.join(ppwd,'template', html_name)
   return open(template_file,"r").readlines()
+
+'''Add svg code to a template - the key of the atlas_svg should correspond to replacement text'''
+''' eg, svg["coronal"] will replace [coronal] tag in template!'''
+def add_svg(svg,template):
+  # If the number of svgs is != text_substitutions, we add them all to same spot
+  for tag,code in svg.iteritems():
+    template = [t.replace("[%s]" %(tag),code) for t in template]
+  return template

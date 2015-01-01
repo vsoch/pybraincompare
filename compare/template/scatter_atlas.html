@@ -1,7 +1,15 @@
-<!-- SCATTERPLOT TEMPLATE -->
+<!-- SCATTERPLOT ATLAS TEMPLATE -->
 <!-- pycomparebrain python package -->
 <!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
 <!-- Tooltip example from http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html -->
+
+<!--Atlas region paths will be appended here-->
+[coronal]
+[axial]
+[sagittal]
+<!--Scatterplot will be appended here-->
+<h2 id="region">Brain Regions</h2>
+<pybrain>
 
 <style>
 body {
@@ -25,13 +33,20 @@ body {
   height: 28px;
   pointer-events: none;
 }
+
+#region{
+  float:right;
+  margin-right: 140px;
+  margin-top: 50px;
+  color: #CCCCCC;
+}
 </style>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script type="text/javascript">
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 15, right: 5, bottom: 30, left: 40},
+    width = 900 - margin.left - margin.right,
+    height = 900 - margin.top - margin.bottom;
 
 /* 
  * value accessor - returns the value to encode for a given data object.
@@ -51,13 +66,14 @@ var yValue = function(d) { return d.val2;}, // data -> value
     yScale = d3.scale.linear().range([height, 0]), // value -> display
     yMap = function(d) { return yScale(yValue(d));}, // data -> display
     yAxis = d3.svg.axis().scale(yScale).orient("left");
+    d3.selectAll(".axis").attr("stroke","#F5f5f5")
 
 // setup fill color
-var cValue = function(d) { return "blue";},
-    color = d3.scale.category10();
+var cValue = function(d) { return d.labels;},
+    color = d3.scale.category20();
 
 // add the graph canvas to the body of the webpage
-var svg = d3.select("body").append("svg")
+var svg = d3.selectAll("pybrain").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -68,6 +84,16 @@ var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+ // Adjust size of atlas images to match image width
+   // Change colors to match colors of regions
+   d3.selectAll("svg.coronal").style("height",150).style("width",150)
+   d3.selectAll("svg.axial").style("height",150).style("width",150)
+   d3.selectAll("svg.sagittal").style("height",150).style("width",150)
+   // Add mouseover function?
+   //d3.selectAll("path").each(function(){
+   //  d3.select(this).style("stroke","#F5F5F5C")
+   //});
+
 // the data will be appended here
 raw = {"val1":[INPUT_DATA_ONE],
        "val2":[INPUT_DATA_TWO],
@@ -76,10 +102,10 @@ raw = {"val1":[INPUT_DATA_ONE],
 
   data = []
   for (i = 0; i < raw.val1.length; i++) { 
-    data.push({"val1":raw.val1[i],"val2":raw.val2[i]});    
+    data.push({"val1":raw.val1[i],"val2":raw.val2[i],"labels":raw.labels[i],"atlas":raw.atlas[i]});    
   }
 
-  // don't want dots overlapping axis, so add in buffer to data domain
+   // don't want dots overlapping axis, so add in buffer to data domain
   xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
   yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
@@ -93,7 +119,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("x", width)
       .attr("y", -6)
       .style("text-anchor", "end")
-      .text("Image 1");
+      .text("");
 
   // y-axis
   svg.append("g")
@@ -102,41 +128,108 @@ raw = {"val1":[INPUT_DATA_ONE],
     .append("text")
       .attr("class", "label")
       .attr("transform", "rotate(-90)")
-      .attr("y", 6)
+      .attr("y", -8)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text("Image 2");
+      .text("");
 
   // draw dots
   svg.selectAll(".dot")
       .data(data)
     .enter().append("circle")
-      .attr("class", "dot")
-      .attr("r", 3.5)
+      .attr("class",function(d) { return "dot " + d.labels.replace(/\s+/g, ''); })
+      .attr("r", 4)
       .attr("cx", xMap)
       .attr("cy", yMap)
       .style("fill", function(d) { return color(cValue(d));}) 
+      // Mouseover tool tips
+      .on("mouseover.tip", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html(d.labels + ":<br>image 1: " + (d.val1).toFixed(2) + "<br>image 2: " + (d.val2).toFixed(2))
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseout.tip", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      })
+      // Mouseover region highlight
+      .on("mouseover.color", function(d) {
+        d3.selectAll("path").each(function() {
+          var region = d3.select(this).attr("id")
+          if (region == d.labels) { d3.select(this).style("stroke",color(region)) };
+        })
+      })
+     .on("mouseout.color", function(d) {
+        d3.selectAll("path").each(function() {
+          d3.select(this).style("stroke","#F5F5F5")
+        });
+      })
+      // Mouseover size
+      .on("mouseover.size", function(d) {
+          d3.select(this).attr("r",5)
+      })
+     .on("mouseout.size", function(d) {
+          d3.select(this).attr("r",4)
+      });
 
-  // draw legend
+     
+  // draw selection buttons
   var legend = svg.selectAll(".legend")
       .data(color.domain())
     .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
 
-  // draw legend colored rectangles
   legend.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", color);
-
-  // draw legend text
-  legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d;})
-
+      .attr("transform","translate(-100,0)")
+      .attr("x", width - 250)
+      .attr("width", 25)
+      .attr("height", 25)
+      .style("fill", color)
+      .on("mouseover.legend",function(d){ 
+          region = document.getElementById("region")
+          region.textContent = d
+          d3.selectAll("path").each(function() {
+            var region = d3.select(this).attr("id")
+              if (region == d) { d3.select(this).style("stroke",color(d)) };
+          })
+      })
+      .on("mouseout.legend", function(d) {
+          region = document.getElementById("region")
+          region.textContent = "Brain Regions"
+          d3.selectAll("path").each(function() {
+            var region = d3.select(this).attr("id")
+              if (region == d) { d3.select(this).style("stroke","#F5F5F5") };
+          })
+  
+      })
+       // On click, show or hide the points
+      .on("click",function(d){
+          if (d3.select(this).classed("hidden") == false) {
+            d3.selectAll("circle." + d.replace(/\s+/g, ''))
+              .attr("stroke-opacity",0)
+              .attr("opacity",0)
+            d3.select(this).classed("hidden",true)
+            // remove brain region
+            d3.selectAll("path").each(function() {
+              var region = d3.select(this).attr("id")
+              if (region == d) { d3.select(this).style("stroke-width",0) };
+             })
+           } 
+         else {
+            d3.selectAll("circle." + d.replace(/\s+/g, ''))
+              .attr("stroke-opacity",1)
+              .attr("opacity",1)
+            d3.select(this).classed("hidden",false) 
+            // add brain region
+            d3.selectAll("path").each(function() {
+              var region = d3.select(this).attr("id")
+              if (region == d) { d3.select(this).style("stroke-width",1) };
+            })
+         }
+       });
 </script>
