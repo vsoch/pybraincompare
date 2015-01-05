@@ -14,3 +14,7 @@ def make_tmp_folder():
 # Get the directory of the package
 def get_package_dir():
    return os.path.abspath(os.path.join(os.path.dirname(compare.__file__)))
+
+# Filename
+def get_name(path):
+  return os.path.split(path)[1]

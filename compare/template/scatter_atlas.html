@@ -8,7 +8,6 @@
 [axial]
 [sagittal]
 <!--Scatterplot will be appended here-->
-<h2 id="region">Brain Regions</h2>
 <pybrain>
 
 <style>
@@ -69,8 +68,18 @@ var yValue = function(d) { return d.val2;}, // data -> value
     d3.selectAll(".axis").attr("stroke","#F5f5f5")
 
 // setup fill color
-var cValue = function(d) { return d.labels;},
-    color = d3.scale.category20();
+//color_values= ["[ATLAS_CCOLORS]"];
+//var cValue = function(d) { return d.atlas;},
+//color = function(c) {
+//  return color_values[c]   
+//}
+
+// Svg for the legend
+var legend_svg = d3.selectAll("pybrain").append("svg")
+    .attr("width", 450)
+    .attr("height", 150)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // add the graph canvas to the body of the webpage
 var svg = d3.selectAll("pybrain").append("svg")
@@ -89,23 +98,29 @@ var tooltip = d3.select("body").append("div")
    d3.selectAll("svg.coronal").style("height",150).style("width",150)
    d3.selectAll("svg.axial").style("height",150).style("width",150)
    d3.selectAll("svg.sagittal").style("height",150).style("width",150)
-   // Add mouseover function?
-   //d3.selectAll("path").each(function(){
-   //  d3.select(this).style("stroke","#F5F5F5C")
-   //});
-
+   
 // the data will be appended here
 raw = {"val1":[INPUT_DATA_ONE],
        "val2":[INPUT_DATA_TWO],
        "atlas":[ATLAS_DATA],
-       "labels":[ATLAS_LABELS]};
+       "labels":[ATLAS_LABELS],
+       "color":[ATLAS_COLORS]};
 
+
+  // Color value index will correspond to atlas index (raw.atlas)
   data = []
+  var colors = new Array()
   for (i = 0; i < raw.val1.length; i++) { 
-    data.push({"val1":raw.val1[i],"val2":raw.val2[i],"labels":raw.labels[i],"atlas":raw.atlas[i]});    
+    data.push({"val1":raw.val1[i],"val2":raw.val2[i],"labels":raw.labels[i],"atlas":+raw.atlas[i],"color":raw.color[i]});
+    colors[+raw.atlas[i]] = {"label":raw.labels[i],"color":raw.color[i]};     
   }
 
-   // don't want dots overlapping axis, so add in buffer to data domain
+  // Make sure color is correct
+  for (i = 0; i < colors.length; i++) { 
+    d3.selectAll("path#" + colors[i].label).attr("stroke",colors[i].color)    
+  }
+
+  // don't want dots overlapping axis, so add in buffer to data domain
   xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
   yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
@@ -117,9 +132,9 @@ raw = {"val1":[INPUT_DATA_ONE],
     .append("text")
       .attr("class", "label")
       .attr("x", width)
-      .attr("y", -6)
+      .attr("y", -25)
       .style("text-anchor", "end")
-      .text("");
+      .text("[image 1]");
 
   // y-axis
   svg.append("g")
@@ -128,10 +143,10 @@ raw = {"val1":[INPUT_DATA_ONE],
     .append("text")
       .attr("class", "label")
       .attr("transform", "rotate(-90)")
-      .attr("y", -8)
+      .attr("y", -25)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text("");
+      .text("[image 2]");
 
   // draw dots
   svg.selectAll(".dot")
@@ -141,7 +156,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("r", 4)
       .attr("cx", xMap)
       .attr("cy", yMap)
-      .style("fill", function(d) { return color(cValue(d));}) 
+      .style("fill", function(d) { return d.color;}) 
       // Mouseover tool tips
       .on("mouseover.tip", function(d) {
           tooltip.transition()
@@ -157,20 +172,21 @@ raw = {"val1":[INPUT_DATA_ONE],
                .style("opacity", 0);
       })
       // Mouseover region highlight
-      .on("mouseover.color", function(d) {
+      .on("mouseover.highlight", function(d) {
         d3.selectAll("path").each(function() {
           var region = d3.select(this).attr("id")
-          if (region == d.labels) { d3.select(this).style("stroke",color(region)) };
+          if (region == d.labels) { d3.select(this).style("stroke-width",3) };
         })
       })
-     .on("mouseout.color", function(d) {
+     .on("mouseout.highlight", function(d) {
         d3.selectAll("path").each(function() {
-          d3.select(this).style("stroke","#F5F5F5")
+          var region = d3.select(this).attr("id")
+          if (region == d.labels) { d3.select(this).style("stroke-width",1) };
         });
       })
       // Mouseover size
       .on("mouseover.size", function(d) {
-          d3.select(this).attr("r",5)
+          d3.select(this).attr("r",6)
       })
      .on("mouseout.size", function(d) {
           d3.select(this).attr("r",4)
@@ -178,58 +194,65 @@ raw = {"val1":[INPUT_DATA_ONE],
 
      
   // draw selection buttons
-  var legend = svg.selectAll(".legend")
-      .data(color.domain())
+  var legend_text = legend_svg.selectAll(".legend_text")
+       .data(colors)
+     .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
+
+  legend_text.append("text")
+       .attr("transform", "rotate(90)")
+       .attr("x", 35)
+       .attr("y",-50)
+       .attr("font-family", "sans-serif")
+       .attr("font-size", "10px")
+       .text(function(d){ return d.label.replace("_"," ")})
+
+  var legend = legend_svg.selectAll(".legend")
+      .data(colors)
     .enter().append("g")
       .attr("class", "legend")
       .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
 
   legend.append("rect")
-      .attr("transform","translate(-100,0)")
-      .attr("x", width - 250)
-      .attr("width", 25)
-      .attr("height", 25)
-      .style("fill", color)
-      .on("mouseover.legend",function(d){ 
-          region = document.getElementById("region")
-          region.textContent = d
-          d3.selectAll("path").each(function() {
-            var region = d3.select(this).attr("id")
-              if (region == d) { d3.select(this).style("stroke",color(d)) };
-          })
+      .attr("transform","translate(40,0)")
+      .attr("x", 0)
+      .attr("y",0)
+      .attr("width", 30)
+      .attr("height", 30)
+      .style("fill", function(d) { return d.color })
+      .on("mouseover.legend",function(d){
+        d3.selectAll("path#" + d.label)
+           .style("stroke-width",3)
+        d3.selectAll("circle." + d.label)
+          .attr("stroke-width",4)            
       })
       .on("mouseout.legend", function(d) {
-          region = document.getElementById("region")
-          region.textContent = "Brain Regions"
-          d3.selectAll("path").each(function() {
-            var region = d3.select(this).attr("id")
-              if (region == d) { d3.select(this).style("stroke","#F5F5F5") };
-          })
-  
+        d3.selectAll("path#" + d.label)
+            .style("stroke-width",1)   
+          d3.selectAll("circle." + d.label)
+            .attr("stroke-width",1)              
       })
        // On click, show or hide the points
       .on("click",function(d){
           if (d3.select(this).classed("hidden") == false) {
-            d3.selectAll("circle." + d.replace(/\s+/g, ''))
+            d3.selectAll("circle." + d.label)
               .attr("stroke-opacity",0)
               .attr("opacity",0)
+            d3.select(this).style("fill","#F5F5F5")
             d3.select(this).classed("hidden",true)
-            // remove brain region
-            d3.selectAll("path").each(function() {
-              var region = d3.select(this).attr("id")
-              if (region == d) { d3.select(this).style("stroke-width",0) };
-             })
+            // hide brain region
+            d3.selectAll("path#" + d.label)
+              .style("stroke","#F5F5F5")
            } 
          else {
-            d3.selectAll("circle." + d.replace(/\s+/g, ''))
+            d3.selectAll("circle." + d.label)
               .attr("stroke-opacity",1)
               .attr("opacity",1)
+            d3.select(this).style("fill",function(d){ return d.color })
             d3.select(this).classed("hidden",false) 
             // add brain region
-            d3.selectAll("path").each(function() {
-              var region = d3.select(this).attr("id")
-              if (region == d) { d3.select(this).style("stroke-width",1) };
-            })
-         }
-       });
+            d3.selectAll("path#" + d.label)
+               .style("stroke",d.color )
+          }
+       })
 </script>

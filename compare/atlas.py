@@ -13,6 +13,7 @@ from skimage.util import img_as_float
 import pylab as pl
 from futils import make_tmp_folder
 from mrutils import percent_to_float
+from visual import get_colors
 
 class region:
   def __init__(self,label,index,x,y,z):
@@ -41,10 +42,10 @@ class atlas:
     if image_file in atlases:
       labels = {}
       # A value of 0 indicates no label in the image
-      labels["0"] = region("No Label",0,0,0,0)
+      labels["0"] = region("No_Label",0,0,0,0)
       for lab in dom.getElementsByTagName("label"):
         # Caution - the index is 1 less than image value
-        labels[str(int(lab.getAttribute("index"))+1)] = region(lab.lastChild.nodeValue, (int(lab.getAttribute("index"))+1), lab.getAttribute("x"), lab.getAttribute("y"), lab.getAttribute("z"))
+        labels[str(int(lab.getAttribute("index"))+1)] = region(lab.lastChild.nodeValue.replace(" ","_"), (int(lab.getAttribute("index"))+1), lab.getAttribute("x"), lab.getAttribute("y"), lab.getAttribute("z"))
       return labels    
     else:
       print "ERROR: xml file atlas name does not match given atlas name!"
@@ -69,17 +70,24 @@ class atlas:
     self.views = views
     mr = self.mr.get_data()      
     middles = [numpy.round(x/2) for x in self.mr.get_shape()]         
+
+    # Create a color lookup table
+    colors_html = get_colors(len(self.labels),"hex")
+    self.color_lookup = self.make_color_lookup(colors_html)
+  
     with make_tmp_folder() as temp_dir:
       
       # Get all unique regions (may not be present in every slice)
       regions = [ x for x in numpy.unique(mr) if x != 0]
 
-      # Generate unique color for each region (can be changed later)
-      colors = [numpy.round(numpy.random.random_sample(3),1) for x in range(0,len(regions))]
+      # Get colors - will later be changed
+      colors = get_colors(len(self.labels),"decimal")
         
       # Generate an axial, sagittal, coronal view
       slices = dict()
       for v in views:
+        # Keep a list of region names that correspond to paths
+        region_names = []
         # Generate each of the views
         if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],2)
         elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],2)
@@ -103,6 +111,7 @@ class atlas:
     
         for rr in range(0,len(regions)):
           index_value = regions[rr]
+          #region_name = self.labels[str(index_value)].label
           filtered = numpy.zeros(numpy.shape(slices[v]))
           filtered[slices[v] == regions[rr]] = 1
           region = img_as_float(find_boundaries(filtered)) # We aren't using Canny anymore...
@@ -183,13 +192,15 @@ class atlas:
         dom.getElementsByTagName("svg")[0].setAttribute("class",v)
         for path in dom.getElementsByTagName("path"):
           style = path.getAttribute("style")
+          # This is lame - but we have to use the color to look up the region
           color = [x for x in style.split(";") if expression.search(x)][0]
-          style = style.replace("none",color.replace("stroke:",""))
           color = [percent_to_float(x) for x in color.replace("stroke:rgb(","").replace(")","").split(",")]
           region_index = [x for x in range(0,len(colors)) if numpy.equal(colors[x],color).all()][0]+1
           region_label = self.labels[str(region_index)].label
-          path.setAttribute("id",region_label)
-          path.setAttribute("style",style)
+          # We don't want to rely on cairo to style the paths
+          self.remove_attributes(path,"style")
+          self.set_attributes(path,["id","stroke"],[region_label,self.color_lookup[region_label]])
+
         svg_data_file[v] = dom.toxml()
         svg_data[v] = dom.toxml().replace("<?xml version=\"1.0\" ?>","") # get rid of just xml tag
         svg_data_partial[v] = "/n".join(dom.toxml().split("\n")[1:-1])
@@ -207,19 +218,26 @@ class atlas:
         filey.writelines(self.svg_file[v])
         filey.close()
 
-  '''Internal function to change color of svg xml'''
-  def set_color(self,new_color):
-    new_svg_xml = dict()
-    for tag, svg in self.svg_file.iteritems():
-      dom = minidom.parseString(svg)
-      for path in dom.getElementsByTagName("path"):
-        expression = re.compile("stroke:rgb")
-        #TODO: turn this into a function
-        style = path.getAttribute("style")
-        color = [x for x in style.split(";") if expression.search(x)][0]
-        style = style.replace(color,"stroke:%s" %(new_color))
-        path.setAttribute("style",style)
-      new_svg_xml[tag] = dom.toxml()
-      self.svg[tag] = dom.toxml().replace("<?xml version=\"1.0\" ?>","")
-      self.paths[tag] = "/n".join(dom.toxml().split("\n")[1:-1])
-    self.svg_file = new_svg_xml
+  '''Internal function to add/change svg attributes'''
+  def set_attributes(self,path,attributes,new_values):
+    if isinstance(attributes,str): attributes = [attributes]
+    if isinstance(new_values,str): new_values = [new_values]
+    if len(attributes) == len(new_values):
+      for a in range(0,len(attributes)):
+        path.setAttribute(attributes[a],new_values[a])
+    else:
+      print "Please provide list of attributes with equal length to values."
+
+  '''Internal function to remove svg attributes'''
+  def remove_attributes(self,path,attributes):
+    if isinstance(attributes,str): attributes = [attributes]
+    for attribute in attributes:
+      path.removeAttribute(attribute)
+
+  '''Create color lookup table corresponding to regions'''
+  def make_color_lookup(self,new_colors):
+    color_lookup = dict()
+    new_color = new_colors[:]
+    for index,region in self.labels.iteritems():
+      color_lookup[region.label] = new_color.pop()
+    return color_lookup
