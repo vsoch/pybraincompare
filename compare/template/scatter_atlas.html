@@ -103,7 +103,8 @@ raw = {"val1":[INPUT_DATA_ONE],
        "val2":[INPUT_DATA_TWO],
        "atlas":[ATLAS_DATA],
        "labels":[ATLAS_LABELS],
-       "color":[ATLAS_COLORS]};
+       "color":[ATLAS_COLORS],
+       "corr":[ATLAS_CORR]};
 
 
   // Color value index will correspond to atlas index (raw.atlas)
@@ -111,7 +112,7 @@ raw = {"val1":[INPUT_DATA_ONE],
   var colors = new Array()
   for (i = 0; i < raw.val1.length; i++) { 
     data.push({"val1":raw.val1[i],"val2":raw.val2[i],"labels":raw.labels[i],"atlas":+raw.atlas[i],"color":raw.color[i]});
-    colors[+raw.atlas[i]] = {"label":raw.labels[i],"color":raw.color[i]};     
+    colors[+raw.atlas[i]] = {"label":raw.labels[i],"color":raw.color[i],"corr":+raw.corr[i]};     
   }
 
   // Make sure color is correct
@@ -191,7 +192,6 @@ raw = {"val1":[INPUT_DATA_ONE],
      .on("mouseout.size", function(d) {
           d3.select(this).attr("r",4)
       });
-
      
   // draw selection buttons
   var legend_text = legend_svg.selectAll(".legend_text")
@@ -201,7 +201,7 @@ raw = {"val1":[INPUT_DATA_ONE],
 
   legend_text.append("text")
        .attr("transform", "rotate(90)")
-       .attr("x", 35)
+       .attr("x", 42)
        .attr("y",-50)
        .attr("font-family", "sans-serif")
        .attr("font-size", "10px")
@@ -218,7 +218,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("x", 0)
       .attr("y",0)
       .attr("width", 30)
-      .attr("height", 30)
+      .attr("height", 36)
       .style("fill", function(d) { return d.color })
       .on("mouseover.legend",function(d){
         d3.selectAll("path#" + d.label)
@@ -255,5 +255,19 @@ raw = {"val1":[INPUT_DATA_ONE],
                .style("stroke",d.color )
           }
        })
+
+  // add correlation values
+  var legend_corr = legend_svg.selectAll(".legend_corr")
+       .data(colors)
+     .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
+
+  legend_corr.append("text")
+       .attr("x", 44)
+       .attr("y", 10)
+       .style("font-family", "sans-serif")
+       .style("font-size", "10px")
+       .style("stroke", "white")
+       .text(function(d){ return d.corr.toFixed(2)})
 
 </script>

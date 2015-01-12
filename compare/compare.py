@@ -2,14 +2,23 @@ import nibabel
 from mrutils import get_standard_mask, do_mask
 from templates import get_template, add_string
 from futils import get_name
+from maths import do_correlation
 import pandas
 import numpy
 import os
 import atlas
 
 # Unbiased visual comparison with scatterplot
-"Generate a d3 scatterplot for two registered, standardized images."
-def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,corr=None):
+'''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
+- image1: full path to image 1, must be in MNI space [required]
+- image2: full path to image 2, must be in MNI space [required]
+- software: FSL or FREESURFER, currently FREESURFER is better supported [default FSL]
+- voxdim: dimension to resample atlas and images into [default [8,8,8]]
+- atlas: a pybraincompare "atlas" object, will be rendered in vis and color data points [default None]
+- corr: regional correlation type to include [default None]
+- custom: custom dictionary of {"TEMPLATE_IDS":,"text to substitute"} [default None]
+'''
+def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,corr=None,custom=None):
 
   # Get the reference brain mask
   reference = get_standard_mask(software)
@@ -22,18 +31,25 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     # Prepare label (names)
     labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
     masked["ATLAS_LABELS"] = labels
+    # Add correlation values if user wants to do pearson correlation
+    if corr:
+      corrs = do_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"])
+      correlations = [corrs[x] for x in masked["ATLAS_LABELS"]]
+    else: correlations = ["" for x in masked["ATLAS_LABELS"]]
+    masked["ATLAS_CORR"] = correlations
     # Prepare colors - value of 0 == no label or just empty space, they are equivalent
     colors = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
     masked["ATLAS_COLORS"] = colors
     # The column names MUST correspond to the replacement text in the file
-    masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_COLORS"]
+    masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
     # Get template
     template = get_template("scatter_atlas",masked)
-    # Add SVGs - key value of svgs == text substitution in template, eg atlas_key["coronal"] replaces [coronal]
+    # Add user custom text (right now only would be image labels)
+    if custom:
+      template = add_string(custom,template)
+    # Add SVGs, eg atlas_key["coronal"] replaces [coronal]
     template = add_string(atlas.svg,template)
-    # ADD HERE - if user wants to do pearson correlation
-    if corr:
-      print "We will do pearson correlation!"
+      
     # Finally, add image names
     template = add_string({"image 1":get_name(image1),"image 2":get_name(image2)},template)
   else:

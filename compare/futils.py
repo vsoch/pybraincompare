@@ -17,4 +17,4 @@ def make_tmp_folder():
 
 # Filename
 def get_name(path):
-  return os.path.split(path)[1]
+  return os.path.split(path)[1].split(".")[0]
