@@ -9,7 +9,7 @@ import atlas
 
 # Unbiased visual comparison with scatterplot
 "Generate a d3 scatterplot for two registered, standardized images."
-def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None):
+def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,corr=None):
 
   # Get the reference brain mask
   reference = get_standard_mask(software)
@@ -31,6 +31,9 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None):
     template = get_template("scatter_atlas",masked)
     # Add SVGs - key value of svgs == text substitution in template, eg atlas_key["coronal"] replaces [coronal]
     template = add_string(atlas.svg,template)
+    # ADD HERE - if user wants to do pearson correlation
+    if corr:
+      print "We will do pearson correlation!"
     # Finally, add image names
     template = add_string({"image 1":get_name(image1),"image 2":get_name(image2)},template)
   else:

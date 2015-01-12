@@ -83,19 +83,3 @@ def do_mask(images,mask,resample_dim,interpolation="continuous"):
   if isinstance(images_resamp,str): images_resamp = [images_resamp]
   return apply_mask(images_resamp, reference, dtype='f', smoothing_fwhm=None, ensure_finite=True)
 
-# WORKING WITH NUMBERS -------------------------------------------------------------------
-def percent_to_float(x):
-  return float(x.strip('%'))/100
-
-# ATLAS --------------------------------------------------------------------------------
-#'''Apply atlas object to set of images'''
-#def apply_atlas(images,atlas,reference,resample_dim):
-  
-  # First resample images to reference with new voxel size
-  #images_resamp, reference_resamp = _resample_images_ref(images.append(atlas.file),reference,resample_dim)  
-  #atlas_resamp = images_resamp.pop(-1)
-
-  # For each region in the atlas, apply the mask to get the values
-  #for label in atlas.labels:
-    # This will (I think) get mean signal for each image based on label
-    # nilearn.region.img_to_signals_labels(images_resamp, atlas_resamp, mask_img=reference, background_label=0, order='F')

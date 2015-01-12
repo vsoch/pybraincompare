@@ -13,8 +13,8 @@ atlas_xml = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI.x
 atlas = Atlas.atlas(atlas_xml,atlas_file,views=["coronal"]) # custom set of views
 atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
 
-# Create d3 scatterplot with atlas
-html_snippet,data_table = compare.scatterplot_compare(image1=image1,image2=image2,software="FREESURFER",voxdim=voxel_resample,atlas=atlas)
+# Create d3 scatterplot with atlas - specify to include pearson correlation
+html_snippet,data_table = compare.scatterplot_compare(image1=image1,image2=image2,software="FREESURFER",voxdim=voxel_resample,atlas=atlas,corr="pearson")
 
 # View in browser!
 view(html_snippet)

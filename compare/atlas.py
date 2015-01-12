@@ -12,7 +12,7 @@ from skimage.segmentation import mark_boundaries, find_boundaries
 from skimage.util import img_as_float
 import pylab as pl
 from futils import make_tmp_folder
-from mrutils import percent_to_float
+from maths import percent_to_float
 from visual import get_colors
 
 class region:

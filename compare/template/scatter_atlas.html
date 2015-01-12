@@ -65,7 +65,6 @@ var yValue = function(d) { return d.val2;}, // data -> value
     yScale = d3.scale.linear().range([height, 0]), // value -> display
     yMap = function(d) { return yScale(yValue(d));}, // data -> display
     yAxis = d3.svg.axis().scale(yScale).orient("left");
-    d3.selectAll(".axis").attr("stroke","#F5f5f5")
 
 // setup fill color
 //color_values= ["[ATLAS_CCOLORS]"];
@@ -148,15 +147,20 @@ raw = {"val1":[INPUT_DATA_ONE],
       .style("text-anchor", "end")
       .text("[image 2]");
 
+  // Coloring for axis
+  d3.selectAll("path.domain").style("stroke","#CCCCCC")
+  
   // draw dots
   svg.selectAll(".dot")
       .data(data)
     .enter().append("circle")
-      .attr("class",function(d) { return "dot " + d.labels.replace(/\s+/g, ''); })
+      .attr("class",function(d) { return "dot " + d.labels })
       .attr("r", 4)
       .attr("cx", xMap)
       .attr("cy", yMap)
       .style("fill", function(d) { return d.color;}) 
+      .style("stroke", function(d) { return d.color;}) 
+      .style("fill-opacity",0.7)
       // Mouseover tool tips
       .on("mouseover.tip", function(d) {
           tooltip.transition()
@@ -173,16 +177,12 @@ raw = {"val1":[INPUT_DATA_ONE],
       })
       // Mouseover region highlight
       .on("mouseover.highlight", function(d) {
-        d3.selectAll("path").each(function() {
-          var region = d3.select(this).attr("id")
-          if (region == d.labels) { d3.select(this).style("stroke-width",3) };
-        })
+        d3.selectAll("path#" + d.labels)
+          .style("stroke-width",3)
       })
      .on("mouseout.highlight", function(d) {
-        d3.selectAll("path").each(function() {
-          var region = d3.select(this).attr("id")
-          if (region == d.labels) { d3.select(this).style("stroke-width",1) };
-        });
+        d3.selectAll("path#" + d.labels)
+          .style("stroke-width",1)
       })
       // Mouseover size
       .on("mouseover.size", function(d) {
@@ -224,20 +224,20 @@ raw = {"val1":[INPUT_DATA_ONE],
         d3.selectAll("path#" + d.label)
            .style("stroke-width",3)
         d3.selectAll("circle." + d.label)
-          .attr("stroke-width",4)            
+          .style("stroke","black")            
       })
       .on("mouseout.legend", function(d) {
         d3.selectAll("path#" + d.label)
             .style("stroke-width",1)   
           d3.selectAll("circle." + d.label)
-            .attr("stroke-width",1)              
+            .style("stroke",d.color)              
       })
        // On click, show or hide the points
       .on("click",function(d){
           if (d3.select(this).classed("hidden") == false) {
             d3.selectAll("circle." + d.label)
-              .attr("stroke-opacity",0)
-              .attr("opacity",0)
+              .style("stroke-opacity",0)
+              .style("fill-opacity",0)
             d3.select(this).style("fill","#F5F5F5")
             d3.select(this).classed("hidden",true)
             // hide brain region
@@ -246,8 +246,8 @@ raw = {"val1":[INPUT_DATA_ONE],
            } 
          else {
             d3.selectAll("circle." + d.label)
-              .attr("stroke-opacity",1)
-              .attr("opacity",1)
+              .style("stroke-opacity",1)
+              .style("fill-opacity",0.7)
             d3.select(this).style("fill",function(d){ return d.color })
             d3.select(this).classed("hidden",false) 
             // add brain region
@@ -255,4 +255,5 @@ raw = {"val1":[INPUT_DATA_ONE],
                .style("stroke",d.color )
           }
        })
+
 </script>
