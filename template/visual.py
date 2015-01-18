@@ -1,5 +1,5 @@
 # Functions for visualization parameters
-from futils import make_tmp_folder
+from template.futils import make_tmp_folder
 import webbrowser
 
 '''Display code in temporary browser!'''

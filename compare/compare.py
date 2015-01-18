@@ -1,7 +1,7 @@
 import nibabel
 from mrutils import get_standard_mask, do_mask
-from templates import get_template, add_string
-from futils import get_name
+from template.templates import get_template, add_string
+from template.futils import get_name
 from maths import do_correlation
 import pandas
 import numpy

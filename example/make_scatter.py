@@ -1,6 +1,6 @@
 # Create a scatterplot from two brain images
 from compare import compare, atlas as Atlas
-from compare.visual import view
+from template.visual import view
 
 # Images that we want to compare
 image1 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat1_1.nii"

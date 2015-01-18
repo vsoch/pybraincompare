@@ -14,4 +14,4 @@ atlas.paths["coronal"]
 # Save svg views to file
 output_directory = "/home/vanessa/Desktop"
 atlas.save_svg(output_directory) # default will save all views generated
-atlas.save_svg(,output_directory,views=["coronal"]) # specify a custom set
+atlas.save_svg(output_directory,views=["coronal"]) # specify a custom set

@@ -12,16 +12,16 @@ setup(
     author_email="vsochat@stanford.edu",
 
     # Packages
-    packages=["compare"],
+    packages=["compare","annotate","template"],
 
     # Data
-    package_data = {'compare':['template/*.html']},
+    package_data = {'template':['html/*.html']},
 
     # Details
-    url="http://www.vbmis.com/blog",
+    url="http://www.github.com/vsoch/pybraincompare",
 
     license="LICENSE.txt",
-    description="Content-aware image comparison",
+    description="image-based meta analysis and comparison for neuroimaging in python",
 
     install_requires = ['scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image']
 )
