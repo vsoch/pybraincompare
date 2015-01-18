@@ -13,5 +13,3 @@ html_snippet = ontology.make_ontology_tree_d3(data_structure)
 
 # View in browser!
 view(html_snippet)
-
-

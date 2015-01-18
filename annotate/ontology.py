@@ -10,7 +10,8 @@ ROOT    CONCEPT_A    CONTRAST_1    image_file_1
 ROOT    CONCEPT_B    CONTRAST_1    image_file_2
 ROOT    CONCEPT_D    CONTRAST_2    image_file_3
 
-Each name corresponds to whatever the node is called, with the final column having the image names
+Each name corresponds to whatever the node is called, with the final column having the image names.
+NOTE: This format is not currently compatible with any d3 visualizations, just an option for data export!
 '''
 def ontology_tree_from_tsv(relationship_table,output_json=None):
   data_structure = {}
