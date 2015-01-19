@@ -42,13 +42,23 @@ id	parent	name
 4	2	DS000009
 
 '''
-def named_ontology_tree_from_tsv(relationship_table,output_json=None):
+def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=None):
   nodes = []
 
-  with open(relationship_table) as f:
-    for row in f.readlines()[1:]:
-      nid, parent, name = row.strip().split()
-      nodes.append(Node(nid, parent, name))
+  if meta_data:
+    with open(relationship_table) as f:
+      for row in f.readlines()[1:]:
+        meta = dict()
+        nid, parent, name = row.strip().split()
+        if name in meta_data.keys():
+          meta[name] = meta_data[name]
+        else: meta[name] = ""
+        nodes.append(Node(nid, parent, name, meta))
+  else:
+    with open(relationship_table) as f:
+      for row in f.readlines()[1:]:
+        nid, parent, name = row.strip().split()
+        nodes.append(Node(nid, parent, name))
 
   nodeDict = NodeDict()
   nodeDict.addNodes(nodes)
@@ -69,4 +79,10 @@ def make_ontology_tree_d3(data_structure):
   temp = add_string({"INPUT_ONTOLOGY_JSON":data_structure},temp)
   return temp
 
+
+'''Render d3 of ontology tree, return html with embedded data'''
+def make_reverse_inference_tree_d3(data_structure):
+  temp = get_template("reverse_inference_tree")
+  temp = add_string({"INPUT_ONTOLOGY_JSON":data_structure},temp)
+  return temp
 

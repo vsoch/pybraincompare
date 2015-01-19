@@ -5,11 +5,12 @@ import json
 import UserDict
 
 class Node(object):
-    def __init__(self, nid, parent, name):
+    def __init__(self, nid, parent, name, meta = None):
         self.nid = nid
         self.parent = parent
         self.children = []
         self.name = name
+        self.meta = [meta] # should be dictionary!
 
 class NodeDict(UserDict.UserDict):
     def addNodes(self, nodes):
@@ -24,7 +25,7 @@ class NodeDict(UserDict.UserDict):
 class NodeJSONEncoder(json.JSONEncoder):
     def default(self, node):
         if type(node) == Node:
-            return {"nid":node.nid, "name":node.name, "children":node.children}
+            return {"nid":node.nid, "name":node.name, "meta":node.meta,"children":node.children}
         raise TypeError("{} is not an instance of Node".format(node))
 
 if __name__ == "__main__":

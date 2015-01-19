@@ -3,7 +3,7 @@
 from annotate import ontology
 from template.visual import view
 
-# This defines a "mock" ontology for the openfmri proof of concept set
+# This defines a "mock" ontology for the openfmri proof of concept set - names should be unique
 relationship_table = "data/cogatlas_annotate_triples.tsv"
 
 # Create a data structure for d3 visualization and data analysis (no output json, specify with output_json=)

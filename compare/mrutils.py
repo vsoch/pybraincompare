@@ -4,7 +4,6 @@ import os
 import numpy
 from nilearn.image import resample_img
 from nilearn.masking import apply_mask, compute_epi_mask
-from nilearn.masking import compute_epi_mask
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
 '''Returns reference mask from FSL or FREESURFER'''
