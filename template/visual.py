@@ -1,5 +1,7 @@
 # Functions for visualization parameters
 from template.futils import make_tmp_folder
+from nilearn.plotting import plot_glass_brain
+import matplotlib.pyplot as plt
 import webbrowser
 
 '''Display code in temporary browser!'''
@@ -30,3 +32,13 @@ def get_colors(N,color_format="decimal"):
     return colors
   else:
     print "Current colorscale only has %s colors! Add more!" %(len(colors))
+
+"""Make glassbrain image, optional save image to png file (not vector)"""
+def make_glassbrain_image(nifti_file,png_img_file=None):
+    nifti_file = str(nifti_file)
+    glass_brain = plot_glass_brain(nifti_file)
+    if png_img_file:    
+      glass_brain.savefig(png_img_file)
+    plt.close()
+    return glass_brain
+

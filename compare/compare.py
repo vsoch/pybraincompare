@@ -2,7 +2,8 @@ import nibabel
 from mrutils import get_standard_mask, do_mask
 from template.templates import get_template, add_string
 from template.futils import get_name
-from maths import do_correlation
+from template.visual import make_glassbrain_image
+from maths import do_pairwise_correlation, do_multi_correlation
 import pandas
 import numpy
 import os
@@ -33,7 +34,7 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     masked["ATLAS_LABELS"] = labels
     # Add correlation values if user wants to do pearson correlation
     if corr:
-      corrs = do_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"])
+      corrs = do_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"])
       correlations = [corrs[x] for x in masked["ATLAS_LABELS"]]
     else: correlations = ["" for x in masked["ATLAS_LABELS"]]
     masked["ATLAS_CORR"] = correlations
@@ -58,3 +59,21 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
   
   # Return complete html and raw data
   return template,masked
+
+
+# Similarity search interface for multiple images
+def similarity_search(image_paths,software="FREESURFER",voxdim=[8,8,8],corr="pearson"):
+
+  # Get the reference brain mask
+  reference = get_standard_mask(software)
+  masked = do_mask(images=image_paths,mask=reference,resample_dim=voxdim)
+  masked = pandas.DataFrame(numpy.transpose(masked))
+  masked.columns = image_paths
+  # Pairwise comparison matrix
+  similarity_matrix = do_multi_correlation(masked,corr)
+  # Generate glass brain images
+  glass_brains = []
+  for image in image_paths:
+    glass_brains.append(make_glassbrain_image(image))
+  
+
