@@ -2,7 +2,7 @@ import nibabel
 from mrutils import get_standard_mask, do_mask
 from template.templates import get_template, add_string
 from template.futils import get_name
-from template.visual import make_glassbrain_image
+from template.visual import show_similarity_search
 from maths import do_pairwise_correlation, do_multi_correlation
 import pandas
 import numpy
@@ -62,18 +62,28 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
 
 
 # Similarity search interface for multiple images
-def similarity_search(image_paths,software="FREESURFER",voxdim=[8,8,8],corr="pearson"):
+"""similarity_search: interface to see most similar brain images.
+tags: must be a list of lists, one for each image, with tag categories
+"""
+def similarity_search(mr_paths,software="FREESURFER",voxdim=[8,8,8],corr="pearson",tags=None, image_paths=None):
+
+  if tags:
+    if len(tags) != len(mr_paths):
+      print "ERROR: Number of tags must be equal to number of images!"
+
+  if image_paths:
+    if len(image_paths) != len(mr_paths):
+      print "ERROR: Number of image files provided must be equal to number of images!"
 
   # Get the reference brain mask
   reference = get_standard_mask(software)
-  masked = do_mask(images=image_paths,mask=reference,resample_dim=voxdim)
+  masked = do_mask(images=mr_paths,mask=reference,resample_dim=voxdim)
   masked = pandas.DataFrame(numpy.transpose(masked))
-  masked.columns = image_paths
+  masked.columns = mr_paths
   # Pairwise comparison matrix
   similarity_matrix = do_multi_correlation(masked,corr)
-  # Generate glass brain images
-  glass_brains = []
-  for image in image_paths:
-    glass_brains.append(make_glassbrain_image(image))
-  
+  # Get template
+  template = get_template("similarity_search")
+  # Generate temporary interface
+  show_similarity_search(template=template,tags=tags,mr_files=mr_paths,image_paths=image_paths)
 
