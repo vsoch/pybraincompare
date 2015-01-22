@@ -15,6 +15,6 @@ groups = ["%s-%s" %(parcel_info["Hem"][x],parcel_info["ID"][x]) for x in range(0
 # A threshold value for the connectivity matrix to determine neighbors, eg, a value of .95 means we only keep top 5% of positive and negative connections, and the user can explore this top percent
 threshold = 0.99
 
-html_snippet = connectogram(matrix_file=connectivity_matrix,groups=groups,threshold=threshold)
+html_snippet = connectogram(matrix_file=connectivity_matrix,groups=groups,threshold=threshold,network_names=networks)
 
 view(html_snippet)

@@ -347,11 +347,8 @@ classes = [CONNECTOGRAM_JSON];
         })
      
 
-  // We want to only print the label for networks when we are seeing
-  // them for the first time.  Other "donut" methods text looks too hideous, so 
-  // I am trying this!
-  var textlabels = []   
-
+  // TODO: only print name for first name
+  
   svg.selectAll("g.node")
       .data(nodes.filter(function(n) { return !n.children; }))
         .enter().append("svg:g")
@@ -362,19 +359,11 @@ classes = [CONNECTOGRAM_JSON];
     .append("svg:text")
       .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
       .attr("dy", ".8em")
-      .attr("fill",function(d) { 
-          if (d.network == "L Cingulo-opercular") {return "#000000";}
-          if (d.network == "R Cingulo-opercular") {return "#000000";}
-          else return d.color; })
+      .attr("fill",function(d) { return d.color; })
       .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
       .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
-      .text(function(d) { 
-         // Find the last node
-         if (d.makelabel == 0) {return "";}
-         else return d.network;
-       })
+      .text(function(d) { return d.network });
       
-   
     svg.selectAll("g.node")
         .append("svg:circle")
           .attr("r",4)

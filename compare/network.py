@@ -54,10 +54,9 @@ def connectogram(matrix_file,groups,threshold,network_names=None):
    myjson = []  
    c = 0
    for row in thresh_df.iterrows():
-     node_name = row[0]
      connections = numpy.where(row[1] != 0)   
      network = network_names[c]
-     if len(connections) > 0: 
+     if len(connections[0]) > 0: 
        connection_names = list(thresh_df.columns[connections]) 
        connection_groups = [groups[x] for x in connections[0]]      
        connection_labels = ["%s.%s" %(connection_groups[i],connection_names[i]) for i in range(0,len(connections[0]))]       
@@ -69,9 +68,15 @@ def connectogram(matrix_file,groups,threshold,network_names=None):
          myjson.append('{"name":"%s.%s","strength":"%s","x":99,"y":99,"z":99,"image":"#","order":%s,"color":"%s","network":"%s","connections":["%s"]},' %(groups[c],labels[c],connection_values_string,labels[c],network_colors[network],network,connection_labels_string))
        else:
          myjson.append('{"name":"%s.%s","strength":"%s","x":99,"y":99,"z":99,"image":"#","order":%s,"color":"%s","network":"%s","connections":["%s"]}' %(groups[c],labels[c],connection_values_string,labels[c],network_colors[network],network,connection_labels_string))
+     # If there are no connections
+     else:
+       if c+1 != thresh_df.shape[0]:  
+         myjson.append('{"name":"%s.%s","x":99,"y":99,"z":99,"image":"#","order":%s,"color":"%s","network":"%s"},' %(groups[c],labels[c],labels[c],network_colors[network],network))
+       else:
+         myjson.append('{"name":"%s.%s","x":99,"y":99,"z":99,"image":"#","order":%s,"color":"%s","network":"%s"}' %(groups[c],labels[c],labels[c],network_colors[network],network))
      c=c+1
    myjson = "\n".join([x for x in myjson])
-   myjson = "[%s];" % myjson
+   myjson = "[%s]" % myjson
    
    # Plug into the template
    template = get_template("connectogram")
