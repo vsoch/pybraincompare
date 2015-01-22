@@ -4,6 +4,7 @@ from nilearn.plotting import plot_glass_brain
 from template.templates import add_string
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 import webbrowser
 
 '''View code in temporary browser!'''
@@ -21,6 +22,14 @@ def internal_view(html_snippet,tmp_file):
   url = 'file://%s' %(tmp_file)
   webbrowser.open_new_tab(url)
   raw_input("Press Enter to finish...")
+
+'''Generate N random colors'''
+def random_colors(N):
+  colors = []
+  for x in range(0,N):
+    r = lambda: random.randint(0,255)
+    colors.append('#%02X%02X%02X' % (r(),r(),r()))
+  return colors
 
 def peterson_roi_labels(colors=True):
   color_labels = ["Default","Second-Dorsal-Attention","Ventral-Attention-Language","Second-Visual","Frontal-Parietal","Somatomotor","none","Parietal-Episodic-Retrieval","Parieto-Occipital","Cingulo-opercular","Salience","Frontal-Parietal-Other","First-Dorsal-Attention","First-Visual-V1+","Subcortical"]

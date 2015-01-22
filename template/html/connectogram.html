@@ -1,0 +1,531 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<title>Connectogram: pybraincompare</title>
+<!-- JQuery for Bootstrap -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+<!-- Bootstrap styling -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/vsoch/pybraincompare/master/template/js/d3.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/vsoch/pybraincompare/master/template/js/d3.layout.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/vsoch/pybraincompare/master/template/js/packages.js"></script>
+<!-- Connectogram Styling -->
+<style>
+body {
+  background: #ffffff;
+}
+
+a:link, a:visited {
+  color: #777;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #666;
+}
+
+blockquote {
+  margin: 0;
+}
+
+blockquote:before {
+  content: "â€œ";
+  position: absolute;
+  left: -.4em;
+}
+
+blockquote:after {
+  content: "â€";
+  position: absolute;
+}
+
+
+.invert {
+  background: #1f1f1f;
+  color: #dcdccc;
+}
+
+.invert h2, .invert h3 {
+  color: #7f9f7f;
+}
+
+.string, .regexp {
+  color: #f39;
+}
+
+.keyword {
+  color: #00c;
+}
+
+.comment {
+  color: #777;
+  font-style: oblique;
+}
+
+.number {
+  color: #369;
+}
+
+.class, .special {
+  color: #1181B8;
+}
+
+
+/* Specific d3 styling */
+
+path.arc {
+  cursor: move;
+  fill: #fff;
+}
+
+.node {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.node:hover {
+  fill: #1f77b4;
+}
+
+.link {
+  fill: none;
+  stroke: #1f77b4;
+  stroke-opacity: 0.4;
+  pointer-events: none;
+}
+
+.link.source, .link.target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.node.target {
+  /*fill: #d62728 !important;*/
+}
+
+.link.source {
+  /*stroke: #d62728;*/
+}
+
+.node.source {
+  /*fill: #2ca02c;*/
+}
+
+.link.target {
+  /*stroke: #2ca02c;*/
+}
+
+
+/* Network div position */
+#network {
+  position: fixed:
+  top: 75px;
+  left: 100px;
+}
+
+/* Here is the control sliders */
+.control {
+  position:absolute;
+  bottom:20;
+  font-size:18px;"
+  padding-left: 20px;
+  padding-right:30px;
+  padding-top: 5px;
+  padding-bottom: 20px;
+  float: left;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  margin-top: 5px;
+  margin-left: 5px;
+  border-radius: 15px;
+  /*background: #cccccc;
+  filter:alpha(opacity=80);
+			opacity: 0.8;
+			-moz-opacity: 0.8;
+			-khtml-opacity:0.8;*/
+  z-index: 5;
+}
+
+/* Here is the image box in the top right*/
+#imageBox {
+  vertical-align: top;
+  padding-left: 20px;
+  padding-right:20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  float: right;
+  position: absolute;
+  margin-top: 30px;
+  margin-left: 40px;
+  border-radius: 15px;
+  background: #cccccc;
+  filter:alpha(opacity=70);
+			opacity: 0.7;
+			-moz-opacity: 0.7;
+			-khtml-opacity:0.7;
+  z-index: 5;
+  top: 50px;
+  right: 25px;
+  
+}
+
+/* Title box with region name at top*/
+#titleBox {
+  vertical-align: top;
+  padding-left: 15px;
+  padding-right:15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  position: absolute;
+  margin-top: 20px;
+  margin-left: 40px;
+  border-radius: 15px;
+  color: #666666;
+  z-index: 6;
+  top: 75px;
+  right: 15%;
+  
+}
+
+/* Control box in top left*/
+#controlBox {
+  vertical-align: top;
+  width: 250px;
+  height: 200px;
+  padding-top:100px;
+  padding-left:20px;
+  float: left;
+  position: absolute;
+  margin-top: 30px;
+  margin-left: 25px;
+  border-radius: 15px;
+  z-index: 5;
+  top: 50px;
+  left: 10px;
+  
+}
+</style>
+<!-- Mobile touch zooming -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+<!--Controls, saving, etc-->
+<div id="controlBox">
+
+<form role="form">
+  <div class="form-group">
+     <input type="checkbox" class="btn btn-success" id="highlight_positive"> Highlight Positive<br>
+  </div>
+  <div class="form-group">
+    <input type="checkbox" class="btn btn-success" id="highlight_negative"> Highlight Negative<br>     
+  </div>
+  <button class="btn btn-success" id="save_as_svg" value="" onclick="save_svg()">Save as SVG</button>
+</form>
+
+</div>
+
+<!--Here is image box
+<div id="imageBox">
+  <img src="img/dummy.png" width="100px" />
+  <h3>X<div id="x">0.0</div></h3>
+  <h3>Y<div id="y">0.0</div></h3>
+  <h3>Z<div id="z">0.0</div></h3>
+</div>-->
+<!--Here is the title-->
+<div id="titleBox">
+      <h3>Connectogram</h3>
+</div>   
+
+<!-- Stick d3 here-->
+<div class="network" id="network">
+<fullNetwork>
+</div>
+
+
+<!-- Insert my connectome javascript! -->
+<script>
+// Here is the size of the canvas, and the radius for the visualization
+var w = 1600,
+    h = 1600,
+    rx = w / 2 - 150,
+    ry = h / 2 - 150,
+    m0,
+    rotate = 0;
+
+var splines = [];
+
+// Here is a function to specify the ordering
+// We compare the "order" varaible between the two nodes
+function comparator(a, b) {
+    return d3.ascending(a.order, b.order);
+}
+
+// The clustering layout will sort the data based on the "order" variable, HOWEVER (this is important!)
+// if you specify groupings (Eg in name R-1.1, R-1 is a group) that break apart this ordering, it will
+// be broken.
+var cluster = d3.layout.cluster()
+    .size([360, ry - 150])
+    .sort(comparator);
+    
+
+var bundle = d3.layout.bundle();
+
+var line = d3.svg.line.radial()
+    .interpolate("bundle")
+    .tension(.85) // this tension determines the spacing and extent of the edges into the circle
+    .radius(function(d) { return d.y; })
+    .angle(function(d) { return d.x / 180 * Math.PI; });
+
+// Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
+var div = d3.select("fullNetwork").insert("div", "h2")
+    .attr("id","svg-canvas")
+    .style("top", "80px")
+    .style("left", "80px")
+    .style("width", w + "px")
+    .style("height", w + "px")
+    .style("position", "absolute")
+    .style("-webkit-backface-visibility", "hidden");
+
+var svg = div.append("svg:svg")
+    .attr("width", w)
+    .attr("height", w)
+    .attr("xmlns","http://www.w3.org/2000/svg")
+    .attr("version",1.1)
+    .append("svg:g")
+      .attr("transform", "translate(" + rx + "," + ry + ")");
+
+svg.append("svg:path")
+    .attr("class", "arc")
+    .style("fill","#fff")
+    .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
+    .on("mousedown", mousedown);
+
+// Here is a funcion to get variables from the URL - the code script name
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+classes = [CONNECTOGRAM_JSON];
+
+  var classcounts = packages.count(classes);
+  
+  var nodes = cluster.nodes(packages.root(classes,classcounts.centroids)),
+      // Links will have source, target, and value (strength) of correlation
+      links = packages.connections(nodes),
+      splines = bundle(links);
+         
+  // This variable could determine if the current svg view should
+  // be frozen, which can be done with a click
+  // var freeze = "on";
+
+  var path = svg.selectAll("path.link")
+      .data(links)
+      .enter().append("svg:path")
+        .attr("class", function(d) { 
+         if (d.value > 0) {var direction = "up"}
+         else {var direction = "down"}
+         return "link source-" + d.source.key + " direction-" + direction + " target-" + d.target.key; })
+        .attr("d", function(d, i) { return line(splines[i]); })
+        // These attributes are very important to saving - they must be defined here 
+        // or else saving the shot of the svg will not include them, and you will
+        // create a monster!
+        .style("stroke-opacity",0.2)
+        .style("fill","none")
+        .style("stroke",function(d){
+          // Here we add a variable, "value" to class of node to distinguish if its positive or negative
+          var direction;
+          if (d.value > 0) {return "red";}
+          else {return "#7AA6FE";}
+        })
+     
+
+  // We want to only print the label for networks when we are seeing
+  // them for the first time.  Other "donut" methods text looks too hideous, so 
+  // I am trying this!
+  var textlabels = []   
+
+  svg.selectAll("g.node")
+      .data(nodes.filter(function(n) { return !n.children; }))
+        .enter().append("svg:g")
+        .attr("class", "node")
+        .style("font-size",18)
+        .attr("id", function(d) { return "node-" + d.key; })
+        .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+    .append("svg:text")
+      .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+      .attr("dy", ".8em")
+      .attr("fill",function(d) { 
+          if (d.network == "L Cingulo-opercular") {return "#000000";}
+          if (d.network == "R Cingulo-opercular") {return "#000000";}
+          else return d.color; })
+      .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+      .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+      .text(function(d) { 
+         // Find the last node
+         if (d.makelabel == 0) {return "";}
+         else return d.network;
+       })
+      
+   
+    svg.selectAll("g.node")
+        .append("svg:circle")
+          .attr("r",4)
+          .attr("fill",function(d) {return d.color})   
+      .on("mouseover", mouseover)
+      .on("mouseout", mouseout)
+
+      // Show image of roi when mouse over node
+      .on("mouseover.image",function(node){
+        // Add the image
+        d3.select("#imageBox")
+          .selectAll("img")
+          .attr("src", "img/" + node.image)
+
+          // Add the xyz coordinates
+          d3.select("#x").text(node.xcoord.toFixed(2))
+          d3.select("#y").text(node.ycoord.toFixed(2))
+          d3.select("#z").text(node.z.toFixed(2))
+      })
+      // Show title of network when mouse over node
+      .on("mouseover.title",function(d) { 
+         d3.select("#titleBox")
+          .selectAll("h3")
+          .text(d.network);})
+     
+
+  // Here is slider to adjust the tension   
+  d3.select("input[type=range]").on("change", function() {
+    line.tension(this.value / 100);
+    path.attr("d", function(d, i) { return line(splines[i]); });
+  });
+
+d3.select(window)
+    .on("mousemove", mousemove)
+    .on("mouseup", mouseup);
+
+function mouse(e) {
+  return [e.pageX - rx, e.pageY - ry];
+}
+
+function mousedown() {
+  m0 = mouse(d3.event);
+  d3.event.preventDefault();
+}
+
+function mousemove() {
+  if (m0) {
+    var m1 = mouse(d3.event),
+        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+    div.style("-webkit-transform", "translateY(" + (ry - rx) + "px)rotateZ(" + dm + "deg)translateY(" + (rx - ry) + "px)");
+  }
+}
+
+function mouseup() {
+  if (m0) {
+    var m1 = mouse(d3.event),
+        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+
+    rotate += dm;
+    if (rotate > 360) rotate -= 360;
+    else if (rotate < 0) rotate += 360;
+    m0 = null;
+
+    div.style("-webkit-transform", null);
+
+    svg
+      .attr("transform", "translate(" + rx + "," + ry + ")rotate(" + rotate + ")")
+      .selectAll("g.node text")
+        .attr("dx", function(d) { return (d.x + rotate) % 360 < 180 ? 8 : -8; })
+        .attr("text-anchor", function(d) { return (d.x + rotate) % 360 < 180 ? "start" : "end"; })
+        .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
+  }
+}
+// Here is where we should modify the coloring of the nodes!
+function mouseover(d) {
+  svg.selectAll("path.link.target-" + d.key)
+        .attr('stroke-width', 8)
+        .style("stroke-opacity", 1);
+  
+  svg.selectAll("path.link.source-" + d.key)
+      .attr('stroke-width', 8)
+      .style("stroke-opacity", 1);
+      
+}
+
+function mouseout(d) {
+  svg.selectAll("path.link.source-" + d.key)
+             .attr('stroke-width',3)
+             .style("stroke-opacity", 0.2);
+
+  svg.selectAll("path.link.target-" + d.key)
+       .attr('stroke-width',3)
+        .style("stroke-opacity", 0.2);
+
+}
+
+function updateNodes(name, value) {
+  return function(d) {
+    if (value) this.parentNode.appendChild(this);
+    svg.select("#node-" + d[name].key).classed(name, value);
+  };
+}
+
+function cross(a, b) {
+  return a[0] * b[1] - a[1] * b[0];
+}
+
+function dot(a, b) {
+  return a[0] * b[0] + a[1] * b[1];
+}
+
+//Vanessa's Hacky save svg function!
+function save_svg(evt) {
+    var svg = document.getElementsByTagName("svg");
+    var serializer = new XMLSerializer();
+    var svg_blob = new Blob([serializer.serializeToString(svg[0])],
+                            {'type': "image/svg+xml"});
+    var url = URL.createObjectURL(svg_blob);
+    var svg_win = window.open(url, "svg_win");
+}
+
+
+//Highlight all positive node connections
+document.getElementById('highlight_positive').onchange = function() {
+    if ( document.getElementById('highlight_positive').checked === true ) {
+       d3.selectAll("path.link.direction-up")        
+      .attr("stroke-width",8);
+    }
+    else {
+      d3.selectAll("path.link.direction-up")        
+      .attr("stroke-width",3);
+    }
+}
+
+
+document.getElementById('highlight_negative').onchange = function() {
+    if ( document.getElementById('highlight_negative').checked === true ) {
+       d3.selectAll("path.link.direction-down")        
+      .attr("stroke-width",8);
+    }
+    else {
+      d3.selectAll("path.link.direction-down")        
+      .attr("stroke-width",3);
+    }
+
+}
+</script>
+<div class="control">
+<h3 class="navbar-brand" style="margin-bottom:0px;padding-left:5px">tension</h3>
+<input style="padding-left:20px;position:relative;top:3px;" type="range" min="0" max="100" value="85">
+</div>
+    
+</body>
+</html>

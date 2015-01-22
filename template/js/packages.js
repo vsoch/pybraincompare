@@ -6,7 +6,6 @@
     // where to position the label
     root: function(classes,centroids) {
       var map = {};
-      console.log(centroids);
       function find(name, data) {
         var node = map[name], i;
         if (!node) {
@@ -98,7 +97,6 @@
         } 
       });
       
-      console.log(centroids);
       classcount = {classes:classes,colors:colors,centroids:centroids};
       return classcount;
 
