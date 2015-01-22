@@ -22,6 +22,12 @@ def internal_view(html_snippet,tmp_file):
   webbrowser.open_new_tab(url)
   raw_input("Press Enter to finish...")
 
+def peterson_roi_labels(colors=True):
+  color_labels = ["Default","Second-Dorsal-Attention","Ventral-Attention-Language","Second-Visual","Frontal-Parietal","Somatomotor","none","Parietal-Episodic-Retrieval","Parieto-Occipital","Cingulo-opercular","Salience","Frontal-Parietal-Other","First-Dorsal-Attention","First-Visual-V1+","Subcortical"]
+  colors = ["#ff2700","#d6add6","#007d7d","#393FAC","#FFFB00","#00ffff","94CD54","#CC0066","#003eff","#fbfbda","#822082","#000000","#c46b8b","#00f700","#94cd54","#CC0066"]
+  if not colors: return color_labels
+  else: return [colors,color_labels]
+
 def get_colors(N,color_format="decimal"):
   # color scale chosen manually that I like :)
   colors = [[122,197,205],[71,60,139],[255,99,71],[118,238,0],[100,149,237],[255,127,36],[139,0,0],[255,48,48],[34,139,34],[0,206,209],[160,32,240],[238,201,0],[89,89,89],[238,18,137],[205,179,139],[255,0,0]]
