@@ -103,15 +103,16 @@ def show_similarity_search(template,query,corr_df,button_url,image_url):
   # Sort based on similarity score
   query_similar = corr_df.sort(columns=query_id,ascending=False)
   
-  # Remove the query image
+  # Remove the query image, and cut down to 100 results
   query_similar = query_similar[query_similar.index != query_id]
-        
+  if query_similar.shape[0] > 100: query_similar = query_similar[0:99]
+
   # Get the unique tags
   all_tags = unwrap_list_unique(list(query_similar["tags"]))
   placeholders = dict()
   for tag in all_tags: placeholders[tag] = tag.replace(" ","")
     
-  #TODO: remove columns for other images (so keep query, tags png)(might speed up?)
+  #TODO: if we remove columns for other images (so keep query, tags png)(does it speed up?)
 
   # Create custom urls
   button_urls = ["%s/%s/%s" %(button_url,query_id,x) for x in query_similar.index.tolist()]
@@ -143,16 +144,16 @@ def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=No
       image = image_paths[i]    
       portfolio_items = '%s<li class="portfolio-item ' %(portfolio_items) 
       image_tags = tags[i]
+      if image_urls != None: image_url = image_urls[i]
+      else: image_url = image
       if values != None: value = values[i]
       else: value = image
       if button_urls != None: button_url = button_urls[i]
       else: button_url = image
-      if image_urls != None: image_url = image_urls[i]
-      else: image_url = image
       for it in image_tags:
         portfolio_items = '%s %s ' %(portfolio_items,placeholders[it])
-      portfolio_items = '%s">\n<div class="item-inner">\n<a href="%s"><img src="%s" alt=""></a>\n' %(portfolio_items,image_url,image)
-      portfolio_items = '%s\n<h5>Score: %s</h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,button_url)
+      portfolio_items = '%s">\n<div class="item-inner">\n<img src="%s" alt="">\n' %(portfolio_items,image)
+      portfolio_items = '%s\n<h5>Score: %s</h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,button_url,image_url)
     portfolio_items = '%s\n</ul>' %(portfolio_items)                
 
     portfolio = '%s%s' %(portfolio_filters,portfolio_items)
