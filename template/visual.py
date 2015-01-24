@@ -1,5 +1,5 @@
 # Functions for visualization parameters
-from template.futils import make_tmp_folder
+from template.futils import make_tmp_folder, make_png_paths, unwrap_list_unique
 from nilearn.plotting import plot_glass_brain
 from template.templates import add_string
 import matplotlib.pyplot as plt
@@ -74,33 +74,68 @@ def get_svg_html(mpl_figures):
       svg_images.append(fig_data)
   return svg_images
 
-"""Generate temporary web interface for similarity search"""
-def show_similarity_search(template,tags,mr_files,image_paths=None):
+"""Generate temporary web interface to show brainglass images"""
+def show_brainglass_interface(template,tags,mr_files,image_paths=None):
   with make_tmp_folder() as tmp_dir:  
 
     # If we need to make the image paths from the mr_files
-    if not image_paths:
-      image_paths = []
-      for i in range(0,len(mr_files)):
-        image = mr_files[i]
-        tmp_svg = "%s/tmpbrain%s.png" %(tmp_dir,i)
-        make_glassbrain_image(image,tmp_svg)
-        image_paths.append(tmp_svg)
+    if not image_paths: image_paths = make_png_paths(mr_files)
 
     # Get the unique tags
-    all_tags = []
-    for taglist in tags:
-      all_tags = all_tags + [tag for tag in taglist]
-    all_tags = list(np.unique(all_tags))
+    all_tags = unwrap_list_unique(tags)
     placeholders = dict()
     for tag in all_tags: placeholders[tag] = tag.replace(" ","")
 
+    # Create portfolio
+    portfolio = create_glassbrain_portfolio(image_paths,all_tags,placeholders)
+    html_snippet = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
+    tmp_file = "%s/similarity_search.html" %(tmp_dir)
+    internal_view(html_snippet,tmp_file)
+
+"""Generate temporary web interface to show brainglass images
+   Future version will generate on the fly and use "internal_show"
+"""
+def show_similarity_search(template,query,corr_df,button_url,image_url):
+  #if not image_paths: image_paths = make_png_paths(mr_files)
+  query_row = corr_df[corr_df["png"] == query]
+  query_id = query_row.index[0]
+    
+  # Sort based on similarity score
+  query_similar = corr_df.sort(columns=query_id,ascending=False)
+  
+  # Remove the query image
+  query_similar = query_similar[query_similar.index != query_id]
+        
+  # Get the unique tags
+  all_tags = unwrap_list_unique(list(query_similar["tags"]))
+  placeholders = dict()
+  for tag in all_tags: placeholders[tag] = tag.replace(" ","")
+    
+  #TODO: remove columns for other images (so keep query, tags png)(might speed up?)
+
+  # Create custom urls
+  button_urls = ["%s/%s/%s" %(button_url,query_id,x) for x in query_similar.index.tolist()]
+  image_urls = ["%s/%s" %(image_url,x) for x in query_similar.index.tolist()]
+
+  # Create portfolio with images and tags
+  scores = np.round(query_similar[query_id].values,2)
+  png_images = query_similar["png"].tolist()
+  tags_list = query_similar["tags"].tolist()
+  portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,tags=tags_list,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls)
+  template = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
+  html_snippet = add_string({"QUERY_IMAGE":query},template)
+  return html_snippet
+
+
+'''Base brainglass portfolio for image comparison or brainglass interface standalone'''
+def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=None,button_urls=None,image_urls=None):
     # Create portfolio filters
-    portfolio_filters = '<ul class="portfolio-filter">\n<li><a class="btn btn-default active" href="#" data-filter="*">All</a></li>'     
+    portfolio_filters = '<div class="row"><div class="col-md-6" style="padding-left:20px"><ul class="portfolio-filter">\n<li><a class="btn btn-default active" href="#" data-filter="*">All</a></li>'     
     for t in range(0,len(all_tags)):
       tag = all_tags[t]; placeholder = placeholders[tag]      
       portfolio_filters = '%s<li><a class="btn btn-default" href="#" data-filter=".%s">%s</a></li>\n' %(portfolio_filters,placeholder,tag) 
-    portfolio_filters = '%s</ul><!--/#portfolio-filter-->\n' %(portfolio_filters)
+    portfolio_filters = '%s</ul><!--/#portfolio-filter--></div><div class="col-md-6">\n' %(portfolio_filters)
+    portfolio_filters = '%s<img class = "query_image" src="[QUERY_IMAGE]"/></div></div>' %(portfolio_filters)
 
     # Create portfolio items
     portfolio_items = '<ul class="portfolio-items col-3">'
@@ -108,14 +143,17 @@ def show_similarity_search(template,tags,mr_files,image_paths=None):
       image = image_paths[i]    
       portfolio_items = '%s<li class="portfolio-item ' %(portfolio_items) 
       image_tags = tags[i]
+      if values != None: value = values[i]
+      else: value = image
+      if button_urls != None: button_url = button_urls[i]
+      else: button_url = image
+      if image_urls != None: image_url = image_urls[i]
+      else: image_url = image
       for it in image_tags:
         portfolio_items = '%s %s ' %(portfolio_items,placeholders[it])
-      portfolio_items = '%s">\n<div class="item-inner">\n<img src="%s" alt="">\n' %(portfolio_items,image)
-      portfolio_items = '%s\n<h5>%s</h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s"><i class="icon-eye-open"></i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,image,image)
+      portfolio_items = '%s">\n<div class="item-inner">\n<a href="%s"><img src="%s" alt=""></a>\n' %(portfolio_items,image_url,image)
+      portfolio_items = '%s\n<h5>Score: %s</h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,button_url)
     portfolio_items = '%s\n</ul>' %(portfolio_items)                
 
-    # Add both to template
     portfolio = '%s%s' %(portfolio_filters,portfolio_items)
-    html_snippet = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
-    tmp_file = "%s/similarity_search.html" %(tmp_dir)
-    internal_view(html_snippet,tmp_file)
+    return portfolio

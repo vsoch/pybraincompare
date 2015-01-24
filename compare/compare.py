@@ -2,7 +2,7 @@ import nibabel
 from mrutils import get_standard_mask, do_mask
 from template.templates import get_template, add_string
 from template.futils import get_name
-from template.visual import show_similarity_search
+from template.visual import show_similarity_search, show_brainglass_interface
 from maths import do_pairwise_correlation, do_multi_correlation
 import pandas
 import numpy
@@ -55,17 +55,17 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     template = add_string({"image 1":get_name(image1),"image 2":get_name(image2)},template)
   else:
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]
-    template = get_template("scatter",masked)
+    template = get_template("scatter",data_frame=masked)
   
   # Return complete html and raw data
   return template,masked
 
 
-# Similarity search interface for multiple images
-"""similarity_search: interface to see most similar brain images.
+# Show images in brain glass interface and sort by tags [IN DEV]
+"""brainglass_interface: interface to see most similar brain images.
 tags: must be a list of lists, one for each image, with tag categories
 """
-def similarity_search(mr_paths,software="FREESURFER",voxdim=[8,8,8],corr="pearson",tags=None, image_paths=None):
+def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None,image_paths=None):
 
   if tags:
     if len(tags) != len(mr_paths):
@@ -80,10 +80,40 @@ def similarity_search(mr_paths,software="FREESURFER",voxdim=[8,8,8],corr="pearso
   masked = do_mask(images=mr_paths,mask=reference,resample_dim=voxdim)
   masked = pandas.DataFrame(numpy.transpose(masked))
   masked.columns = mr_paths
-  # Pairwise comparison matrix
-  similarity_matrix = do_multi_correlation(masked,corr)
+  # Get template
+  template = get_template("brainglass_interface")
+  # Generate temporary interface, if brainglass images don't exist, they will be generated
+  show_brainglass_interface(template=template,tags=tags,mr_files=mr_paths,image_paths=image_paths)
+
+
+# Search interface to show images most similar to a query in database
+"""similarity_search: interface to see most similar brain images.
+***image_paths, mr_paths, and rows/cols of corr_df must be in sync!
+tags: must be a list of lists, one for each image, with tag categories
+query: image (must be in mr_paths) that will determine ordering of others (most similar to it)
+       if image_paths is provided, the equivalent index will be used
+corr_df: matrix of correlation values for images, if none, calculated (pearson) on the fly
+   should be pandas data frame with columns and index corresponding to image_paths, mr_paths
+"""
+def similarity_search(corr_df,query,button_url,image_url,software="FREESURFER",voxdim=[4,4,4]):
+
+  if "tags" not in corr_df.columns: print "ERROR: Must include 'tags' column in data frame!"
+  if "png" not in corr_df.columns: print "ERROR: Must include 'png' image paths column in data frame!"
+
+  # Find the query image in the data frame png list
+  if query not in list(corr_df["png"]): print "ERROR: Query image png path must be in data frame 'png' paths!"
+
+  # If we add option to calculate correlation on the fly
+  #if not corr_df:
+    # Get the reference brain mask
+    #reference = get_standard_mask(software)
+    #masked = do_mask(images=mr_paths,mask=reference,resample_dim=voxdim)
+    #masked = pandas.DataFrame(numpy.transpose(masked))
+    #masked.columns = mr_paths; masked.index = mr_paths
+    #corr_df = do_multi_correlation(masked)
+  
   # Get template
   template = get_template("similarity_search")
   # Generate temporary interface
-  show_similarity_search(template=template,tags=tags,mr_files=mr_paths,image_paths=image_paths)
+  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url)
 

@@ -3,6 +3,8 @@ import tempfile
 import shutil
 import contextlib
 import futils
+#from template.visual import make_glassbrain_image
+import numpy as np
 
 # Get the directory of the package
 def get_package_dir():
@@ -18,3 +20,21 @@ def make_tmp_folder():
 # Filename
 def get_name(path):
   return os.path.split(path)[1].split(".")[0]
+
+# Generate new png paths to correspond to nifti filenames
+def make_png_paths(nifti_files):
+  image_paths = []
+  for i in range(0,len(mr_files)):
+    image = mr_files[i]
+    tmp_svg = "%s/tmpbrain%s.png" %(tmp_dir,i)
+    make_glassbrain_image(image,tmp_svg)
+    image_paths.append(tmp_svg)
+  return image_paths
+
+# Get unique values in a list of lists
+def unwrap_list_unique(list_of_lists):
+  uniques = []
+  for listy in list_of_lists:
+    uniques = uniques + [item for item in listy]
+  uniques = list(np.unique(uniques))
+  return uniques

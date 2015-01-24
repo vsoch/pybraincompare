@@ -4,7 +4,7 @@ import pandas
 
 def get_template(html_name,data_frame=None):
   template = read_template(html_name)
-  if data_frame:
+  if isinstance(data_frame,pandas.core.frame.DataFrame):
     replacements = data_frame.columns
     for rep in replacements:
       dat = data_frame[rep]
