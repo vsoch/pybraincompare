@@ -9,7 +9,7 @@ import pandas
 corr_df = pandas.read_pickle("/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/example/data/pearson_corr.pkl")
 
 # Here are pre-generated png images
-png_images = mrs = glob("/home/vanessa/Packages/vagrant/neurovault/image_data/images/1/*.png") + glob("/home/vanessa/Packages/vagrant/neurovault/image_data/images/2/*.png")
+png_images = glob("/home/vanessa/Packages/vagrant/neurovault/image_data/images/1/*.png") + glob("/home/vanessa/Packages/vagrant/neurovault/image_data/images/2/*.png")
 
 # Create a list of tags for each image
 tags = [["Z","brain"],["Z","brain"],["brain"],["Z","brain"],["Z","brain"]]
