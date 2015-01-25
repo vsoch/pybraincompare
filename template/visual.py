@@ -92,20 +92,31 @@ def show_brainglass_interface(template,tags,mr_files,image_paths=None):
     tmp_file = "%s/similarity_search.html" %(tmp_dir)
     internal_view(html_snippet,tmp_file)
 
-"""Generate temporary web interface to show brainglass images
-   Future version will generate on the fly and use "internal_show"
+"""Generate web interface for similarity search
+Future version will generate on the fly and use "internal_show"
+template: html template (similarity_search)
+corr_df: matrix of correlation values for images, with "png" column corresponding to image paths, "tags" corresponding to image tags. Column and row names should be image id.
+query: image png (must be in "png" column) that the others will be compared to
+button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
+image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
+max_results: maximum number of results to return
+absolute_value: return absolute value of score (default=True)
 """
-def show_similarity_search(template,query,corr_df,button_url,image_url):
+def show_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value):
   #if not image_paths: image_paths = make_png_paths(mr_files)
   query_row = corr_df[corr_df["png"] == query]
   query_id = query_row.index[0]
     
-  # Sort based on similarity score
-  query_similar = corr_df.sort(columns=query_id,ascending=False)
+  # Sort based on (absolute value of) similarity score
+  if absolute_value: 
+    query_similar = corr_df[query_id].abs()
+    query_similar.sort(ascending=False)
+    query_similar = corr_df.loc[query_similar.index]
+  else: query_similar = corr_df.sort(columns=query_id,ascending=False)
   
   # Remove the query image, and cut down to 100 results
   query_similar = query_similar[query_similar.index != query_id]
-  if query_similar.shape[0] > 100: query_similar = query_similar[0:99]
+  if query_similar.shape[0] > max_results: query_similar = query_similar[0:max_results]
 
   # Get the unique tags
   all_tags = unwrap_list_unique(list(query_similar["tags"]))

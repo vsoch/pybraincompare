@@ -88,14 +88,14 @@ def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None
 
 # Search interface to show images most similar to a query in database
 """similarity_search: interface to see most similar brain images.
-***image_paths, mr_paths, and rows/cols of corr_df must be in sync!
-tags: must be a list of lists, one for each image, with tag categories
-query: image (must be in mr_paths) that will determine ordering of others (most similar to it)
-       if image_paths is provided, the equivalent index will be used
-corr_df: matrix of correlation values for images, if none, calculated (pearson) on the fly
-   should be pandas data frame with columns and index corresponding to image_paths, mr_paths
+corr_df: matrix of correlation values for images, with "png" column corresponding to image paths, "tags" corresponding to image tags. Column and row names should be image id.
+query: image png (must be in "png" column) that the others will be compared to
+button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
+image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
+max_results: maximum number of results to return
+absolute_value: return absolute value of score (default=True)
 """
-def similarity_search(corr_df,query,button_url,image_url,software="FREESURFER",voxdim=[4,4,4]):
+def similarity_search(corr_df,query,button_url,image_url,max_results=100,software="FREESURFER",voxdim=[4,4,4],absolute_value=True):
 
   if "tags" not in corr_df.columns: print "ERROR: Must include 'tags' column in data frame!"
   if "png" not in corr_df.columns: print "ERROR: Must include 'png' image paths column in data frame!"
@@ -115,5 +115,5 @@ def similarity_search(corr_df,query,button_url,image_url,software="FREESURFER",v
   # Get template
   template = get_template("similarity_search")
   # Generate temporary interface
-  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url)
+  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value)
 
