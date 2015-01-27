@@ -11,7 +11,7 @@ def get_standard_mask(software):
   if software == "FSL":
     reference = os.path.join(os.environ['FSL_DIR'],'data', 'standard', 'MNI152_T1_2mm_brain_mask.nii.gz')
   elif software == "FREESURFER":
-    reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brainmask.nii.gz')
+    reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brainmask.mgz')
   return reference
   #TODO: How do I trigger an error?  
 
@@ -20,7 +20,7 @@ def get_standard_brain(software):
   if software == "FSL":
     reference = os.path.join(os.environ['FSL_DIR'],'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
   elif software == "FREESURFER":
-    reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brain.nii.gz')
+    reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brain.mgz')
   return reference
   #TODO: Trigger an error
 
