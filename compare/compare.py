@@ -51,8 +51,8 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     # Add SVGs, eg atlas_key["coronal"] replaces [coronal]
     template = add_string(atlas.svg,template)
       
-    # Finally, add image names
-    template = add_string({"image 1":get_name(image1),"image 2":get_name(image2)},template)
+    # Finally, add image names and links
+    template = add_string({"IMAGE_1":get_name(image1),"IMAGE_2":get_name(image2),"IMAGE_1_LINK":"#","IMAGE_2_LINK":"#"},template)
   else:
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]
     template = get_template("scatter",data_frame=masked)

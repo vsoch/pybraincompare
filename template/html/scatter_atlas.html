@@ -66,12 +66,6 @@ var yValue = function(d) { return d.val2;}, // data -> value
     yMap = function(d) { return yScale(yValue(d));}, // data -> display
     yAxis = d3.svg.axis().scale(yScale).orient("left");
 
-// setup fill color
-//color_values= ["[ATLAS_CCOLORS]"];
-//var cValue = function(d) { return d.atlas;},
-//color = function(c) {
-//  return color_values[c]   
-//}
 
 // Svg for the legend
 var legend_svg = d3.selectAll("pybrain").append("svg")
@@ -129,24 +123,29 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
+    .append("a")
+      .attr("xlink:href", "[IMAGE_1_LINK]")
     .append("text")
       .attr("class", "label")
       .attr("x", width)
-      .attr("y", -25)
+      .attr("y", -35)
       .style("text-anchor", "end")
-      .text("[image 1]");
+      .text("[IMAGE_1]")
+      .attr("xlink:href", "#");
 
   // y-axis
   svg.append("g")
       .attr("class", "y axis")
       .call(yAxis)
+    .append("a")
+      .attr("xlink:href", "[IMAGE_2_LINK]")
     .append("text")
       .attr("class", "label")
       .attr("transform", "rotate(-90)")
       .attr("y", -25)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text("[image 2]");
+      .text("[IMAGE_2]")
 
   // Coloring for axis
   d3.selectAll("path.domain").style("stroke","#CCCCCC")
@@ -200,6 +199,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
 
   legend_text.append("text")
+       .classed(function(d){ return "legend_text " + d.label })
        .attr("transform", "rotate(90)")
        .attr("x", 42)
        .attr("y",-50)
@@ -214,6 +214,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
 
   legend.append("rect")
+      .classed("legend_box",true)
       .attr("transform","translate(40,0)")
       .attr("x", 0)
       .attr("y",0)
@@ -239,6 +240,9 @@ raw = {"val1":[INPUT_DATA_ONE],
               .style("stroke-opacity",0)
               .style("fill-opacity",0)
             d3.select(this).style("fill","#F5F5F5")
+            d3.selectAll(".legend_corr_" + d.label )
+              .style("stroke","black")
+              .style("fill","black")
             d3.select(this).classed("hidden",true)
             // hide brain region
             d3.selectAll("path#" + d.label)
@@ -249,12 +253,64 @@ raw = {"val1":[INPUT_DATA_ONE],
               .style("stroke-opacity",1)
               .style("fill-opacity",0.7)
             d3.select(this).style("fill",function(d){ return d.color })
+            d3.selectAll(".legend_corr_" + d.label )
+              .style("stroke","white")
+              .style("fill","white")
             d3.select(this).classed("hidden",false) 
             // add brain region
             d3.selectAll("path#" + d.label)
                .style("stroke",d.color )
           }
        })
+
+  // Deselect all button
+  selectall = legend_svg.append("g")
+
+  selectall.append("rect")
+      .classed("selectall",true)
+      .attr("transform","translate(40,0)")
+      .attr("x", 305)
+      .attr("y",0)
+      .attr("width", 45)
+      .attr("height", 36)
+      .style("fill", "red")
+      .on("mouseover.legend",function(){
+        d3.selectAll("path")
+           .style("stroke-width",3)
+        d3.select(this).style("stroke","black")
+          .style("stroke-width",3)     
+      })
+      .on("mouseout.legend", function() {
+        d3.selectAll("path")
+            .style("stroke-width",1)   
+          d3.select(this).style("stroke","white") 
+            .style("stroke-width",1)    
+      })
+       // On click, show or hide ALL the points
+      .on("click",function(){
+            d3.selectAll("circle")
+              .style("stroke-opacity",0)
+              .style("fill-opacity",0)
+            d3.selectAll(".legend_box")
+              .style("fill","#F5F5F5")
+              .classed("hidden",true)
+            d3.selectAll(".legend_corr")
+              .style("stroke","black")
+              .style("fill","black")
+            // hide ALL brain regions
+            d3.selectAll("path").style("stroke","#F5F5F5")
+        });
+
+    selectall.append("text")
+       .attr("x", 350)
+       .attr("y",21)
+       .style("fill","white")
+       .style("stroke","white")
+       .style("stroke-width",0.5)
+       .attr("font-family", "sans-serif")
+       .attr("font-size", "10px")
+       .text("CLEAR")
+
 
   // add correlation values
   var legend_corr = legend_svg.selectAll(".legend_corr")
@@ -263,10 +319,14 @@ raw = {"val1":[INPUT_DATA_ONE],
       .attr("transform", function(d, i) { return "translate(" + i * 30 + ",0)"; });
 
   legend_corr.append("text")
+       .attr("class", function(d) { return "legend_corr_" + d.label})
+       .classed("legend_corr",true)
        .attr("x", 44)
        .attr("y", 10)
        .style("font-family", "sans-serif")
        .style("font-size", "10px")
+       .style("fill", "white")
+       .style("stroke-width", 0.5)
        .style("stroke", "white")
        .text(function(d){ return d.corr.toFixed(2)})
 
