@@ -102,7 +102,7 @@ image_url: prefix of the url that the "view" button will link to. format will be
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 """
-def show_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value):
+def show_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value,image_names):
   #if not image_paths: image_paths = make_png_paths(mr_files)
   query_row = corr_df[corr_df["png"] == query]
   query_id = query_row.index[0]
@@ -133,14 +133,14 @@ def show_similarity_search(template,query,corr_df,button_url,image_url,max_resul
   scores = np.round(query_similar[query_id].values,2)
   png_images = query_similar["png"].tolist()
   tags_list = query_similar["tags"].tolist()
-  portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,tags=tags_list,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls)
+  portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,tags=tags_list,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls,image_names=image_names)
   template = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
   html_snippet = add_string({"QUERY_IMAGE":query},template)
   return html_snippet
 
 
 '''Base brainglass portfolio for image comparison or brainglass interface standalone'''
-def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=None,button_urls=None,image_urls=None):
+def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=None,button_urls=None,image_urls=None,image_names=None):
     # Create portfolio filters
     portfolio_filters = '<div class="row"><div class="col-md-6" style="padding-left:20px"><ul class="portfolio-filter">\n<li><a class="btn btn-default active" href="#" data-filter="*">All</a></li>'     
     for t in range(0,len(all_tags)):
@@ -157,6 +157,8 @@ def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=No
       image_tags = tags[i]
       if image_urls != None: image_url = image_urls[i]
       else: image_url = image
+      if image_names != None: image_name = "[%s]" %(image_names[i])
+      else: image_name = ""
       if values != None: value = values[i]
       else: value = image
       if button_urls != None: button_url = button_urls[i]
@@ -164,7 +166,7 @@ def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=No
       for it in image_tags:
         portfolio_items = '%s %s ' %(portfolio_items,placeholders[it])
       portfolio_items = '%s">\n<div class="item-inner">\n<img src="%s" alt="">\n' %(portfolio_items,image)
-      portfolio_items = '%s\n<h5>Score: %s</h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,button_url,image_url)
+      portfolio_items = '%s\n<h5>Score: %s <span style="color:#FF8C00;">%s</span></h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,image_name,button_url,image_url)
     portfolio_items = '%s\n</ul>' %(portfolio_items)                
 
     portfolio = '%s%s' %(portfolio_filters,portfolio_items)

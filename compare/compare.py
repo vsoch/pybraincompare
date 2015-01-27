@@ -95,25 +95,16 @@ image_url: prefix of the url that the "view" button will link to. format will be
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 """
-def similarity_search(corr_df,query,button_url,image_url,max_results=100,software="FREESURFER",voxdim=[4,4,4],absolute_value=True):
+def similarity_search(corr_df,query,button_url,image_url,max_results=100,software="FREESURFER",voxdim=[4,4,4],absolute_value=True,image_names=None):
 
   if "tags" not in corr_df.columns: print "ERROR: Must include 'tags' column in data frame!"
   if "png" not in corr_df.columns: print "ERROR: Must include 'png' image paths column in data frame!"
 
   # Find the query image in the data frame png list
   if query not in list(corr_df["png"]): print "ERROR: Query image png path must be in data frame 'png' paths!"
-
-  # If we add option to calculate correlation on the fly
-  #if not corr_df:
-    # Get the reference brain mask
-    #reference = get_standard_mask(software)
-    #masked = do_mask(images=mr_paths,mask=reference,resample_dim=voxdim)
-    #masked = pandas.DataFrame(numpy.transpose(masked))
-    #masked.columns = mr_paths; masked.index = mr_paths
-    #corr_df = do_multi_correlation(masked)
   
   # Get template
   template = get_template("similarity_search")
   # Generate temporary interface
-  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value)
+  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value,image_names=image_names)
 

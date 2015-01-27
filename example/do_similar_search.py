@@ -25,8 +25,11 @@ image_url = "http://www.neurovault.org/image" # format will be prefix/[other_id]
 # Here is the query image
 query = png_images[0]
 
+# You can optionally add image names
+image_names = ["image 1","image 2","image 3","image 4","image 5"]
+
 # Currently only supporting generating similarity search for pre-computed similarity data frame
-html_snippet = similarity_search(corr_df=corr_df,button_url=compare_url,image_url=image_url,query=query)
+html_snippet = similarity_search(corr_df=corr_df,button_url=compare_url,image_url=image_url,query=query,image_names=image_names)
 
 # Show in browser
 view(html_snippet)
