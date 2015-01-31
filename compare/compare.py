@@ -2,7 +2,7 @@ import nibabel
 from mrutils import get_standard_mask, do_mask
 from template.templates import get_template, add_string
 from template.futils import get_name
-from template.visual import show_similarity_search, show_brainglass_interface
+from template.visual import calculate_similarity_search, show_brainglass_interface
 from maths import do_pairwise_correlation, do_multi_correlation
 import pandas
 import numpy
@@ -88,23 +88,35 @@ def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None
 
 # Search interface to show images most similar to a query in database
 """similarity_search: interface to see most similar brain images.
-corr_df: matrix of correlation values for images, with "png" column corresponding to image paths, "tags" corresponding to image tags. Column and row names should be image id.
+data: pandas series of similarity scores, including the query. Row names should be image ids. column name is query id.
 query: image png (must be in "png" column) that the others will be compared to
+tags: a list of lists of tags, one for each image, in same order as data
+png_paths: a list of pre-generated png images, one for each image, in same order as data
 button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
 image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
+image_names: a list of image names to show in interface [OPTIONAL]
 """
-def similarity_search(corr_df,query,button_url,image_url,max_results=100,software="FREESURFER",voxdim=[4,4,4],absolute_value=True,image_names=None):
+def similarity_search(data,tags,png_paths,query,button_url,image_url,max_results=100,absolute_value=True,image_names=None):
 
-  if "tags" not in corr_df.columns: print "ERROR: Must include 'tags' column in data frame!"
-  if "png" not in corr_df.columns: print "ERROR: Must include 'png' image paths column in data frame!"
-
-  # Find the query image in the data frame png list
-  if query not in list(corr_df["png"]): print "ERROR: Query image png path must be in data frame 'png' paths!"
-  
   # Get template
   template = get_template("similarity_search")
-  # Generate temporary interface
-  return show_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value,image_names=image_names)
 
+  if isinstance(data,pandas.core.series.Series):
+
+    if len(tags) != len(png_paths) != data.shape[0]:
+      print "ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal"
+      return
+
+    corr_df = pandas.concat([data],axis=1) 
+    corr_df["png"] = png_paths
+    corr_df["tags"] = tags
+
+    # Find the query image in the data frame png list
+    if query not in list(corr_df["png"]): print "ERROR: Query image png path must be in data frame 'png' paths!"; return
+  
+    return calculate_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value,image_names=image_names)
+  
+  else:
+    print "Please provide data in a pandas series, with index corresponding to image id."

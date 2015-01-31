@@ -102,7 +102,12 @@ image_url: prefix of the url that the "view" button will link to. format will be
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 """
-def show_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value,image_names):
+
+# VANESSA STOPPED HERE - need to write show_similarity_search function that handles doing a list, and separate
+# end of this function into a third function shared by the two!
+
+def calculate_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value,image_names):
+  """calculate_similarity_search_df starts with pandas data frame to make similarity interface"""
   #if not image_paths: image_paths = make_png_paths(mr_files)
   query_row = corr_df[corr_df["png"] == query]
   query_id = query_row.index[0]
@@ -118,33 +123,34 @@ def show_similarity_search(template,query,corr_df,button_url,image_url,max_resul
   query_similar = query_similar[query_similar.index != query_id]
   if query_similar.shape[0] > max_results: query_similar = query_similar[0:max_results]
 
-  # Get the unique tags
-  all_tags = unwrap_list_unique(list(query_similar["tags"]))
-  placeholders = dict()
-  for tag in all_tags: placeholders[tag] = tag.replace(" ","")
-    
-  #TODO: if we remove columns for other images (so keep query, tags png)(does it speed up?)
-
-  # Create custom urls
-  button_urls = ["%s/%s/%s" %(button_url,query_id,x) for x in query_similar.index.tolist()]
-  image_urls = ["%s/%s" %(image_url,x) for x in query_similar.index.tolist()]
-
-  # Create portfolio with images and tags
+  # Prepare data for show_similarity_search
+  image_ids = query_similar.index.tolist()
+  all_tags = query_similar["tags"].tolist()
   scores = np.round(query_similar[query_id].values,2)
   png_images = query_similar["png"].tolist()
-  tags_list = query_similar["tags"].tolist()
-  portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,tags=tags_list,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls,image_names=image_names)
+
+  # Get the unique tags
+  unique_tags = unwrap_list_unique(all_tags)
+  placeholders = dict()
+  for tag in unique_tags: placeholders[tag] = tag.replace(" ","")
+
+  # Create custom urls
+  button_urls = ["%s/%s/%s" %(button_url,query_id,x) for x in image_ids]
+  image_urls = ["%s/%s" %(image_url,x) for x in image_ids]
+
+  # Create portfolio with images and tags
+  portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,unique_tags=unique_tags,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls,image_names=image_names)
   template = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
   html_snippet = add_string({"QUERY_IMAGE":query},template)
   return html_snippet
 
 
 '''Base brainglass portfolio for image comparison or brainglass interface standalone'''
-def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=None,button_urls=None,image_urls=None,image_names=None):
+def create_glassbrain_portfolio(image_paths,all_tags,unique_tags,placeholders,values=None,button_urls=None,image_urls=None,image_names=None):
     # Create portfolio filters
     portfolio_filters = '<div class="row"><div class="col-md-6" style="padding-left:20px"><ul class="portfolio-filter">\n<li><a class="btn btn-default active" href="#" data-filter="*">All</a></li>'     
-    for t in range(0,len(all_tags)):
-      tag = all_tags[t]; placeholder = placeholders[tag]      
+    for t in range(0,len(unique_tags)):
+      tag = unique_tags[t]; placeholder = placeholders[tag]      
       portfolio_filters = '%s<li><a class="btn btn-default" href="#" data-filter=".%s">%s</a></li>\n' %(portfolio_filters,placeholder,tag) 
     portfolio_filters = '%s</ul><!--/#portfolio-filter--></div><div class="col-md-6">\n' %(portfolio_filters)
     portfolio_filters = '%s<img class = "query_image" src="[QUERY_IMAGE]"/></div></div>' %(portfolio_filters)
@@ -154,7 +160,7 @@ def create_glassbrain_portfolio(image_paths,all_tags,tags,placeholders,values=No
     for i in range(0,len(image_paths)):
       image = image_paths[i]    
       portfolio_items = '%s<li class="portfolio-item ' %(portfolio_items) 
-      image_tags = tags[i]
+      image_tags = all_tags[i]
       if image_urls != None: image_url = image_urls[i]
       else: image_url = image
       if image_names != None: image_name = "[%s]" %(image_names[i])
