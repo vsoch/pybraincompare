@@ -1,3 +1,9 @@
+'''
+network.py: part of pybraincompare package
+Functions for visualization of functional MRI
+
+'''
+
 import nibabel
 from template.templates import get_template, add_string
 from template.futils import get_name

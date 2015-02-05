@@ -1,11 +1,13 @@
 # Functions for visualization parameters
 from template.futils import make_tmp_folder, make_png_paths, unwrap_list_unique
-from nilearn.plotting import plot_glass_brain
 from template.templates import add_string
 import matplotlib.pyplot as plt
+import SimpleHTTPServer
+import SocketServer
 import numpy as np
 import random
 import webbrowser
+
 
 '''View code in temporary browser!'''
 def view(html_snippet):
@@ -22,6 +24,14 @@ def internal_view(html_snippet,tmp_file):
   url = 'file://%s' %(tmp_file)
   webbrowser.open_new_tab(url)
   raw_input("Press Enter to finish...")
+
+'''Web server (for Papaya Viewer in QA report'''
+def run_webserver(PORT=8000,html_page="index.html"):
+  Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+  httpd = SocketServer.TCPServer(("", PORT), Handler)
+  print "Serving pybraincompare at port", PORT
+  webbrowser.open("http://localhost:%s/%s" %(PORT,html_page))
+  httpd.serve_forever()
 
 '''Generate N random colors'''
 def random_colors(N):
@@ -53,15 +63,6 @@ def get_colors(N,color_format="decimal"):
     return colors
   else:
     print "Current colorscale only has %s colors! Add more!" %(len(colors))
-
-"""Make glassbrain image, optional save image to png file (not vector)"""
-def make_glassbrain_image(nifti_file,png_img_file=None):
-  nifti_file = str(nifti_file)
-  glass_brain = plot_glass_brain(nifti_file)
-  if png_img_file:    
-    glass_brain.savefig(png_img_file)
-  plt.close()
-  return glass_brain
 
 """Get svg html from matplotlib figures (eg, glass brain images)"""
 def get_svg_html(mpl_figures):
@@ -102,9 +103,6 @@ image_url: prefix of the url that the "view" button will link to. format will be
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 """
-
-# VANESSA STOPPED HERE - need to write show_similarity_search function that handles doing a list, and separate
-# end of this function into a third function shared by the two!
 
 def calculate_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value,image_names):
   """calculate_similarity_search_df starts with pandas data frame to make similarity interface"""

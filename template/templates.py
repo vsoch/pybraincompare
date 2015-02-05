@@ -13,6 +13,11 @@ def get_template(html_name,data_frame=None):
       template = [t.replace(rep,dat) for t in template]
   return template
 
+def save_template(html_snippet,output_file):
+  filey = open(output_file,"wb")
+  filey.writelines(html_snippet)
+  filey.close()
+
 def read_template(html_name):
 
   # Get package directory
@@ -21,10 +26,9 @@ def read_template(html_name):
   template_file = os.path.join(ppwd,'html', html_name)
   return open(template_file,"r").readlines()
 
-'''Add strings (eg, svg code) to a template - the key of the atlas_svg should correspond to replacement text'''
-''' eg, svg["coronal"] will replace [coronal] tag in template!'''
+'''Add strings (eg, svg code) to a template - the key of the atlas_svg should correspond to replacement text. eg, svg["coronal"] will replace [coronal] tag in template!'''
 def add_string(svg,template):
   # If the number of svgs is != text_substitutions, we add them all to same spot
   for tag,code in svg.iteritems():
-    template = [t.replace("[%s]" %(tag),code) for t in template]
+    template = [t.replace("[%s]" %(tag),"%s" %(code)) for t in template]
   return template

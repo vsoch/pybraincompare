@@ -1,3 +1,9 @@
+'''
+atlas.py: part of pybraincompare package
+Functions to integrate atlases in image comparison
+
+'''
+
 import nibabel
 import pandas
 import numpy

@@ -1,3 +1,9 @@
+'''
+mrutils.py: part of pybraincompare package
+Functions work with brain maps
+
+'''
+
 import nibabel
 import subprocess
 import os
@@ -13,7 +19,6 @@ def get_standard_mask(software):
   elif software == "FREESURFER":
     reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brainmask.mgz')
   return reference
-  #TODO: How do I trigger an error?  
 
 '''Returns reference brain from FSL or FREESURFER'''
 def get_standard_brain(software):
@@ -22,7 +27,6 @@ def get_standard_brain(software):
   elif software == "FREESURFER":
     reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brain.mgz')
   return reference
-  #TODO: Trigger an error
 
 '''Return MNI transformations for registration'''
 def get_standard_mat(software):

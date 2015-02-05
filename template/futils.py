@@ -3,12 +3,23 @@ import tempfile
 import shutil
 import contextlib
 import futils
+import zipfile
 #from template.visual import make_glassbrain_image
 import numpy as np
 
 # Get the directory of the package
 def get_package_dir():
    return os.path.abspath(os.path.join(os.path.dirname(futils.__file__)))
+
+# Make directory
+def make_dir(directory):
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+# Unzip static files to temporary directory
+def unzip(source,dest_dir):
+  with zipfile.ZipFile(source, "r") as z:
+    z.extractall(dest_dir)
 
 # Make temporary directory
 @contextlib.contextmanager

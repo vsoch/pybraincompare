@@ -1,3 +1,9 @@
+'''
+compare.py: part of pybraincompare package
+Functions to perform and visualize image comparisons
+
+'''
+
 import nibabel
 from mrutils import get_standard_mask, do_mask
 from template.templates import get_template, add_string

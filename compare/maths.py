@@ -1,5 +1,12 @@
+'''
+maths.py: part of pybraincompare package
+Simple math functions
+
+'''
+
 from scipy.stats import pearsonr
 import numpy as np
+import maths
 
 def percent_to_float(x):
   return float(x.strip('%'))/100
@@ -29,3 +36,19 @@ def do_pearson(image_vector1,image_vector2):
 '''comparison for an entire pandas data frame'''
 def do_multi_correlation(image_df,corr_type="pearson"):
   return image_df.corr(method=corr_type, min_periods=1)
+
+'''from chrisfilo https://github.com/chrisfilo/mriqc'''
+def calc_rows_columns(ratio, n_images):
+    rows = 1
+    for _ in range(100):
+        columns = math.floor(ratio * rows)
+        total = rows * columns
+        if total > n_images:
+            break
+
+        columns = math.ceil(ratio * rows)
+        total = rows * columns
+        if total > n_images:
+            break
+        rows += 1
+    return rows, columns
