@@ -194,8 +194,14 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     if len(alerts_thresh) == 0: alerts_thresh = ['<div class="task high last"><div class="desc"><div class="title">No Thresholded Maps</div><div>No images have been flagged as thresholded [percent nonzero voxels in mask <= %s]</div></div><div class="time"><div class="date">%s</div></div></div>' %(nonzero_thresh,time.strftime("%c"))]
     if len(alerts_outliers) == 0: alerts_outliers = ['<div class="task medium last"><div class="desc"><div class="title">No Outliers</div><div>No images have been flagged for outliers %s standard deviations in either direction.</div></div><div class="time"><div class="date">%s</div></div></div>' %(outlier_sds,time.strftime("%c"))]
     if len(alerts_passing) == 0: alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
-    if alerts_outliers: alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
-    if alerts_thresh: alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
+    if alerts_outliers: 
+      alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
+      number_outlier = 0
+    else: number_outliers = len(alerts_outliers)
+    if alerts_thresh: 
+      alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
+      number_thresh = 0
+    else: number_thresh = len(alerts_thresh)
 
     # Alerts and summary template
     template_alerts = add_string({"ALERTS_PASSING":"\n".join(alerts_passing),
@@ -216,8 +222,8 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     image_gallery = ['<div id="image-%s" class="masonry-thumb"><a style="background:url(%s/img/glassbrain.png) width=200px" title="%s" href="%s/%s.html"><img class="grayscale" src="%s/img/glassbrain.png" alt="%s"></a></div>' %(m,m,image_names[m],m,m,m,image_names[m]) for m in range(0,len(mr_paths)) ]
     substitutions = {"MEAN_IMAGE_HISTOGRAM":histogram_mean_counts,
 		     "GLASSBRAIN_GALLERY":"\n".join(image_gallery),
-                     "NUMBER_OUTLIERS":len(alerts_outliers)-1,
-                     "NUMBER_THRESH":len(alerts_thresh)-1,
+                     "NUMBER_OUTLIERS":number_outliers,
+                     "NUMBER_THRESH":number_thresh,
                      "NUMBER_IMAGES":len(mr_paths),
                      "INVESTIGATOR":investigator
                     }
