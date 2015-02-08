@@ -161,7 +161,9 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
       else:
         statmap_histograms.append('<div class="span2 statbox red" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"><i class="icon-arrow-down"></i></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
       m+=1
-    template = add_string({"STATMAP_HISTOGRAMS":"\n".join(statmap_histograms),"NUMBER_IMAGES":len(mr_paths)},template)
+    template = add_string({"STATMAP_HISTOGRAMS":"\n".join(statmap_histograms),
+                           "NUMBER_IMAGES":len(mr_paths),
+                           "INVESTIGATOR":investigator},template)
     save_template(template,"%s/histograms.html" %(html_dir)) 
 
     # Summary table page and alerts
