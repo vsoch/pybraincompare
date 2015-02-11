@@ -72,6 +72,13 @@ def _resample_images_ref(images,mask,resample_dim,interpolation):
 
   return images_resamp, reference_resamp
 
+'''squeeze out extra fourth dimension'''
+def squeeze_fourth_dimension(images):
+  squeezed=[]
+  for image in images:
+    squeezed_image = nibabel.Nifti1Image(numpy.squeeze(image.get_data()),affine=image.get_affine(),header=image.get_header())
+    squeezed.append(squeezed_image)
+  return squeezed
 
 # MASKING --------------------------------------------------------------------------------
 '''Mask and resample registered images'''
@@ -79,6 +86,9 @@ def do_mask(images,mask,resample_dim,interpolation="continuous"):
 
   # Resample images to reference and new voxel size
   images_resamp, reference_resamp = _resample_images_ref(images,mask,resample_dim,interpolation)  
+
+  # Make sure images are 3d (squeeze out extra dimension)
+  images_resamp = squeeze_fourth_dimension(images_resamp)
   
   # Assume needs to be binarized to be mask [FREESURFER IM LOOKING AT YOU]
   reference = compute_epi_mask(reference_resamp)
