@@ -56,7 +56,8 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     # Calculate a mean image for the entire set
     print "Calculating mean image..."
     mean_image = np.zeros(mask_bin.shape)
-    all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True)
+    all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True) # we replace nan with 0, but do not count 0s in counts
+    all_masked_data_nan = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=False)
     mean_image[mask_bin.get_data()==1] = np.mean(all_masked_data,axis=0)
     mean_image = nib.Nifti1Image(mean_image,affine=mask_bin.get_affine())
     mean_intensity = np.mean(mean_image.get_data()[mask_bin.get_data()==1])
@@ -196,7 +197,7 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     if len(alerts_passing) == 0: alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
     if alerts_outliers: 
       alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
-      number_outlier = 0
+      number_outliers = 0
     else: number_outliers = len(alerts_outliers)
     if alerts_thresh: 
       alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")

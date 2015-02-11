@@ -60,6 +60,8 @@ def make_glassbrain_image(nifti_file,png_img_file=None):
 '''Get histogram data for an image (for d3)'''
 def get_histogram_data(data,width=12,height=4,color=None,ylabel="frequency",xlabel="map intensity value bins",title="Histogram of Intensity Values for Image",bins=25):
   if not color: color = random_colors(1)[0]
+  data = data.flatten()
+  data = np.array(data)[np.isnan(data)==False]
   n, bins, patches = P.hist(data, bins, normed=1, histtype='stepfilled')
   membership = np.digitize(data,bins)
   counts = [membership.tolist().count(x) for x in range(1,len(bins))]
