@@ -103,7 +103,7 @@ def do_mask(images,mask,resample_dim,interpolation="continuous",second_mask=None
 '''Make binary deletion mask (pairwise deletion) - intersection of nonzero and non-nan values'''
 def make_binary_deletion_mask(images):
     if isinstance(images, nibabel.nifti1.Nifti1Image):
-        images = [ihmages]
+        images = [images]
     images_data = [numpy.squeeze(image.get_data()) for image in images]
     mask = numpy.ones(images_data[0].shape)
     for image_data in images_data:
