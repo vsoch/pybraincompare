@@ -4,16 +4,17 @@ Functions to perform and visualize image comparisons
 
 '''
 
-import nibabel
-from mrutils import get_standard_mask, do_mask
-from template.templates import get_template, add_string
-from template.futils import get_name
-from template.visual import calculate_similarity_search, show_brainglass_interface
-from maths import do_pairwise_correlation, do_multi_correlation
 import pandas
 import numpy
 import os
 import atlas
+import nibabel
+from template.futils import get_name
+from template.templates import get_template, add_string
+from maths import do_pairwise_correlation, do_multi_correlation
+from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask
+from template.visual import calculate_similarity_search, show_brainglass_interface
+
 
 # Unbiased visual comparison with scatterplot
 '''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
@@ -27,13 +28,17 @@ import atlas
 '''
 def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,corr=None,custom=None):
 
-  # Get the reference brain mask
+  # Get the reference brain mask, make pairwise deletion mask
   reference = get_standard_mask(software)
-  masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim)
+  image1_nib = nibabel.load(image1)
+  image2_nib = nibabel.load(image2)
+  pdmask = make_binary_deletion_mask([image1_nib,image2_nib])
+  pdmask = nibabel.Nifti1Image(pdmask,header=image1_nib.get_header(),affine=image1_nib.get_affine())
+  masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim,second_mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
 
   if atlas:
-    masked_atlas = do_mask(images = atlas.file,mask=reference,resample_dim=voxdim,interpolation="nearest")
+    masked_atlas = do_mask(images = atlas.file,mask=reference,resample_dim=voxdim,interpolation="nearest",second_mask=pdmask)
     masked["ATLAS_DATA"] = numpy.transpose(masked_atlas)
     # Prepare label (names)
     labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
@@ -104,25 +109,31 @@ max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 image_names: a list of image names to show in interface [OPTIONAL]
 """
-def similarity_search(data,tags,png_paths,query,button_url,image_url,max_results=100,absolute_value=True,image_names=None):
+def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,max_results=100,absolute_value=True,image_names=None):
 
   # Get template
   template = get_template("similarity_search")
 
-  if isinstance(data,pandas.core.series.Series):
+  if query_id not in image_ids:
+    print "ERROR: Query id must be in list of image ids!"
+    return
 
-    if len(tags) != len(png_paths) != data.shape[0]:
-      print "ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal"
-      return
+  if len(tags) != len(png_paths) != len(image_ids) != data.shape[0]:
+    print "ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal"
+    return
 
-    corr_df = pandas.concat([data],axis=1) 
-    corr_df["png"] = png_paths
-    corr_df["tags"] = tags
+  if query_png not in png_paths: 
+    print "ERROR: Query image png path must be in data frame 'png' paths!" 
+    return
 
-    # Find the query image in the data frame png list
-    if query not in list(corr_df["png"]): print "ERROR: Query image png path must be in data frame 'png' paths!"; return
-  
-    return calculate_similarity_search(template=template,corr_df=corr_df,query=query,button_url=button_url,image_url=image_url,max_results=max_results,absolute_value=absolute_value,image_names=image_names)
-  
-  else:
-    print "Please provide data in a pandas series, with index corresponding to image id."
+  corr_df = pandas.DataFrame() 
+  corr_df["png"] = png_paths
+  corr_df["tags"] = tags
+  corr_df["scores"] = image_scores
+  corr_df["image_ids"] = image_ids
+  corr_df["image_names"] = image_names
+  corr_df.index = image_ids
+
+  return calculate_similarity_search(template=template,corr_df=corr_df,query_png=query_png,
+                                       query_id=query_id,button_url=button_url,image_url=image_url,
+                                       max_results=max_results,absolute_value=absolute_value)

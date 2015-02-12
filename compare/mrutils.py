@@ -49,7 +49,6 @@ def _load_image_data(image):
 def _resample_img(image,affine,interpolation="continuous"):
   return resample_img(image, target_affine=affine)
 
-# stopped here - need function to resample an atlas!
 
 '''Resample image to match some other reference'''
 def _resample_img_ref(image,reference,interpolation):
@@ -82,7 +81,7 @@ def squeeze_fourth_dimension(images):
 
 # MASKING --------------------------------------------------------------------------------
 '''Mask and resample registered images'''
-def do_mask(images,mask,resample_dim,interpolation="continuous"):
+def do_mask(images,mask,resample_dim,interpolation="continuous",second_mask=None):
 
   # Resample images to reference and new voxel size
   images_resamp, reference_resamp = _resample_images_ref(images,mask,resample_dim,interpolation)  
@@ -93,6 +92,20 @@ def do_mask(images,mask,resample_dim,interpolation="continuous"):
   # Assume needs to be binarized to be mask [FREESURFER IM LOOKING AT YOU]
   reference = compute_epi_mask(reference_resamp)
 
+  if second_mask != None:
+    second_mask_resamp = resample_img(second_mask, target_affine=reference_resamp.get_affine(), target_shape=reference_resamp.get_shape(),interpolation="nearest")
+    ref_tmp = numpy.logical_and(reference.get_data(), second_mask_resamp.get_data()).astype(int)
+    reference = nibabel.Nifti1Image(ref_tmp,header=reference_resamp.get_header(),affine=reference_resamp.get_affine())
+
   if isinstance(images_resamp,str): images_resamp = [images_resamp]
   return apply_mask(images_resamp, reference, dtype='f', smoothing_fwhm=None, ensure_finite=True)
 
+'''Make binary deletion mask (pairwise deletion) - intersection of nonzero and non-nan values'''
+def make_binary_deletion_mask(images):
+    if isinstance(images, nibabel.nifti1.Nifti1Image):
+        images = [images]
+    images_data = [numpy.squeeze(image.get_data()) for image in images]
+    mask = numpy.ones(images_data[0].shape)
+    for image_data in images_data:
+        mask *= (image_data != 0) & ~numpy.isnan(image_data)
+    return mask

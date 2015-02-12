@@ -104,28 +104,28 @@ max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 """
 
-def calculate_similarity_search(template,query,corr_df,button_url,image_url,max_results,absolute_value,image_names):
+def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,image_url,max_results,absolute_value):
   """calculate_similarity_search_df starts with pandas data frame to make similarity interface"""
   #if not image_paths: image_paths = make_png_paths(mr_files)
-  query_row = corr_df[corr_df["png"] == query]
-  query_id = query_row.index[0]
+  query_row = corr_df[corr_df["png"] == query_png]
     
   # Sort based on (absolute value of) similarity score
   if absolute_value: 
-    query_similar = corr_df[query_id].abs()
+    query_similar = corr_df["scores"].abs()
     query_similar.sort(ascending=False)
     query_similar = corr_df.loc[query_similar.index]
-  else: query_similar = corr_df.sort(columns=query_id,ascending=False)
+  else: query_similar = corr_df.sort(columns="scores",ascending=False)
   
   # Remove the query image, and cut down to 100 results
   query_similar = query_similar[query_similar.index != query_id]
   if query_similar.shape[0] > max_results: query_similar = query_similar[0:max_results]
 
   # Prepare data for show_similarity_search
-  image_ids = query_similar.index.tolist()
-  all_tags = query_similar["tags"].tolist()
-  scores = np.round(query_similar[query_id].values,2)
-  png_images = query_similar["png"].tolist()
+  image_ids = query_similar.image_ids.tolist()
+  all_tags = query_similar.tags.tolist()
+  scores = np.round(query_similar.scores.values,2)
+  png_images = query_similar.png.tolist()
+  image_names = query_similar.image_names.tolist()
 
   # Get the unique tags
   unique_tags = unwrap_list_unique(all_tags)
@@ -139,7 +139,7 @@ def calculate_similarity_search(template,query,corr_df,button_url,image_url,max_
   # Create portfolio with images and tags
   portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,unique_tags=unique_tags,placeholders=placeholders,values=scores,button_urls=button_urls,image_urls=image_urls,image_names=image_names)
   template = add_string({"SIMILARITY_PORTFOLIO":portfolio},template)
-  html_snippet = add_string({"QUERY_IMAGE":query},template)
+  html_snippet = add_string({"QUERY_IMAGE":query_png},template)
   return html_snippet
 
 
