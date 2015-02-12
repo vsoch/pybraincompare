@@ -37,6 +37,9 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
   masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim,second_mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
 
+  #STOPPED HERE - i am removing an atlas label when I apply pdmask, there is somehow a ahange in lenght of dat, etc,
+  # try to do these two things together? or apply the mask before this function?
+
   if atlas:
     masked_atlas = do_mask(images = atlas.file,mask=reference,resample_dim=voxdim,interpolation="nearest",second_mask=pdmask)
     masked["ATLAS_DATA"] = numpy.transpose(masked_atlas)

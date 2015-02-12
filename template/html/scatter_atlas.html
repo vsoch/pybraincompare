@@ -109,6 +109,9 @@ raw = {"val1":[INPUT_DATA_ONE],
     colors[+raw.atlas[i]] = {"label":raw.labels[i],"color":raw.color[i],"corr":+raw.corr[i]};     
   }
 
+  // Remove any regions that were not in the atlas
+  colors = colors.filter(function(n){ return n != undefined })
+
   // Make sure color is correct
   for (i = 0; i < colors.length; i++) { 
     d3.selectAll("path#" + colors[i].label).attr("stroke",colors[i].color)    
