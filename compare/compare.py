@@ -12,8 +12,8 @@ import nibabel
 from template.futils import get_name
 from template.templates import get_template, add_string
 from maths import do_pairwise_correlation, do_multi_correlation
-from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask
 from template.visual import calculate_similarity_search, show_brainglass_interface
+from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, _resample_images_ref
 
 
 # Unbiased visual comparison with scatterplot
@@ -30,15 +30,11 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
 
   # Get the reference brain mask, make pairwise deletion mask
   reference = get_standard_mask(software)
-  image1_nib = nibabel.load(image1)
-  image2_nib = nibabel.load(image2)
-  pdmask = make_binary_deletion_mask([image1_nib,image2_nib])
-  pdmask = nibabel.Nifti1Image(pdmask,header=image1_nib.get_header(),affine=image1_nib.get_affine())
+  images_resamp, reference_resamp = _resample_images_ref([image1,image2],reference,voxdim,interpolation="nearest")
+  pdmask = make_binary_deletion_mask(images_resamp)
+  pdmask = nibabel.Nifti1Image(pdmask,header=images_resamp[0].get_header(),affine=images_resamp[0].get_affine())
   masked = do_mask(images=[image1,image2],mask=reference,resample_dim=voxdim,second_mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
-
-  #STOPPED HERE - i am removing an atlas label when I apply pdmask, there is somehow a ahange in lenght of dat, etc,
-  # try to do these two things together? or apply the mask before this function?
 
   if atlas:
     masked_atlas = do_mask(images = atlas.file,mask=reference,resample_dim=voxdim,interpolation="nearest",second_mask=pdmask)
