@@ -9,9 +9,10 @@ import numpy
 import os
 import atlas
 import nibabel
+import collections
 from template.futils import get_name
-from template.templates import get_template, add_string
 from maths import do_pairwise_correlation, do_multi_correlation
+from template.templates import get_template, add_string, add_javascript_function
 from template.visual import calculate_similarity_search, show_brainglass_interface
 from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, _resample_images_ref
 
@@ -53,14 +54,20 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     masked["ATLAS_COLORS"] = colors
     # The column names MUST correspond to the replacement text in the file
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
+    # Here we return only regions with 3+ points
+    counts =  dict(collections.Counter(masked.ATLAS_LABELS.tolist()))
+    regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
+    masked = masked[masked.ATLAS_LABELS.isin(regions_to_eliminate)==False]
     # Get template
     template = get_template("scatter_atlas",masked)
+    # If there are no surviving correlations
+    if masked.shape[0] == 0:
+      template = add_javascript_function('alert("Not enough overlap in regions to calculate correlations!")',template)
     # Add user custom text (right now only would be image labels)
     if custom:
       template = add_string(custom,template)
     # Add SVGs, eg atlas_key["coronal"] replaces [coronal]
-    template = add_string(atlas.svg,template)
-      
+    template = add_string(atlas.svg,template)      
     # Finally, add image names and links
     template = add_string({"IMAGE_1":get_name(image1),"IMAGE_2":get_name(image2),"IMAGE_1_LINK":"#","IMAGE_2_LINK":"#"},template)
   else:

@@ -13,6 +13,12 @@ def get_template(html_name,data_frame=None):
       template = [t.replace(rep,dat) for t in template]
   return template
 
+
+# Add code string to end of template
+def add_javascript_function(function_code,template):
+  template.append("<script>\n%s\n</script>" % (function_code))
+  return template
+
 def save_template(html_snippet,output_file):
   filey = open(output_file,"wb")
   filey.writelines(html_snippet)
