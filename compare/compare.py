@@ -62,14 +62,16 @@ def scatterplot_compare(image1,image2,software="FSL",voxdim=[8,8,8],atlas=None,c
     template = get_template("scatter_atlas",masked)
     # If there are no surviving correlations
     if masked.shape[0] == 0:
-      template = add_javascript_function('alert("Not enough overlap in regions to calculate correlations!")',template)
-    # Add user custom text (right now only would be image labels)
-    if custom:
-      template = add_string(custom,template)
+      #template = add_javascript_function('alert("Not enough overlap in regions to calculate correlations!")',template)
+      template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
+    else:
+      # Add user custom text (right now only would be image labels)
+      if custom:
+        template = add_string(custom,template)
+      # Finally, add image names and links
+      template = add_string({"IMAGE_1":get_name(image1),"IMAGE_2":get_name(image2),"IMAGE_1_LINK":"#","IMAGE_2_LINK":"#"},template)
     # Add SVGs, eg atlas_key["coronal"] replaces [coronal]
     template = add_string(atlas.svg,template)      
-    # Finally, add image names and links
-    template = add_string({"IMAGE_1":get_name(image1),"IMAGE_2":get_name(image2),"IMAGE_1_LINK":"#","IMAGE_2_LINK":"#"},template)
   else:
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO"]
     template = get_template("scatter",data_frame=masked)

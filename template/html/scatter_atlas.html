@@ -71,6 +71,7 @@ var yValue = function(d) { return d.val2;}, // data -> value
 var legend_svg = d3.selectAll("pybrain").append("svg")
     .attr("width", 450)
     .attr("height", 150)
+    .attr("class","svglegend")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -78,6 +79,7 @@ var legend_svg = d3.selectAll("pybrain").append("svg")
 var svg = d3.selectAll("pybrain").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
+    .attr("class","svgplot")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
