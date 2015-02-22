@@ -107,17 +107,20 @@ def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None
 
 # Search interface to show images most similar to a query in database
 """similarity_search: interface to see most similar brain images.
-data: pandas series of similarity scores, including the query. Row names should be image ids. column name is query id.
-query: image png (must be in "png" column) that the others will be compared to
+image_scores: list of image scores
 tags: a list of lists of tags, one for each image, in same order as data
 png_paths: a list of pre-generated png images, one for each image, in same order as data
+query_png: full path to query png image. Must be in png_paths
+query_id: id of query image, must be in image_ids
 button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
 image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
+image_ids: all image ids that correspond to same order of png paths, tags, and scores
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
-image_names: a list of image names to show in interface [OPTIONAL]
+top_text: a list of text labels to show on top of images [OPTIONAL]
+bottom_text: a list of text labels to show on bottoms of images [OPTIONAL]
 """
-def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,max_results=100,absolute_value=True,image_names=None):
+def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,max_results=100,absolute_value=True,top_text=None,bottom_text=None):
 
   # Get template
   template = get_template("similarity_search")
@@ -126,7 +129,7 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
     print "ERROR: Query id must be in list of image ids!"
     return
 
-  if len(tags) != len(png_paths) != len(image_ids) != data.shape[0]:
+  if len(tags) != len(png_paths) != len(image_ids):
     print "ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal"
     return
 
@@ -139,7 +142,8 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
   corr_df["tags"] = tags
   corr_df["scores"] = image_scores
   corr_df["image_ids"] = image_ids
-  corr_df["image_names"] = image_names
+  corr_df["top_text"] = top_text
+  corr_df["bottom_text"] = bottom_text
   corr_df.index = image_ids
 
   return calculate_similarity_search(template=template,corr_df=corr_df,query_png=query_png,
