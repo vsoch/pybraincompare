@@ -9,6 +9,7 @@ import subprocess
 import os
 import numpy
 from nilearn.image import resample_img
+from report.plots import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
@@ -85,10 +86,8 @@ def do_mask(images,mask,resample_dim,interpolation="continuous",second_mask=None
 
   # Resample images to reference and new voxel size
   images_resamp, reference_resamp = _resample_images_ref(images,mask,resample_dim,interpolation)  
-
   # Make sure images are 3d (squeeze out extra dimension)
   images_resamp = squeeze_fourth_dimension(images_resamp)
-  
   # Assume needs to be binarized to be mask [FREESURFER IM LOOKING AT YOU]
   reference = compute_epi_mask(reference_resamp)
 
@@ -109,3 +108,22 @@ def make_binary_deletion_mask(images):
     for image_data in images_data:
         mask *= (image_data != 0) & ~numpy.isnan(image_data)
     return mask
+
+'''make in out mask
+Generate masked image, return two images: voxels in mask, and voxels outside
+'''
+def make_in_out_mask(mask_bin,mr_folder,masked_in,masked_out,img_dir,save_png=True):
+  mr_in_mask = numpy.zeros(mask_bin.shape)
+  mr_out_mask = numpy.zeros(mask_bin.shape)
+  mr_out_mask[mask_bin.get_data()==0] = masked_out
+  mr_out_mask = nibabel.Nifti1Image(mr_out_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
+  mr_in_mask[mask_bin.get_data()!=0] = masked_in
+  mr_in_mask = nibabel.Nifti1Image(mr_in_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
+  nibabel.save(mr_in_mask,"%s/masked.nii" %(mr_folder))
+  nibabel.save(mr_out_mask,"%s/masked_out.nii" %(mr_folder))
+  if save_png:
+    make_anat_image("%s/masked.nii" %(mr_folder),png_img_file="%s/masked.png" %(img_dir))
+    make_anat_image("%s/masked_out.nii" %(mr_folder),png_img_file="%s/masked_out.png" %(img_dir))
+  os.remove("%s/masked_out.nii" %(mr_folder))
+  return mr_in_mask,mr_out_mask
+

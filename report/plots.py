@@ -4,7 +4,7 @@ Functions to plot stuff
 
 '''
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
-from visual import random_colors
+from colors import random_colors
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.figure import Figure

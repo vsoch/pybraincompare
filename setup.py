@@ -12,7 +12,7 @@ setup(
     author_email="vsochat@stanford.edu",
 
     # Packages
-    packages=["compare","annotate","template"],
+    packages=["compare","annotate","template","report"],
 
     # Data
     package_data = {'template':['html/*.html']},

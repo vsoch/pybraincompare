@@ -33,14 +33,6 @@ def run_webserver(PORT=8000,html_page="index.html"):
   webbrowser.open("http://localhost:%s/%s" %(PORT,html_page))
   httpd.serve_forever()
 
-'''Generate N random colors'''
-def random_colors(N):
-  colors = []
-  for x in range(0,N):
-    r = lambda: random.randint(0,255)
-    colors.append('#%02X%02X%02X' % (r(),r(),r()))
-  return colors
-
 def peterson_roi_labels(colors=True):
   color_labels = ["Default","Second-Dorsal-Attention","Ventral-Attention-Language","Second-Visual","Frontal-Parietal","Somatomotor","none","Parietal-Episodic-Retrieval","Parieto-Occipital","Cingulo-opercular","Salience","Frontal-Parietal-Other","First-Dorsal-Attention","First-Visual-V1+","Subcortical"]
   colors = ["#ff2700","#d6add6","#007d7d","#393FAC","#FFFB00","#00ffff","94CD54","#CC0066","#003eff","#fbfbda","#822082","#000000","#c46b8b","#00f700","#94cd54","#CC0066"]
@@ -94,6 +86,7 @@ def show_brainglass_interface(template,tags,mr_files,image_paths=None):
     internal_view(html_snippet,tmp_file)
 
 """Generate web interface for similarity search
+
 Future version will generate on the fly and use "internal_show"
 template: html template (similarity_search)
 corr_df: matrix of correlation values for images, with "png" column corresponding to image paths, "tags" corresponding to image tags. Column and row names should be image id.
@@ -102,6 +95,7 @@ button_url: prefix of url that the "compare" button will link to. format will be
 image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
 max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
+
 """
 
 def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,image_url,max_results,absolute_value):

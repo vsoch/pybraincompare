@@ -7,7 +7,7 @@ Functions for visualization of functional MRI
 import nibabel
 from template.templates import get_template, add_string
 from template.futils import get_name
-from template.visual import random_colors
+from report.colors import random_colors
 import pandas
 import json
 import numpy

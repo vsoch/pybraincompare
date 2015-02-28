@@ -1,6 +1,6 @@
 '''
-qa.py: part of pybraincompare package
-Functions to check quality of statistical maps
+webreport.py: part of pybraincompare package
+Functions to generate reports using qa tools
 
 '''
 import os
@@ -16,20 +16,22 @@ from template.visual import view, run_webserver
 from nilearn.masking import compute_epi_mask, apply_mask
 from template.templates import get_template, add_string, save_template
 from template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
-from nipy.algorithms.registration.histogram_registration import HistogramRegistration
-from template.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
-from mrutils import do_mask, _resample_img, _resample_images_ref, get_standard_brain, get_standard_mask
-#from nipy.algorithms.statistics.empirical_pvalue import NormalEmpiricalNull
+from report.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
+from qa import header_metrics, central_tendency, outliers, mutual_information_against_standard,\
+get_percent_nonzero, count_voxels, is_thresholded
+from compare.mrutils import do_mask, _resample_img, _resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
 
 '''run_qa: a tool to generate an interactive qa report for statistical maps
+
 mr_paths: a list of paths to brain statistical maps that can be read with nibabel [REQUIRED]
 software: currently only freesurfer is supporte [default:FREESURFER]
 voxdim: a list of x,y,z dimensions to resample data when normalizing [default [2,2,2]]
 outlier_sds: the number of standard deviations from the mean to define an outlier [default:6]
-investigator: the name (string) of an investigator to add to alerts summary page [default:None]
+investigator: the name (string) of an investigator to add to alerts summary page [defauflt:None]
 nonzero_thresh: images with # of nonzero voxels in brain mask < this value will be flagged as thresholded [default:0.8] 
+
 '''
-def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,investigator="brainman",nonzero_thresh=0.8):
+def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investigator="brainman",nonzero_thresh=0.95):
 
     # First resample to standard space
     print "Resampling all data to %s using %s standard brain..." %(voxdim,software)
@@ -47,7 +49,7 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     mask_out = nib.Nifti1Image(mask_out,affine=mask_bin.get_affine())
       
     # We will save qa values for all in a data frame
-    results = pandas.DataFrame(columns=["voxels_in","voxels_out","standard_deviation_resamp","mean_resamp","variance_resamp","median_resamp","mi_score","n_outliers_low_%ssd" %(outlier_sds),"n_outliers_high_%ssd" %(outlier_sds),"nonzero_percent_voxels_in_mask"])
+    results = pandas.DataFrame(columns=["voxels_in","voxels_out","standard_deviation_resamp","mean_resamp","variance_resamp","median_resamp","mi_score","n_outliers_low_%ssd" %(outlier_sds),"n_outliers_high_%ssd" %(outlier_sds),"nonzero_percent_voxels_in_mask","threshold_flag"])
 
     # We also need to save distributions for the summary page
     all_histograms = []
@@ -109,14 +111,16 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
       mi_score = mutual_information_against_standard(mr,mean_image)
           
       # euler characteristics
-
       # smoothness
 
-      # estimate thresholded or not
-      percent_nonzero = get_percent_nonzero(masked_in_data)
-
+      # estimate thresholded or not. If the original image is the same shape as the mask, use it
+      if mr_original.shape == mask.shape:
+        threshold_flag,percent_nonzero = is_thresholded(mr_original,mask,threshold=nonzero_thresh)
+      else: # this will return biased high values because we have resampled with this standard!
+        threshold_flag,percent_nonzero = is_thresholded(mr,mask,threshold=nonzero_thresh)
+      
       # Add everything to table, prepare single page template
-      results.loc[m] = [count_in,count_out,metrics["std"],metrics["mean"],metrics["var"],metrics["med"],mi_score,low_out,high_out,percent_nonzero]
+      results.loc[m] = [count_in,count_out,metrics["std"],metrics["mean"],metrics["var"],metrics["med"],mi_score,low_out,high_out,percent_nonzero,threshold_flag]
       template = get_template("qa_single_statmap")
 
       # Things to fill into individual template
@@ -132,7 +136,8 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
       substitutions = {"NUMBER_IMAGES":len(mr_paths),
 			"IMAGE_NAME":  image_name,
 			"NONZERO_VOXELS": "%0.3f" % (percent_nonzero),
-			"VOXELS_OUT_MASK": "%0.3f" % (count_out / float(count_in+count_out)),
+			"THRESHOLD_FLAG": "%s" % (threshold_flag),
+			"NONZERO_THRESH": "%s" % (nonzero_thresh),
 			"TOTAL_VOXELS":total_voxels,
 			"MI_SCORE":"%0.2f" % mi_score,
 			"MEAN_SCORE":"%0.2f" % metrics["mean"],
@@ -173,12 +178,19 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     statmap_table = []; alerts_passing = []; alerts_outliers = []; alerts_thresh = []; count=0;
     for res in results.iterrows():
 
+      # SUMMARY ITEMS ----
+
       # If the image has too many zeros:
-      if res[1]["nonzero_percent_voxels_in_mask"] <= nonzero_thresh:
+      if res[1]["threshold_flag"] == True:
         alerts_thresh.append('<div class="task high"><div class="desc"><div class="title">Thresholded Map</div><div>Image ID %s has been flagged as being thresholded! Nonzero voxels in mask: %s.</div></div><div class="time"><div class="date">%s</div></div></div>' %(count,res[1]["nonzero_percent_voxels_in_mask"],time.strftime("%c")))
 
-      # If the image has outliers
-      if res[1]["n_outliers_low_%ssd" %(outlier_sds)] + res[1]["n_outliers_high_%ssd" %(outlier_sds)] > 0:
+      # If the image has outliers or is thresholded:
+      total_outliers = res[1]["n_outliers_low_%ssd" %(outlier_sds)] + res[1]["n_outliers_high_%ssd" %(outlier_sds)]
+      flagged = (total_outliers > 0) | res[1]["threshold_flag"]
+      print "Total outliers are %s, threshold flag is %s" %(total_outliers,res[1]["threshold_flag"]) 
+      print "FLAGGED:%s" %(flagged)
+
+      if flagged == True:
         statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-danger" href="%s/%s.html"><i class="icon-flag zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["mi_score"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
         if res[1]["n_outliers_high_%ssd" %(outlier_sds)] > 0: 
           alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier High</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
@@ -191,19 +203,26 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
         alerts_passing.append('<div class="task low"><div class="desc"><div class="title">%s</div><div>This map has no flags as determined by the standards of only this report.</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(image_names[count],time.strftime("%c")))
       count+=1
 
-    # In the case of zero of any of the above
-    if len(alerts_thresh) == 0: alerts_thresh = ['<div class="task high last"><div class="desc"><div class="title">No Thresholded Maps</div><div>No images have been flagged as thresholded [percent nonzero voxels in mask <= %s]</div></div><div class="time"><div class="date">%s</div></div></div>' %(nonzero_thresh,time.strftime("%c"))]
-    if len(alerts_outliers) == 0: alerts_outliers = ['<div class="task medium last"><div class="desc"><div class="title">No Outliers</div><div>No images have been flagged for outliers %s standard deviations in either direction.</div></div><div class="time"><div class="date">%s</div></div></div>' %(outlier_sds,time.strftime("%c"))]
-    if len(alerts_passing) == 0: alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
-    if alerts_outliers: 
-      alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
-      number_outliers = 0
-    else: number_outliers = len(alerts_outliers)
-    if alerts_thresh: 
-      alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
-      number_thresh = 0
-    else: number_thresh = len(alerts_thresh)
+    # ALERTS ITEMS ----
 
+    # In the case of zero of any of the above
+    if len(alerts_thresh) == 0: 
+      alerts_thresh = ['<div class="task high last"><div class="desc"><div class="title">No Thresholded Maps</div><div>No images have been flagged as thresholded [percent nonzero voxels in mask <= %s]</div></div><div class="time"><div class="date">%s</div></div></div>' %(nonzero_thresh,time.strftime("%c"))]
+      number_thresh = 0
+    else:  
+      alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
+      number_thresh = len(alerts_thresh)
+    
+    if len(alerts_outliers) == 0: 
+      alerts_outliers = ['<div class="task medium last"><div class="desc"><div class="title">No Outliers</div><div>No images have been flagged for outliers %s standard deviations in either direction.</div></div><div class="time"><div class="date">%s</div></div></div>' %(outlier_sds,time.strftime("%c"))]
+      number_outliers = 0
+    else:     
+      alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
+      number_outliers = len(alerts_outliers)
+    
+    if len(alerts_passing) == 0: 
+      alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
+    
     # Alerts and summary template
     template_alerts = add_string({"ALERTS_PASSING":"\n".join(alerts_passing),
                                   "ALERTS_OUTLIERS":"\n".join(alerts_outliers),
@@ -235,87 +254,3 @@ def run_qa(mr_paths,html_dir,software="FREESURFER",voxdim=[2,2,2],outlier_sds=6,
     results.to_csv("%s/allMetrics.tsv" %(html_dir),sep="\t")
     os.chdir(html_dir)
     run_webserver(PORT=8091)
-
-'''Metrics:
-Extract metrics from the header
-'''
-def header_metrics(image):
-  mr_affine = image.get_affine()
-  mr_shape = image.shape
-  header = image.get_header()
-  return {"shape":mr_shape,"affine":mr_affine,"header":header}
-
-'''Central tendency:
-standard measures of central tendency and variance
-'''
-def central_tendency(data):
-  mr_mean = data.mean()
-  mr_var = data.var()
-  mr_std = data.std()
-  mr_med = np.median(data)
-  return {"std":mr_std,"var":mr_var,"mean":mr_mean,"med":mr_med}
-
-
-'''Normality across nonzero
-normality of the distribution across non-zero voxels
-'''
-#def normality_across_nonzero(data,out_png=None):
-#  x = np.c_[data]
-#  enn = NormalEmpiricalNull(x)
-#  enn.threshold(verbose=True)
-
-'''Outliers
-outliers (e.g., more than ~6 SD from the mean, maybe less depending on the action)
-'''
-def outliers(masked_data,n_std=6):
-  mean = masked_data.mean()
-  std = masked_data.std()
-  six_dev_up = mean + n_std * std
-  six_dev_down = mean - n_std*std
-  high_outliers = len(np.where(masked_data>=six_dev_up)[0])
-  low_outliers = len(np.where(masked_data<=six_dev_down)[0])
-  return high_outliers,low_outliers
-
-'''Mutual Information Against Standard
-# mutual information against some mean map that is representative of an # expectation [really low --> something is funky]
-'''
-def mutual_information_against_standard(mr,mean_image):
-  mi = HistogramRegistration(mean_image, mr, similarity='nmi')  
-  T = mi.optimize("affine")
-  return mi.explore(T)[0][0]
-
-
-'''Estimate thresholded
-We basically check to see if number of zero voxels exceeds 80% (not thresholded)
-'''
-def get_percent_nonzero(masked_in):
-  number_zeros = len(np.where(masked_in==0)[0])
-  nonzeros = len(masked_in) - number_zeros
-  return nonzeros / float(len(masked_in))
-
-'''make in out mask
-Generate masked image, return two images: voxels in mask, and voxels outside
-'''
-def make_in_out_mask(mask_bin,mr_folder,masked_in,masked_out,img_dir):
-  mr_in_mask = np.zeros(mask_bin.shape)
-  mr_out_mask = np.zeros(mask_bin.shape)
-  mr_out_mask[mask_bin.get_data()==0] = masked_out
-  mr_out_mask = nib.Nifti1Image(mr_out_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
-  mr_in_mask[mask_bin.get_data()!=0] = masked_in
-  mr_in_mask = nib.Nifti1Image(mr_in_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
-  nib.save(mr_in_mask,"%s/masked.nii" %(mr_folder))
-  nib.save(mr_out_mask,"%s/masked_out.nii" %(mr_folder))
-  make_anat_image("%s/masked.nii" %(mr_folder),png_img_file="%s/masked.png" %(img_dir))
-  make_anat_image("%s/masked_out.nii" %(mr_folder),png_img_file="%s/masked_out.png" %(img_dir))
-  os.remove("%s/masked_out.nii" %(mr_folder))
-  return mr_in_mask,mr_out_mask
-
-'''Count voxels in and outside the mask
-possibly need to change this to get "close to" zero
-'''
-def count_voxels(masked_in,masked_out):
-  # Here we are assuming a value of 0 == not in mask
-  count_in = len(masked_in[masked_in!=0])
-  count_out = len(masked_out[masked_out!=0])
-  return count_in,count_out
-
