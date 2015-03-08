@@ -8,4 +8,4 @@ mrs = glob("/home/vanessa/Documents/Work/BRAINMETA/IMAGE_COMPARISON/mr/resampled
 
 # Run quality analysis
 outdir = "/home/vanessa/Desktop/test"
-run_qa(mrs,software="FSL",html_dir=outdir,voxdim=[2,2,2],outlier_sds=6,investigator="Vanessa")
+run_qa(mrs,software="FSL",html_dir=outdir,voxdim=[2,2,2],outlier_sds=6,investigator="Vanessa",nonzero_thresh=0.25)

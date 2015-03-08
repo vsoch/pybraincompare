@@ -24,14 +24,14 @@ range_results = [get_voxel_range(mr) for mr in nifti_objs]
 # Get the mean, std, variance, etc for each image
 stats = [central_tendency(mr) for mr in nifti_objs] 
 
-result = pandas.DataFrame(columns=["threshold_flag","percent_nonzero","only_pos","mean","median","sd","variance","min","max"])
+result = pandas.DataFrame(columns=["image","threshold_flag","percent_nonzero","only_pos","mean","median","sd","variance","min","max"])
 
 count = 0
 for t in range(0,len(threshold_tests)):
   thresh = threshold_tests[t]
   ranges = range_results[t]
   stat = stats[t]
-  result.loc[count] = [thresh[0],thresh[1],positive_tests[t],stat["mean"],stat["med"],stat["std"],stat["var"],ranges[0],ranges[1]]
+  result.loc[count] = [mrs[t],thresh[0],thresh[1],positive_tests[t],stat["mean"],stat["med"],stat["std"],stat["var"],ranges[0],ranges[1]]
   count = count+1
 
 result.to_csv("/home/vanessa/Desktop/threshold_report.tsv",sep="\t")

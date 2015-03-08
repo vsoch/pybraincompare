@@ -4,7 +4,7 @@ Simple math functions
 
 '''
 
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 import numpy as np
 import maths
 
@@ -20,17 +20,30 @@ def percent_to_float(x):
 '''
 def do_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atlas_vector=None):   
   correlations = dict()
+
+  # If we have atlas labels, return vector with labels
   if atlas_vector is not None:
     labs = np.unique(atlas_vector)
     for l in labs:
-      correlations[str(l)] = do_pearson(image_vector1[np.where(atlas_vector == l)[0]],image_vector2[np.where(atlas_vector == l)[0]])
+      if corr_type == "spearman": 
+        correlations[str(l)] = do_spearman(image_vector1[np.where(atlas_vector == l)[0]],
+                                           image_vector2[np.where(atlas_vector == l)[0]])
+      else: 
+        correlations[str(l)] = do_pearson(image_vector1[np.where(atlas_vector == l)[0]],
+                                          image_vector2[np.where(atlas_vector == l)[0]])
   else:
-    correlations["No Label"] = do_pearson(image_vector1,image_vector2)
+    if corr_type == "pearson": correlations["No Label"] = do_pearson(image_vector1,image_vector2)
+    elif corr_type == "spearman": correlations["No Label"] = do_spearman(image_vector1,image_vector2)
   return correlations
 
 '''Pearson correlation'''
 def do_pearson(image_vector1,image_vector2):
   corr,pval = pearsonr(image_vector1,image_vector2)
+  return corr
+
+"""Spearman correlation"""
+def do_spearman(image_vector1,image_vector2):
+  corr,pval = spearmanr(image_vector1,image_vector2)
   return corr
 
 '''comparison for an entire pandas data frame'''
