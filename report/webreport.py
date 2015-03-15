@@ -19,7 +19,8 @@ from template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
 from report.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
 from qa import header_metrics, central_tendency, outliers, mutual_information_against_standard,\
 get_percent_nonzero, count_voxels, is_thresholded
-from compare.mrutils import do_mask, _resample_img, _resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
+from compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
+from nilearn.image import resample_img
 
 '''run_qa: a tool to generate an interactive qa report for statistical maps
 
@@ -37,8 +38,8 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     print "Resampling all data to %s using %s standard brain..." %(voxdim,software)
     reference_file = get_standard_brain(software)
     mask_file = get_standard_mask(software)
-    images_resamp, reference_resamp = _resample_images_ref(mr_paths,reference_file,voxdim,interpolation="continuous")
-    mask = _resample_img(mask_file, affine=np.diag(voxdim))
+    images_resamp, reference_resamp = resample_images_ref(mr_paths,reference_file,resample_dim=voxdim,interpolation="continuous")
+    mask = resample_img(mask_file, target_affine=np.diag(voxdim))
     mask_bin = compute_epi_mask(mask)
     mask_out = np.zeros(mask_bin.shape)
     mask_out[mask_bin.get_data()==0] = 1

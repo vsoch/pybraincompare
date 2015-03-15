@@ -5,18 +5,33 @@ from nilearn.image import resample_img
 from template.visual import view
 import numpy
 
-# Images that we want to compare - they must be in the same space, size
-image1 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat1_1.nii"
-image2 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat3_1.nii"
+# SCATTERPLOT COMPARE ---------------------------------------------------------------------------------
+
+# Images that we want to compare - they must be in MNI space
+image1 = "mr/8mm16_zstat1_1.nii"
+image2 = "mr/2mm16_zstat3_1.nii" 
+image_names = ["image 1","image 2"]
 images = [image1,image2]
 
-# Here is how we would first resample to another size
-images, ref_4mm = resample_images_ref(images,image1,interpolation="continuous",resample_dim=[8,8,8])
+html_snippet,data_table = compare.scatterplot_compare(images=images,
+                                                     image_names=image_names,
+                                                     corr="pearson") 
+view(html_snippet)
 
-# We will color based on atlas labels - the atlas must also be in same space, size
-atlas_file = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI-maxprob-thr25-2mm.nii"
-atlas_xml = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI.xml"
+# CUSTOM ATLAS ---------------------------------------------------------------------------------
+
+# You can specify a custom atlas, including a nifti file and xml file. Give to compare.scatterplot_compare as atlas=atlas
+atlas_file = "mr/MNI-maxprob-thr25-8mm.nii"
+atlas_xml = "mr/MNI.xml"
 atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
 
-# Create d3 scatterplot with atlas - specify to include pearson correlation
-html_snippet,data_table = compare.scatterplot_compare(images,software="FREESURFER",atlas=atlas,corr="pearson")
+
+# RESAMPLING IMAGES ---------------------------------------------------------------------------------
+
+# If you use your own standard brain (arg reference_mask) we recommend resampling to 8mm voxel
+# Here is how you would resample your images if they are differently sized. Both should already be in MNI
+#   -  You will get the resampled images and mask returned
+images_resamp,ref_resamp = resample_images_ref(images_nii,
+                                               reference_mask=standard,
+                                               interpolation="continuous")
+                                               resample_dim=[8,8,8])

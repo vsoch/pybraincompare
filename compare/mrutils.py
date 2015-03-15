@@ -8,9 +8,11 @@ import nibabel
 import subprocess
 import os
 import numpy
+from template.futils import get_name
 from nilearn.image import resample_img
 from report.plots import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
+import atlas as Atlas
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
 '''Returns reference mask from FSL or FREESURFER'''
@@ -34,6 +36,28 @@ def get_standard_mat(software):
   if software == "FREESURFER":
     return os.path.join(os.environ['FREESURFER_HOME'],'average', 'mni152.register.dat')
 
+'''Returns nibabel nifti objects from a list of filenames and/or nibabel objects'''
+def get_nii_obj(images):
+  images_nii = []
+  if isinstance(images,str): images = [images]
+  for i in range(0,len(images)):
+    image = images[i]    
+    if not isinstance(image,nibabel.nifti1.Nifti1Image): 
+      image = nibabel.load(image)
+    images_nii.append(image)
+  return images_nii
+
+'''Returns path to AAL atlas in MNI 152 space'''
+def get_aal_atlas(voxdims=["2","8"]):
+  atlas_directory = os.path.join(os.path.abspath(os.path.dirname(Atlas.__file__) + "/.."),"mr") 
+  atlas_xml = "%s/MNI.xml" %(atlas_directory)
+  atlases = dict()
+  for dim in voxdims:
+    atlas_file = "%s/MNI-maxprob-thr25-%smm.nii" %(atlas_directory,dim)
+    atlas = Atlas.atlas(atlas_xml,atlas_file)
+    atlases[dim] = atlas
+  return atlases
+
 
 # RESAMPLING -----------------------------------------------------------------------------
 
@@ -48,14 +72,17 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
     affine = numpy.diag(resample_dim)
     reference = resample_img(reference, target_affine=affine)
 
-  # Resample images to match reference
+  # Resample images to match reference mask affine and shape
   if isinstance(images,str): images = [images]
   images_resamp = []
   for image in images:
     if not isinstance(image,nibabel.nifti1.Nifti1Image): image = nibabel.load(image)
-    resampled_img = resample_img(image,target_affine=reference.get_affine(), 
+    # Only resample if the image is different from the reference
+    if not (image.get_affine() == reference.get_affine()).all():
+      resampled_img = resample_img(image,target_affine=reference.get_affine(), 
                                  target_shape=reference.get_shape(),
                                  interpolation=interpolation)
+    else: resampled_img = image
     images_resamp.append(resampled_img)
   return images_resamp, reference
 
@@ -75,7 +102,7 @@ mask: a nifti1 object mask [same size and shape]
 def do_mask(images,mask):
 
   # If we only have one image
-  if isinstance(images,str): images = [images]
+  if isinstance(images,nibabel.nifti1.Nifti1Image): images = [images]
 
   # Make sure images are 3d (squeeze out extra dimension)
   shapes = [len(i.shape) == 4 for i in images]
@@ -85,8 +112,10 @@ def do_mask(images,mask):
 
   # If mask needs to be binarized
   if not (numpy.unique(mask.get_data()) == [0,1]).all():
-    mask = compute_epi_mask(mask)
-
+    empty_nii = numpy.zeros(mask.shape)
+    empty_nii[mask!=0] = 1
+    mask = nibabel.nifti1.Nifti1Image(empty_nii,affine=mask.get_affine(),header=mask.get_header())
+    
   # if ensure_finite is True, nans and infs get replaced by zeros
   return apply_mask(images_resamp, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
   

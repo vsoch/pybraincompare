@@ -16,7 +16,6 @@ def percent_to_float(x):
 - image_vector2: single vector of image values
 - corr_type: correlation type [default pearson]
 - atlas_vector: single vector of region labels strings [optional]
-- currently only pearson is supported
 '''
 def do_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atlas_vector=None):   
   correlations = dict()
@@ -26,25 +25,21 @@ def do_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atla
     labs = np.unique(atlas_vector)
     for l in labs:
       if corr_type == "spearman": 
-        correlations[str(l)] = do_spearman(image_vector1[np.where(atlas_vector == l)[0]],
-                                           image_vector2[np.where(atlas_vector == l)[0]])
-      else: 
-        correlations[str(l)] = do_pearson(image_vector1[np.where(atlas_vector == l)[0]],
-                                          image_vector2[np.where(atlas_vector == l)[0]])
+        corr,pval = spearmanr(image_vector1[np.where(atlas_vector == l)[0]],
+                              image_vector2[np.where(atlas_vector == l)[0]])
+        correlations[str(l)] = corr
+      elif corr_type == "pearson": 
+        corr,pval = pearsonr(image_vector1[np.where(atlas_vector == l)[0]],
+                              image_vector2[np.where(atlas_vector == l)[0]])        
+        correlations[str(l)] = corr
+
   else:
-    if corr_type == "pearson": correlations["No Label"] = do_pearson(image_vector1,image_vector2)
-    elif corr_type == "spearman": correlations["No Label"] = do_spearman(image_vector1,image_vector2)
+    if corr_type == "pearson": 
+      correlations["No Label"] = pearsonr(image_vector1,image_vector2)
+    elif corr_type == "spearman": 
+      correlations["No Label"] = spearmanr(image_vector1,image_vector2)
   return correlations
 
-'''Pearson correlation'''
-def do_pearson(image_vector1,image_vector2):
-  corr,pval = pearsonr(image_vector1,image_vector2)
-  return corr
-
-"""Spearman correlation"""
-def do_spearman(image_vector1,image_vector2):
-  corr,pval = spearmanr(image_vector1,image_vector2)
-  return corr
 
 '''comparison for an entire pandas data frame'''
 def do_multi_correlation(image_df,corr_type="pearson"):

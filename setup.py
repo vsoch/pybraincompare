@@ -12,10 +12,10 @@ setup(
     author_email="vsochat@stanford.edu",
 
     # Packages
-    packages=["compare","annotate","template","report"],
+    packages=["compare","annotate","template","report","mr"],
 
     # Data
-    package_data = {'template':['html/*.html']},
+    package_data = {'template':['html/*.html'],'mr':["*.xml","MNI*.nii"]},
 
     # Details
     url="http://www.github.com/vsoch/pybraincompare",

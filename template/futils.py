@@ -4,7 +4,6 @@ import shutil
 import contextlib
 import futils
 import zipfile
-#from template.visual import make_glassbrain_image
 import numpy as np
 
 # Get the directory of the package
