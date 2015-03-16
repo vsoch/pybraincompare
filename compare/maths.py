@@ -35,9 +35,11 @@ def do_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atla
 
   else:
     if corr_type == "pearson": 
-      correlations["No Label"] = pearsonr(image_vector1,image_vector2)
+      corr,pval = pearsonr(image_vector1,image_vector2)
+      correlations["No Label"] = corr
     elif corr_type == "spearman": 
-      correlations["No Label"] = spearmanr(image_vector1,image_vector2)
+      corr,pval = spearmanr(image_vector1,image_vector2)
+      correlations["No Label"] = corr 
   return correlations
 
 

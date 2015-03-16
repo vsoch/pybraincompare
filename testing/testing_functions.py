@@ -21,6 +21,13 @@ def get_images():
   image2 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat3_1.nii"
   return [image1,image2]
 
+# Generate thresholds
+def generate_thresholds():
+  thresholds = []
+  for ii in range(0,4):
+    thresholds = thresholds + [(float(x) * 0.01)+ii for x in range(0,100)]
+  return thresholds
+
 # Test interface output with images thresholded at particular value
 def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False):
   # Threshold the images
@@ -31,7 +38,8 @@ def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,re
 
   # Report overlap of voxels
   pdmask = make_binary_deletion_mask(thresholded_images)
-  print "%s overlapping voxels at threshold %s" %(len(numpy.where(pdmask==1)[0]),threshold)
+  overlapping_voxels = len(numpy.where(pdmask==1)[0])
+  print "%s overlapping voxels at threshold %s" %(overlapping_voxels,threshold)
 
   # Generate the html_snippet
   if reference_mask==None:
@@ -43,20 +51,21 @@ def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,re
   if browser_view == True:
     view(html_snippet)
 
-  return html_snippet,data_table,thresholded_images
+  return html_snippet,data_table,thresholded_images, overlapping_voxels
 
 
 # Test scatterplot compare correlations against Neurovault with different thresholds
 def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False):
   
   # Get the html snippet and data table (with regional correlations)
-  html_snippet,data_table,thresholded_images = run_scatterplot_compare_threshold(images=images,image_names=image_names,threshold=threshold,atlas=atlas,reference_mask=reference_mask,browser_view=browser_view)
+  html_snippet,data_table,thresholded_images,overlap = run_scatterplot_compare_threshold(images=images,image_names=image_names,threshold=threshold,atlas=atlas,reference_mask=reference_mask,browser_view=browser_view)
   
   # Format the regional correlations into a smaller table
   scores = data_table.loc[:,["ATLAS_LABELS","ATLAS_CORR"]]
   scores = scores.drop_duplicates()
   df = pandas.DataFrame(scores)
   df["threshold"] = threshold
+  df["overlapping_voxels"] = overlap
 
   # Calculate a whole brain correlation using same NeuroVault function
   nv_correlation = calculate_voxelwise_pearson_similarity(thresholded_images[0], thresholded_images[1])
@@ -70,11 +79,11 @@ def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,
   return df,nv_correlation,pbc_correlation
 
 # General running function for some set of images and an atlas
-def run_scatterplot_compare(images,image_names,atlas,voxdim=[8,8,8],reference_mask=None):
+def run_scatterplot_compare(images,image_names,atlas,atlas_rendering=None,reference_mask=None):
   if reference_mask == None:
-    html_snippet,data_table = compare.scatterplot_compare(images=images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson",voxdim=voxdim) 
+    html_snippet,data_table = compare.scatterplot_compare(images=images,image_names=image_names,atlas=atlas,atlas_rendering=atlas_rendering,software="FSL",corr="pearson") 
   else:
-    html_snippet,data_table = compare.scatterplot_compare(images=images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson",voxdim=voxdim,reference_mask=reference_mask)  
+    html_snippet,data_table = compare.scatterplot_compare(images=images,image_names=image_names,atlas=atlas,atlas_rendering=atlas_rendering,software="FSL",corr="pearson",reference_mask=reference_mask)  
 
 # Threshold the image
 def threshold_abs(image1,thresh):

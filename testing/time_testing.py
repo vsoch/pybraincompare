@@ -4,6 +4,7 @@ from testing_functions import run_scatterplot_compare, get_images, get_atlas
 from compare.mrutils import resample_images_ref
 from compare import atlas as Atlas
 
+# The ability to specify a voxel dimension has been removed, so this test code is for documentation only
 voxdims = [[2,2,2],[3,3,3],[4,4,4],[5,5,5],[6,6,6],[8,8,8],[9,9,9]]
 total_times = []
 images = get_images()
@@ -36,24 +37,33 @@ for voxdim in voxdims:
 
 # Now no resampling for anyone! These images were resampled / registered in advance, the idea
 # being we would save a transformation for comparison in NeuroVault
-image1 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/8mm16_zstat1_1.nii"
-image2 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/8mm16_zstat3_1.nii"
-atlas_file = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI-maxprob-thr25-8mm.nii"
-atlas_xml = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI.xml"
+image1 = "../mr/8mm16_zstat1_1.nii"
+image2 = "../mr/8mm16_zstat3_1.nii"
+atlas_file = "../mr/MNI-maxprob-thr25-8mm.nii"
+atlas_xml = "../mr/MNI.xml"
+atlas_render = "../mr/MNI-maxprob-thr25-2mm.nii"
 # Our standard also needs to have the same shape and affine, so resampling is not done
-standard = "/usr/share/fsl/5.0/data/standard/MNI152_T1_8mm_brain_mask.nii.gz"
+standard = "../mr/MNI152_T1_8mm_brain_mask.nii.gz"
 atlas = Atlas.atlas(atlas_xml,atlas_file)
+atlas_rendering = Atlas.atlas(atlas_xml,atlas_render)
 images = [image1,image2]
 
-# Now we can run the scatterplot compare
+# Now we can run the scatterplot compare, and test with and without atlas
 start_time = time.time()
-run_scatterplot_compare(images=images,image_names=["image 1","image 2"],voxdim=[8,8,8],reference_mask=standard,atlas=None)
+run_scatterplot_compare(images=images,image_names=["image 1","image 2"],
+                        reference_mask=standard,atlas=None)
 end_time = time.time() - start_time
 print("--- %s seconds ---" % (end_time))
 
-# without atlas resampling
-# --- 0.267699956894 seconds ---
+# without atlas
+# --- 0.973186016083 seconds ---
 
-# with atlas resampling
-# --- 0.368842124939 seconds ---
-# woo!
+start_time = time.time()
+run_scatterplot_compare(images=images,image_names=["image 1","image 2"],
+                        reference_mask=standard,atlas=atlas,atlas_rendering=atlas_rendering)
+end_time = time.time() - start_time
+print("--- %s seconds ---" % (end_time))
+
+# with atlas
+# --- 0.383077859879 seconds ---
+# woot!

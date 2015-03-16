@@ -20,11 +20,12 @@ from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resam
 - image2: full path to image 2, must be in MNI space [required]
 - software: FSL or FREESURFER [default FSL]
 - atlas: a pybraincompare "atlas" object, will be rendered in vis and color data points [default None]
+- atlas_rendering: a pybraincompare "atlas" object for rending svg (should be higher res, 2mm) [default None]
 - custom: custom dictionary of {"TEMPLATE_IDS":,"text to substitute"} [default None]
 - corr: regional correlation type to include [default pearson]
 - reference_mask: if a different standard mask is desired to resample images to [default None]
 '''
-def scatterplot_compare(images,image_names,software="FSL",atlas=None,custom=None,corr="pearson",reference_mask=None):
+def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr="pearson",reference_mask=None):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -44,7 +45,8 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,custom=None
     atlas2mm = atlases["2"]
     atlas = atlases["8"]
   else:
-    atlas2mm = atlas # otherwise we render whatever the user provided
+    if atlas_rendering == None: atlas2mm = atlas # we render whatever the user provided
+    else: atlas2mm = atlas_rendering 
 
   # Only do calculations if we have overlapping regions
   if not (pdmask == 0).all():

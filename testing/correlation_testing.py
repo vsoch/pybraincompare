@@ -2,15 +2,16 @@
 
 # This script will test the scatterplot compare pearson values against neurovault
 
-from testing_functions import run_scatterplot_compare_correlation
+from testing_functions import run_scatterplot_compare_correlation, generate_thresholds
 import pandas
 
 thresholds = [0.0,0.5,1.0,1.5,1.96,2.0,2.58,3.02]
+thresholds = generate_thresholds()
 
 # Use 8mm resampled images for speed
-image1 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/8mm16_zstat1_1.nii"
-image2 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/8mm16_zstat3_1.nii"
-standard = "/usr/share/fsl/5.0/data/standard/MNI152_T1_8mm_brain_mask.nii.gz"
+image1 = "../mr/8mm16_zstat1_1.nii"
+image2 = "../mr/8mm16_zstat3_1.nii"
+standard = "../mr/MNI152_T1_8mm_brain_mask.nii.gz"
 images = [image1,image2]
 
 # Here we will output scatterplot compare correlations for each threshold
@@ -35,13 +36,13 @@ for thresh in thresholds:
 # nan
 
 # pbc_corrs
-# 0.24239542, 3.3100558253633504e-184)},
-# 0.37818813, 1.98323308155013e-23)},
-# 0.58678013, 1.5801695831852542e-15)},
-# 0.84492999, 7.5274193127007272e-07)},
-# 0.52579623, 0.18076500482241567)},
-# 0.52579623, 0.18076500482241567)},
-# nan
-# nan
+# [{'No Label': 0.24239542},
+# {'No Label': 0.37818813},
+# {'No Label': 0.58678013},
+# {'No Label': 0.84492999},
+# {'No Label': 0.52579623},
+# {'No Label': 0.52579623},
+# {'No Label': nan},
+# {'No Label': nan}]
 
-df.to_csv("/home/vanessa/Desktop/pbc_regional_corrs.tsv",sep="\t",index=False)
+df.to_csv("pbc_regional_corrs.tsv",sep="\t",index=False)
