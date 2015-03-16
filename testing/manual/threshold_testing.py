@@ -10,9 +10,9 @@ thresholds = [0.0,0.5,1.0,1.5,1.96,2.0,2.58,3.02]
 
 # We will use our speedy 8mm mask, and images.
 # We don't need to specify atlas - now part of package
-image1 = "../mr/8mm16_zstat1_1.nii"
-image2 = "../mr/8mm16_zstat3_1.nii"
-standard = "../mr/MNI152_T1_8mm_brain_mask.nii.gz"
+image1 = "../../mr/8mm16_zstat1_1.nii"
+image2 = "../../mr/8mm16_zstat3_1.nii"
+standard = "../../mr/MNI152_T1_8mm_brain_mask.nii.gz"
 images = [image1,image2]
 
 # Here we will run scatterplot compare for each threshold

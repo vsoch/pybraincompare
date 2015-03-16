@@ -9,9 +9,9 @@ thresholds = [0.0,0.5,1.0,1.5,1.96,2.0,2.58,3.02]
 thresholds = generate_thresholds()
 
 # Use 8mm resampled images for speed
-image1 = "../mr/8mm16_zstat1_1.nii"
-image2 = "../mr/8mm16_zstat3_1.nii"
-standard = "../mr/MNI152_T1_8mm_brain_mask.nii.gz"
+image1 = "../../mr/8mm16_zstat1_1.nii"
+image2 = "../../mr/8mm16_zstat3_1.nii"
+standard = "../../mr/MNI152_T1_8mm_brain_mask.nii.gz"
 images = [image1,image2]
 
 # Here we will output scatterplot compare correlations for each threshold

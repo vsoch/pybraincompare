@@ -37,13 +37,13 @@ for voxdim in voxdims:
 
 # Now no resampling for anyone! These images were resampled / registered in advance, the idea
 # being we would save a transformation for comparison in NeuroVault
-image1 = "../mr/8mm16_zstat1_1.nii"
-image2 = "../mr/8mm16_zstat3_1.nii"
-atlas_file = "../mr/MNI-maxprob-thr25-8mm.nii"
-atlas_xml = "../mr/MNI.xml"
-atlas_render = "../mr/MNI-maxprob-thr25-2mm.nii"
+image1 = "../../mr/8mm16_zstat1_1.nii"
+image2 = "../../mr/8mm16_zstat3_1.nii"
+atlas_file = "../../mr/MNI-maxprob-thr25-8mm.nii"
+atlas_xml = "../../mr/MNI.xml"
+atlas_render = "../../mr/MNI-maxprob-thr25-2mm.nii"
 # Our standard also needs to have the same shape and affine, so resampling is not done
-standard = "../mr/MNI152_T1_8mm_brain_mask.nii.gz"
+standard = "../../mr/MNI152_T1_8mm_brain_mask.nii.gz"
 atlas = Atlas.atlas(atlas_xml,atlas_file)
 atlas_rendering = Atlas.atlas(atlas_xml,atlas_render)
 images = [image1,image2]

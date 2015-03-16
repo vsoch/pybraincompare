@@ -1,0 +1,78 @@
+# Speed of Comparison
+After testing the timing for different voxel dimensions, it is clear that any resampling takes pretty significant time. The comparison is slow (mean 2.82, std=0.34 seconds). The task can be broken into several levels of resampling:
+
+- Resampling standard mask to a custom size specified by the user. In our case, we were resampling MNI 2mm to 8mm
+- Resampling input images to match the dimension / shape of the resampled mask
+- Resampling the atlas to also match this dimension
+
+This was clearly leading to the slow time to generate the html to render in the page. I've added functionality to skip over resampling if the images already have the same affine, and also take as input a custom standard mask. I'm happy to report that when we give scatterplot_compare an atlas, images, and standard that are already in the same space, the time drops to 0.27 seconds. Much better! So as we discussed, it makes sense to store a transformed image.
+
+[time testing script]()
+[time testing function]()
+
+# Voxel Size for Comparison
+I was going to test correlations at different voxel dimensions, but the reality is that we are constrained by the size of the data needing to render in the browser. If you remember this testing:
+
+[2mm voxel](http://vbmis.com/bmi/share/chris/scatterplot_compare/scatter_2mm.html)
+[4mm voxel](http://vbmis.com/bmi/share/chris/scatterplot_compare/scatter_4mm.html)
+[6mm voxel](http://vbmis.com/bmi/share/chris/scatterplot_compare/scatter_6mm.html)
+[8mm voxel](http://vbmis.com/bmi/share/chris/scatterplot_compare/scatter_8mm.html)
+
+My recommendation is still an 8mm voxel.
+
+# Comparison with Thresholding
+If the image comparison is not possible because severe thresholding leaves the image empty, there should be an error message. This I had already implemented, and it's working from within the package. When we reached a level of 2.58 (below) the browser
+rendered a message that the comparison was not possible due to too few voxels. I will need to debug/test the specific example that you pointed out in NeuroVault.
+
+# 13838 overlapping voxels at threshold 0.0
+# 647 overlapping voxels at threshold 0.5
+# 153 overlapping voxels at threshold 1.0
+# 22 overlapping voxels at threshold 1.5
+# 8 overlapping voxels at threshold 1.96
+# 8 overlapping voxels at threshold 2.0
+# 1 overlapping voxels at threshold 2.58
+# 0 overlapping voxels at threshold 3.02
+# 0 overlapping voxels at threshold 3.5
+# 0 overlapping voxels at threshold 4.0
+# 0 overlapping voxels at threshold 4.5
+# 0 overlapping voxels at threshold 5.0
+# 0 overlapping voxels at threshold 5.5
+# 0 overlapping voxels at threshold 6.0
+
+This test produced some really interesting plots that show how bad an idea it is to use pearson correlation in the case of a thresholded image. The links below show the scatterplot compare interface at the thresholding level aboves up to 3.02. The reason that these "mini maps" have such high scores is because the 
+
+- [Threshold 0.0](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh0.0.html)
+- [Threshold 0.5](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh0.5.html)
+- [Threshold 1.0](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh1.0.html)
+- [Threshold 1.5](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh1.5.html)
+- [Threshold 1.96](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh1.96.html)
+- [Threshold 2.58](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh2.58.html)
+- [Threshold 3.02](http://www.vbmis.com/bmi/share/chris/scatterplot_compare/scatterplot_compare_thresh3.02.html)
+
+[threshold testing script]()
+[threshold testing function]()
+
+
+# Testing of Correlations
+I first wanted to confirm that pybraincompare and NeuroVault, if given the same data vectors (eg, no atlas) would return exactly the same scores. [I confirmed this](). Next, I was not sure how to go about testing the regional scores. As we can see for the links above when there are different thresholdings, it is entirely possible (and likely) to have higher and lower regional scores regardless of the overall correlation. The regional thresholding is going to be different, even if only one score is returned. For example: 
+
+- whole brain threshold at 0.0 is ~0.24, and we also see lower (0.13, caudate) and higher (0.66 Cerebellum)
+- whole brain threshold at 1.96 is ~0.84, and when we look for regions there is only one surviving (Cerebellum) and the correlation is a higher ~0.53. We only have 8 surviving voxels that are being compared, and what it means is that the "No Label" voxels, and all other regions likely had fewer than 3 values, and were eliminated from the data (and would not be eliminated for pbc_correlation or nv_correlation because we don't care about regional labels).
+
+We can look at how the different regional correlations change at different thresholdings:
+
+I seem to remember that there was something troubling you about a comparison between a neurovault score and a set of regional values. If you can give me a sense of what that trouble was, I can do some more tests to assess it!
+
+[correlation testing script]()
+[correlation testing function]()
+
+
+# Changes for NeuroVault
+- I noticed that we resample images to standard space before calculating a similarity metric, but we don't apply any sort of brain mask. Is this ideal? The scatterplot compare does not either, however for my current image comparison experiments, I am creating masks and also using a brain mask to mask out csf, etc. I would imagine some voxels around the edges are cropped, but most importantly, we are masking out ventricles/csf.
+- Do not need to specify atlas for scatterplot compare, and we can remove the atlas files from the repository
+- tasks.py calculate_voxelwise_pearson_similarity should first check if images are same size/dimension and only resample if not.
+- Add task to generate image transformation to 8mm voxel for all uploaded maps. Should the similarity metric be calculated from these maps as well, or are they just for the scatterplot rendering?
+
+# Changes to Pybraincompare
+- The package already will render an error message if the comparison is not possible, so I need to test why this is not happening in NeuroVault. 
+- I've removed the burden of needing to specify an atlas, because most users wouldn't go out of their way to find an xml and nifti file, and this is one less thing we need to do from within NeuroVault (so we can delete the atlas files as they will come with the package). The user still has the option to specify a custom atlas, if desired.
