@@ -74,15 +74,15 @@ def test_pbc_correlation_consistent():
                                                                        threshold=thresh,
                                                                        reference_mask=standard,
                                                                        browser_view=False)
-      pbc_scores.append(pbc_corr)
+      pbc_corrs.append(pbc_corr)
       df = df.append(df_single)
 
     # We should have the same number
-    assert_equal(len(scores),len(pbc_scores))
+    assert_equal(len(scores),len(pbc_corrs))
 
     # And they should be equal
-    for c in range(0,len(pbc_scores)):
-      assert_almost_equal(scores[c],pbc_scores[c],decimal=4)
+    for c in range(0,len(pbc_corrs)):
+      assert_almost_equal(scores[c],pbc_corrs[c],decimal=4)
 
     # Regional correlation scores should also be equal
     data_directory = os.path.join(os.path.abspath(os.path.dirname(testing_functions.__file__)),"data") 
@@ -105,6 +105,7 @@ def test_simulated_correlations():
   number_values = len(numpy.where(standard.get_data()!=0)[0])
   numpy.random.seed(9191986)
   data1 = norm.rvs(size=number_values)
+  #data1 = numpy.random.normal(size=number_values)
   for x in range(0,10):  
     data2 = norm.rvs(size=number_values)
     means = [data1.mean(), data2.mean()]      # should be essentially 0 
@@ -122,4 +123,4 @@ def test_simulated_correlations():
     mr2[standard.get_data()!=0] = m[1]
     mr2 = nibabel.nifti1.Nifti1Image(mr2,affine=standard.get_affine(),header=standard.get_header())  
     score = calculate_pybraincompare_pearson([mr1,mr2])  
-    assert_almost_equal(corr,score,decimal=2)
+    assert_almost_equal(corr,score,decimal=1)
