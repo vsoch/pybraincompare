@@ -25,7 +25,7 @@ from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resam
 - corr: regional correlation type to include [default pearson]
 - reference_mask: if a different standard mask is desired to resample images to [default None]
 '''
-def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr="pearson",reference_mask=None):
+def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr="pearson",reference_mask=None,resample_dim=[8,8,8]):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -34,7 +34,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
   # Resample to reference (so we can also use as a mask)
   if reference_mask == None:
     reference_mask = get_standard_mask(software)
-  images_resamp, reference_resamp = resample_images_ref(images_nii,reference_mask,interpolation="continuous",resample_dim=[8,8,8])
+  images_resamp, reference_resamp = resample_images_ref(images_nii,reference_mask,interpolation="continuous",resample_dim=resample_dim)
     
   # Prepare pairwise deletion mask, apply to data
   pdmask = make_binary_deletion_mask(images_resamp)

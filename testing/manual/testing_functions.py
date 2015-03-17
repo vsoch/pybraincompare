@@ -29,7 +29,7 @@ def generate_thresholds():
   return thresholds
 
 # Test interface output with images thresholded at particular value
-def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False):
+def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False,resample_dim=[8,8,8]):
   # Threshold the images
   thresholded_images = []
   for image in images:
@@ -43,9 +43,9 @@ def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,re
 
   # Generate the html_snippet
   if reference_mask==None:
-    html_snippet,data_table = compare.scatterplot_compare(images=thresholded_images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson") 
+    html_snippet,data_table = compare.scatterplot_compare(images=thresholded_images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson",resample_dim=resample_dim) 
   else: 
-    html_snippet,data_table = compare.scatterplot_compare(images=thresholded_images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson",reference_mask=reference_mask) 
+    html_snippet,data_table = compare.scatterplot_compare(images=thresholded_images,image_names=image_names,atlas=atlas,software="FSL",corr="pearson",reference_mask=reference_mask,resample_dim=resample_dim) 
 
   # If we want to view in the browser
   if browser_view == True:
@@ -55,10 +55,10 @@ def run_scatterplot_compare_threshold(images,image_names,threshold,atlas=None,re
 
 
 # Test scatterplot compare correlations against Neurovault with different thresholds
-def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False):
+def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,reference_mask=None,browser_view=False,resample_dim=[8,8,8]):
   
   # Get the html snippet and data table (with regional correlations)
-  html_snippet,data_table,thresholded_images,overlap = run_scatterplot_compare_threshold(images=images,image_names=image_names,threshold=threshold,atlas=atlas,reference_mask=reference_mask,browser_view=browser_view)
+  html_snippet,data_table,thresholded_images,overlap = run_scatterplot_compare_threshold(images=images,image_names=image_names,threshold=threshold,atlas=atlas,reference_mask=reference_mask,browser_view=browser_view,resample_dim=resample_dim)
   
   # Format the regional correlations into a smaller table
   scores = data_table.loc[:,["ATLAS_LABELS","ATLAS_CORR"]]
@@ -74,6 +74,36 @@ def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,
   pdmask = make_binary_deletion_mask(thresholded_images)
   pdmask = nibabel.Nifti1Image(pdmask,header=thresholded_images[0].get_header(),affine=thresholded_images[0].get_affine())
   masked = do_mask(images=thresholded_images,mask=pdmask)
+  masked = pandas.DataFrame(numpy.transpose(masked))
+  pbc_correlation = do_pairwise_correlation(masked[0],masked[1],corr_type="pearson")
+  return df,nv_correlation,pbc_correlation
+
+# Extract scatterplot compare whole brain correlations at different voxel dimensions
+def run_scatterplot_compare_voxdim(images,image_names,resample_dim,threshold,atlas=None,reference_mask=None,browser_view=False):
+  
+  # Get the html snippet and data table (with regional correlations)
+  html_snippet,data_table,thresholded_images,overlap = run_scatterplot_compare_threshold(images=images,image_names=image_names,threshold=threshold,atlas=atlas,reference_mask=reference_mask,browser_view=browser_view,resample_dim=resample_dim)
+  
+  # Format the regional correlations into a smaller table
+  scores = data_table.loc[:,["ATLAS_LABELS","ATLAS_CORR"]]
+  scores = scores.drop_duplicates()
+  df = pandas.DataFrame(scores)
+  df["threshold"] = threshold
+  df["overlapping_voxels"] = overlap
+
+  # Resample images to the voxel dimension
+  images_resamp = []
+  affine = numpy.diag(resample_dim)
+  for image in thresholded_images:
+    images_resamp.append(resample_img(image,target_affine=affine))
+
+  # Calculate a whole brain correlation using same NeuroVault function
+  nv_correlation = calculate_voxelwise_pearson_similarity(images_resamp[0], images_resamp[1])
+
+  # Calculate a whole brain correlation with same procedure as in pybraincompare
+  pdmask = make_binary_deletion_mask(images_resamp)
+  pdmask = nibabel.Nifti1Image(pdmask,header=images_resamp[0].get_header(),affine=images_resamp[0].get_affine())
+  masked = do_mask(images=images_resamp,mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
   pbc_correlation = do_pairwise_correlation(masked[0],masked[1],corr_type="pearson")
   return df,nv_correlation,pbc_correlation

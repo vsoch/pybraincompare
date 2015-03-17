@@ -1,8 +1,8 @@
 from compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
+from neurovault_functions import calculate_voxelwise_pearson_similarity
 from compare.maths import do_pairwise_correlation
 from compare import compare, atlas as Atlas
 from nilearn.image import resample_img
-from neurovault_functions import calculate_voxelwise_pearson_similarity
 from template.visual import view
 import pandas
 import numpy
@@ -71,12 +71,17 @@ def run_scatterplot_compare_correlation(images,image_names,threshold,atlas=None,
   nv_correlation = calculate_voxelwise_pearson_similarity(thresholded_images[0], thresholded_images[1])
 
   # Calculate a whole brain correlation with same procedure as in pybraincompare
-  pdmask = make_binary_deletion_mask(thresholded_images)
-  pdmask = nibabel.Nifti1Image(pdmask,header=thresholded_images[0].get_header(),affine=thresholded_images[0].get_affine())
-  masked = do_mask(images=thresholded_images,mask=pdmask)
+  pbc_correlation = calculate_pybraincompare_pearson(thresholded_images)
+  return df,nv_correlation,pbc_correlation
+
+# Calculate a whole brain correlation with same procedure as in pybraincompare
+def calculate_pybraincompare_pearson(images):
+  pdmask = make_binary_deletion_mask(images)
+  pdmask = nibabel.Nifti1Image(pdmask,header=images[0].get_header(),affine=images[0].get_affine())
+  masked = do_mask(images=images,mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
   pbc_correlation = do_pairwise_correlation(masked[0],masked[1],corr_type="pearson")
-  return df,nv_correlation,pbc_correlation
+  return pbc_correlation["No Label"]
 
 # General running function for some set of images and an atlas
 def run_scatterplot_compare(images,image_names,atlas,atlas_rendering=None,reference_mask=None):
