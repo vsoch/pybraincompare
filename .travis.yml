@@ -17,15 +17,14 @@ install:
  - pip install pandas
  - pip install matplotlib
  - pip install scikit-image
+ - cd vsoch/pybraincompare
+ - python setup.py sdist
+ - python setup.py install
 
 env:
   global:
     - TEST_RUN_FOLDER="/testing/automatic" # folder where the tests are run from
 
-install: 
-    - cd vsoch/pybraincompare
-    - python setup.py sdist
-    - python setup.py install
 
 # command to run tests
 script:  
