@@ -8,8 +8,8 @@ python:
 install:
     - pip install --upgrade pip
     - sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas python-sympy python-nose  python-sklearn python-nibabel python-matplotlib -y
-    - pip install -U --user nilearn
-    - pip install -U --user scikit-image
+    - pip install nilearn
+    - pip install scikit-image
 
 env:
   global:
