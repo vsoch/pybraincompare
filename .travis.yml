@@ -6,10 +6,18 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-    - pip install --upgrade pip
-    - sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas python-sympy python-nose  python-sklearn python-nibabel python-matplotlib -y
-    - pip install nilearn
-    - pip install scikit-image
+    - sudo pip install --upgrade pip
+    - sudo apt-get install python-numpy -y
+    - sudo apt-get install python-scipy -y
+    - sudo apt-get install python-matplotlib -y 
+    - sudo apt-get install python-pandas -y
+    - sudo apt-get install python-sympy -y
+    - sudo apt-get install python-nose -y
+    - sudo apt-get install python-sklearn -y
+    - sudo apt-get install python-nibabel -y
+    - sudo apt-get install python-matplotlib -y
+    - sudo pip install nilearn
+    - sudo pip install scikit-image
 
 env:
   global:
