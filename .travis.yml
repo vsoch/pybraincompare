@@ -24,7 +24,7 @@ install:
     - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
-    - cd $CURRENT/testing/automatic
+    - cd $CURRENT/testing
 
 #env:
 #  global:
