@@ -16,6 +16,7 @@ install:
     - sudo apt-get install python-sklearn -y
     - sudo apt-get install python-nibabel -y
     - sudo apt-get install python-matplotlib -y
+    - sudo pip install six
     - sudo pip install nilearn
     - sudo pip install scikit-image
 
