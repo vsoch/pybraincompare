@@ -17,6 +17,7 @@ install:
     - sudo apt-get install python-sklearn -y
     - sudo apt-get install python-matplotlib -y
     - sudo pip install networkx
+    - sudo pip install pydicom
     - wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
     - tar -xzvf six-1.9.0.tar.gz
     - cd six-1.9.0
