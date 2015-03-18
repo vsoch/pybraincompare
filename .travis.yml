@@ -24,12 +24,11 @@ install:
     - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
-    - cd $CURRENT
+    - cd $CURRENT/testing/automatic
 
-env:
-  global:
-    - TEST_RUN_FOLDER="testing/" # folder where the tests are run from
-
+#env:
+#  global:
+#    - TEST_RUN_FOLDER="testing/" # folder where the tests are run from
 
 # command to run tests
 script: bash $CURRENT/testing/run_tests.sh
