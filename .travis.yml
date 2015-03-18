@@ -24,6 +24,7 @@ install:
     - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
+    - sudo pip install nibabel
     - cd $CURRENT/testing
 
 #env:
