@@ -5,15 +5,7 @@ python:
   - "2.6"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install:
-    - pip install numpy
-    - pip install scipy
-    - pip install scikit-learn
-    - pip install nibabel
-    - pip install nilearn
-    - pip install pandas
-    - pip install matplotlib
-    - pip install scikit-image
+install: pip install -r requirements.txt --user-mirrors
 
 env:
   global:
@@ -21,8 +13,6 @@ env:
 
 
 # command to run tests
-script:  
-    - chmod u+x testing/run_tests.sh
-    - bash testing/run_tests.sh
+script: bash testing/run_tests.sh
 
 
