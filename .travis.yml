@@ -23,6 +23,7 @@ env:
     - TEST_RUN_FOLDER="/testing/automatic" # folder where the tests are run from
 
 install: 
+    - cd pybraincompare
     - python setup.py sdist
     - python setup.py install
 
