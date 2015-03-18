@@ -6,6 +6,7 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
+    - CURRENT=$PWD
     - sudo pip install --upgrade pip
     - sudo apt-get install python-numpy -y
     - sudo apt-get install python-scipy -y
@@ -22,6 +23,7 @@ install:
     - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
+    - cd $CURRENT
 
 env:
   global:
@@ -29,6 +31,6 @@ env:
 
 
 # command to run tests
-script: bash testing/run_tests.sh
+script: bash $CURRENT/testing/run_tests.sh
 
 
