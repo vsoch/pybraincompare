@@ -15,16 +15,19 @@ install:
     - sudo apt-get install python-sympy -y
     - sudo apt-get install python-nose -y
     - sudo apt-get install python-sklearn -y
-    - sudo apt-get install python-nibabel -y
     - sudo apt-get install python-matplotlib -y
     - sudo pip install networkx
     - wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
     - tar -xzvf six-1.9.0.tar.gz
     - cd six-1.9.0
     - sudo python setup.py install
+    - cd $CURRENT
+    - wget https://pypi.python.org/packages/source/n/nibabel/nibabel-2.0.0.tar.gz
+    - tar -xzvf nibabel-2.0.0.tar.gz
+    - cd nibabel-2.0.0
+    - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
-    - sudo pip install nibabel
     - cd $CURRENT/testing
 
 #env:
