@@ -3,17 +3,17 @@
 """
 Test that regional and whole brain correlation scores remain consistent
 """
-from testing_functions import run_scatterplot_compare_correlation, generate_thresholds, calculate_pybraincompare_pearson
+from testing.testing_functions import run_scatterplot_compare_correlation, generate_thresholds, calculate_pybraincompare_pearson
 from compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
-from neurovault_functions import calculate_voxelwise_pearson_similarity
+from testing.neurovault_functions import calculate_voxelwise_pearson_similarity
 from compare.maths import do_pairwise_correlation
 from nose.tools import assert_true, assert_false
 from compare import compare, atlas as Atlas
 from nilearn.image import resample_img
 from template.visual import view
 from scipy.stats import norm, pearsonr
-import testing_functions
+import testing.testing_functions
 import nibabel
 import random
 import pandas
