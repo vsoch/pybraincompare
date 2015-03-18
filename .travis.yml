@@ -23,8 +23,8 @@ env:
     - TEST_RUN_FOLDER="/testing/automatic" # folder where the tests are run from
 
 install: 
-    - setup.py sdist
-    - setup.py install
+    - python setup.py sdist
+    - python setup.py install
 
 # command to run tests
 script:  
