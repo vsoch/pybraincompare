@@ -13,7 +13,6 @@ install:
     - sudo apt-get install python-matplotlib -y 
     - sudo apt-get install python-pandas -y
     - sudo apt-get install python-sympy -y
-    - sudo apt-get install python-nose -y
     - sudo apt-get install python-sklearn -y
     - sudo apt-get install python-matplotlib -y
     - sudo pip install networkx
@@ -30,6 +29,7 @@ install:
     - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
+    - sudo apt-get install python-nose -y
     - cd $CURRENT/testing
 
 #env:
