@@ -1,9 +1,15 @@
 language: python
+
 python:
   - "2.7"
   - "2.6"
+
+virtualenv:
+  system_site_packages: true
+
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
+ - pip install scipy
  - pip install scikit-learn
  - pip install nibabel
  - pip install nilearn
@@ -11,7 +17,17 @@ install:
  - pip install matplotlib
  - pip install scikit-image
 
+env:
+  global:
+    - TEST_RUN_FOLDER="/testing/automatic" # folder where the tests are run from
+
+install: 
+    - setup.py sdist
+    - setup.py install
+
 # command to run tests
 script:  
  - chmod u+x testing/run_tests.sh
  - bash testing/run_tests.sh
+
+
