@@ -6,15 +6,14 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-    - sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas python-sympy python-nose
-    - pip install scikit-learn
-    - pip install nibabel
-    - pip install nilearn
-    - pip install scikit-image
+    - pip install --upgrade pip
+    - sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas python-sympy python-nose  python-sklearn python-nibabel python-matplotlib -y
+    - pip install -U --user nilearn
+    - pip install -U --user scikit-image
 
 env:
   global:
-    - TEST_RUN_FOLDER="testing/automatic" # folder where the tests are run from
+    - TEST_RUN_FOLDER="testing/" # folder where the tests are run from
 
 
 # command to run tests
