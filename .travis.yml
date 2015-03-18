@@ -16,7 +16,10 @@ install:
     - sudo apt-get install python-sklearn -y
     - sudo apt-get install python-nibabel -y
     - sudo apt-get install python-matplotlib -y
-    - sudo pip install six
+    - wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
+    - tar -xzvf six-1.9.0.tar.gz
+    - cd six-1.9.0
+    - sudo python setup.py install
     - sudo pip install nilearn
     - sudo pip install scikit-image
 
