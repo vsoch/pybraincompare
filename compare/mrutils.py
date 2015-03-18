@@ -4,7 +4,6 @@ Functions work with brain maps
 
 '''
 
-import nibabel
 import subprocess
 import os
 import numpy
@@ -13,6 +12,8 @@ from nilearn.image import resample_img
 from report.plots import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
 import atlas as Atlas
+import nibabel
+
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
 '''Returns reference mask from FSL or FREESURFER'''
