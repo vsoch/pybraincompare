@@ -17,6 +17,7 @@ export CXX=g++
 
 install_from_source() {
     sudo -H pip install --upgrade pip
+    sudo -H pip install Cython
     # Install several packages from source
     CWD=$PWD
     cd /tmp
@@ -30,6 +31,9 @@ install_from_source() {
     git clone http://github.com/scikit-image/scikit-image.git
     cd scikit-image
     sudo -H pip install .
+    cd ..
+    sudo rm -rf scikit-image
+    sudo rm scikit-image.tar.gz
     cd $CWD
 }
 
