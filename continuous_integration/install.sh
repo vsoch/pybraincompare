@@ -15,6 +15,17 @@ set -e
 export CC=gcc
 export CXX=g++
 
+install_from_source() {
+    # Install several packages from source
+    CWD=$PWD
+    cd /tmp
+    wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
+    tar -xzvf six-1.9.0.tar.gz
+    cd six-1.9.0
+    sudo python setup.py install
+    cd $CWD
+}
+
 create_new_venv() {
     # At the time of writing numpy 1.9.1 is included in the travis
     # virtualenv but we want to be in control of the numpy version
@@ -114,8 +125,12 @@ else
     exit 1
 fi
 
+install_from_source
+
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
+
+
 
 python setup.py install
