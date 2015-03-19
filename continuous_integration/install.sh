@@ -26,6 +26,9 @@ install_from_source() {
     cd ..
     sudo rm six-1.9.0.tar.gz
     sudo rm -rf six-1.9.0
+    git clone http://github.com/scikit-image/scikit-image.git
+    cd scikit-image
+    sudo pip install .
     cd $CWD
 }
 
