@@ -5,6 +5,7 @@ Test that pairwise deletion mask (intersection) returns expected values
 """
 from pybraincompare.mr.datasets import get_pair_images, get_data_directory
 from pybraincompare.compare.mrutils import get_standard_mask,resample_images_ref, make_binary_deletion_mask, do_mask
+from pybraincompare.mr.datasets import get_data_directory
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
 from nose.tools import assert_true, assert_false
 from nilearn.image import resample_img
@@ -17,7 +18,8 @@ import os
 '''Test that binary deletion mask returns expected overlap given two images, nans and zeros'''
 def test_binary_deletion_mask():
 
-  standard = get_standard_mask("FSL") 
+  mr_directory = get_data_directory()
+  standard = "%s/MNI152_T1_8mm_brain_mask.nii.gz" %(mr_directory)
   brain_mask = nibabel.load(standard) 
   unzip = lambda l:tuple(zip(*l))
   
