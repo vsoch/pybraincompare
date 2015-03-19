@@ -18,6 +18,7 @@ export CXX=g++
 install_from_source() {
     sudo -H pip install --upgrade pip
     sudo -H pip install Cython
+    sudo -H pip install matplotlib
     # Install several packages from source
     CWD=$PWD
     cd /tmp
@@ -105,7 +106,7 @@ create_new_conda_env() {
 if [[ "$DISTRIB" == "ubuntu" ]]; then
     create_new_venv
     install_from_source
-    sudo apt-get install -qq python-numpy python-scipy python-nose python-pip python-sklearn python-matplotlib
+    sudo apt-get install -qq python-numpy python-scipy python-nose python-pip python-sklearn
 
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
