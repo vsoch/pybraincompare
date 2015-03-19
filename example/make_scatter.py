@@ -1,17 +1,16 @@
 # Create a scatterplot from two brain images
-from compare.mrutils import resample_images_ref
-from compare import compare, atlas as Atlas
+from pybraincompare.compare.mrutils import resample_images_ref
+from pybraincompare.compare import compare, atlas as Atlas
+from pybraincompare.mr.datasets import get_pair_images, get_mni_atlas
 from nilearn.image import resample_img
-from template.visual import view
+from pybraincompare.template.visual import view
 import numpy
 
 # SCATTERPLOT COMPARE ---------------------------------------------------------------------------------
 
 # Images that we want to compare - they must be in MNI space
-image1 = "mr/8mm16_zstat1_1.nii"
-image2 = "mr/2mm16_zstat3_1.nii" 
 image_names = ["image 1","image 2"]
-images = [image1,image2]
+images = get_pair_images(voxdims=["2","8"])
 
 html_snippet,data_table = compare.scatterplot_compare(images=images,
                                                      image_names=image_names,
@@ -21,8 +20,9 @@ view(html_snippet)
 # CUSTOM ATLAS ---------------------------------------------------------------------------------
 
 # You can specify a custom atlas, including a nifti file and xml file. Give to compare.scatterplot_compare as atlas=atlas
-atlas_file = "mr/MNI-maxprob-thr25-8mm.nii"
-atlas_xml = "mr/MNI.xml"
+atlas_file, atlas_xml = get_atlas()
+#atlas_file = "mr/MNI-maxprob-thr25-8mm.nii"
+#atlas_xml = "mr/MNI.xml"
 atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
 
 

@@ -12,15 +12,13 @@ setup(
     author_email="vsochat@stanford.edu",
 
     # Packages
-    packages=["compare",
-              "annotate",
-              "template",
-              "report",
-              "mr",
-              "testing"],
+    packages=find_packages(),
 
     # Data
-    package_data = {'template':['html/*.html'],'mr':["*.xml","MNI*.nii"],'testing':['data/*.tsv']},
+    package_data = {'pybraincompare.template':['html/*.html'],
+                    'pybraincompare.mr':["*.xml","MNI*.nii"],
+                    'pybraincompare.testing':['data/*.tsv'],
+                    'pybraincompare.mr':['*.nii']},
 
     # Details
     url="http://www.github.com/vsoch/pybraincompare",
@@ -28,5 +26,5 @@ setup(
     license="LICENSE.txt",
     description="image-based meta analysis and comparison for neuroimaging in python",
 
-    install_requires = ['networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image']
+    install_requires = ['pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image']
 )

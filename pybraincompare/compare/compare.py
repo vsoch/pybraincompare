@@ -10,9 +10,10 @@ import os
 import nibabel
 import collections
 from maths import do_pairwise_correlation, do_multi_correlation
-from template.templates import get_template, add_string, add_javascript_function
-from template.visual import calculate_similarity_search, show_brainglass_interface
-from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj, get_aal_atlas
+from pybraincompare.template.templates import get_template, add_string, add_javascript_function
+from pybraincompare.template.visual import calculate_similarity_search, show_brainglass_interface
+from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
+from pybraincompare.mr.datasets import get_mni_atlas
 
 # Unbiased visual comparison with scatterplot
 '''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
@@ -41,7 +42,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
 
   # If the user doesn't specify a custom atlas, we use MNI 152 2mm for visual, 8mm for regions
   if atlas == None:
-    atlases = get_aal_atlas(["2","8"]) # 2mm (for svg) and 8mm (for roi)
+    atlases = get_mni_atlas(["2","8"]) # 2mm (for svg) and 8mm (for roi)
     atlas2mm = atlases["2"]
     atlas = atlases["8"]
   else:

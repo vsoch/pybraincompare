@@ -1,6 +1,6 @@
 # Functions for visualization parameters
-from template.futils import make_tmp_folder, make_png_paths, unwrap_list_unique
-from template.templates import add_string
+from pybraincompare.template.futils import make_tmp_folder, make_png_paths, unwrap_list_unique
+from pybraincompare.template.templates import add_string
 import matplotlib.pyplot as plt
 import SimpleHTTPServer
 import SocketServer

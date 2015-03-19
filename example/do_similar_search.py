@@ -1,6 +1,6 @@
 # This will generate an interactive web interface to find similar images
-from template.visual import view
-from compare.compare import similarity_search
+from pybraincompare.template.visual import view
+from pybraincompare.compare.compare import similarity_search
 from glob import glob
 import pandas
 

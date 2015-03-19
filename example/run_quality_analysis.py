@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from glob import glob
-from report.webreport import run_qa
+from pybraincompare.report.webreport import run_qa
 
 # Here is a set of 144 images, these are 9 openfmri studies in Neurovault, resampled to MNI 2mm
 mrs = glob("/home/vanessa/Documents/Work/BRAINMETA/IMAGE_COMPARISON/mr/resampled/*.nii.gz")

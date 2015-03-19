@@ -8,31 +8,7 @@ virtualenv:
   system_site_packages: true
 
 install:
-    - CURRENT=$PWD
-    - sudo pip install --upgrade pip
-    - sudo apt-get install python-numpy -y
-    - sudo apt-get install python-scipy -y
-    - sudo apt-get install python-matplotlib -y 
-    - sudo apt-get install python-pandas -y
-    - sudo apt-get install python-sympy -y
-    - sudo apt-get install python-sklearn -y
-    - sudo apt-get install python-matplotlib -y
-    - sudo pip install networkx
-    - sudo pip install pydicom
-    - sudo pip install Cython
-    - wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
-    - tar -xzvf six-1.9.0.tar.gz
-    - cd six-1.9.0
-    - sudo python setup.py install
-    - cd $CURRENT
-    - wget https://pypi.python.org/packages/source/n/nibabel/nibabel-2.0.0.tar.gz
-    - tar -xzvf nibabel-2.0.0.tar.gz
-    - cd nibabel-2.0.0
-    - sudo python setup.py install
-    - sudo pip install nilearn
-    - sudo pip install scikit-image
-    - sudo apt-get install python-nose -y
-    - cd $CURRENT/testing
+    - source continuous_integration/install.sh
 
 env:
   global:
@@ -49,7 +25,8 @@ env:
       NUMPY_VERSION="*" SCIPY_VERSION="*"
       MATPLOTLIB_VERSION="*" SCIKIT_LEARN_VERSION="*" COVERAGE="true"
 
-# command to run tests
-script: bash $CURRENT/testing/run_tests.sh
+script: 
+    - python continuous_integration/show-python-packages-versions.py
+    - bash $CURRENT/testing/run_tests.sh
 
 

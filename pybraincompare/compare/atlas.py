@@ -17,9 +17,9 @@ from skimage.segmentation import felzenszwalb
 from skimage.segmentation import mark_boundaries, find_boundaries
 from skimage.util import img_as_float
 import pylab as pl
-from template.futils import make_tmp_folder
+from pybraincompare.template.futils import make_tmp_folder
 from maths import percent_to_float
-from template.visual import get_colors
+from pybraincompare.template.visual import get_colors
 
 class region:
   def __init__(self,label,index,x,y,z):

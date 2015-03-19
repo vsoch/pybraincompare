@@ -7,9 +7,9 @@ Functions work with brain maps
 import subprocess
 import os
 import numpy
-from template.futils import get_name
+from pybraincompare.template.futils import get_name
 from nilearn.image import resample_img
-from report.plots import make_anat_image
+from pybraincompare.report.plots import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
 import atlas as Atlas
 import nibabel
@@ -47,17 +47,6 @@ def get_nii_obj(images):
       image = nibabel.load(image)
     images_nii.append(image)
   return images_nii
-
-'''Returns path to AAL atlas in MNI 152 space'''
-def get_aal_atlas(voxdims=["2","8"]):
-  atlas_directory = os.path.join(os.path.abspath(os.path.dirname(Atlas.__file__) + "/.."),"mr") 
-  atlas_xml = "%s/MNI.xml" %(atlas_directory)
-  atlases = dict()
-  for dim in voxdims:
-    atlas_file = "%s/MNI-maxprob-thr25-%smm.nii" %(atlas_directory,dim)
-    atlas = Atlas.atlas(atlas_xml,atlas_file)
-    atlases[dim] = atlas
-  return atlases
 
 
 # RESAMPLING -----------------------------------------------------------------------------

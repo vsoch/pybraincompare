@@ -1,25 +1,12 @@
-from compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
-from neurovault_functions import calculate_voxelwise_pearson_similarity
-from compare.maths import do_pairwise_correlation
-from compare import compare, atlas as Atlas
+from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
+from pybraincompare.testing.neurovault_functions import calculate_voxelwise_pearson_similarity
+from pybraincompare.compare.maths import do_pairwise_correlation
+from pybraincompare.compare import compare, atlas as Atlas
 from nilearn.image import resample_img
-from template.visual import view
+from pybraincompare.template.visual import view
 import pandas
 import numpy
 import nibabel
-
-# Return paths to pybraincompare atlas
-def get_atlas():
-  atlas_file = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI-maxprob-thr25-8mm.nii"
-  atlas_xml = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/MNI.xml"
-  atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
-  return atlas
-
-# Images that we want to compare - they must be in the same space, size
-def get_images():
-  image1 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat1_1.nii"
-  image2 = "/home/vanessa/Documents/Dropbox/Code/Python/pybraincompare/mr/2mm16_zstat3_1.nii"
-  return [image1,image2]
 
 # Generate thresholds
 def generate_thresholds():

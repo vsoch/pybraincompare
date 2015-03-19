@@ -5,7 +5,7 @@ import numpy
 import pylab as plt
 import nibabel as nib
 from scipy.stats.stats import pearsonr
-from testing_functions import make_binary_deletion_mask
+from pybraincompare.testing.testing_functions import make_binary_deletion_mask
 from nilearn.image import resample_img
 
 # Edited for pybraincompare testing - 

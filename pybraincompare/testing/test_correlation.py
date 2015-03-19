@@ -3,17 +3,18 @@
 """
 Test that regional and whole brain correlation scores remain consistent
 """
-from testing.testing_functions import run_scatterplot_compare_correlation, generate_thresholds, calculate_pybraincompare_pearson
-from compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
+from pybraincompare.testing.testing_functions import run_scatterplot_compare_correlation, generate_thresholds, calculate_pybraincompare_pearson
+from pybraincompare.mr.datasets import get_pair_images, get_data_directory
+from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
-from testing.neurovault_functions import calculate_voxelwise_pearson_similarity
-from compare.maths import do_pairwise_correlation
+from pybraincompare.testing.neurovault_functions import calculate_voxelwise_pearson_similarity
+from pybraincompare.compare.maths import do_pairwise_correlation
 from nose.tools import assert_true, assert_false
-from compare import compare, atlas as Atlas
+from pybraincompare.compare import compare, atlas as Atlas
 from nilearn.image import resample_img
-from template.visual import view
+from pybraincompare.template.visual import view
 from scipy.stats import norm, pearsonr
-import testing.testing_functions
+from pybraincompare.testing import testing_functions
 import nibabel
 import random
 import pandas
@@ -22,13 +23,11 @@ import os
 
 def setup_func():
   thresholds = [0.0,0.5,1.0,1.5,1.96,2.0]
-  mr_directory = os.path.join(os.path.abspath(os.path.dirname(testing_functions.__file__) + "/../.."),"mr") 
+  mr_directory = get_data_directory()
 
   # Use 8mm resampled images for speed
-  image1 = "%s/8mm16_zstat1_1.nii" %(mr_directory)
-  image2 = "%s/8mm16_zstat3_1.nii" %(mr_directory)
+  images = get_pair_images(voxdims=["8","8"])   
   standard = "%s/MNI152_T1_8mm_brain_mask.nii.gz" %(mr_directory)
-  images = [image1,image2]
   return thresholds,images,standard
 
 '''Test pybraincompare correlation method against neurovault method'''

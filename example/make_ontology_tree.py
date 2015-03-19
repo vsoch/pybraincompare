@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
-from annotate import ontology
-from template.visual import view
+from pybraincompare.annotate import ontology
+from pybraincompare.template.visual import view
 
 # This defines a "mock" ontology for the openfmri proof of concept set - names should be unique
 relationship_table = "data/cogatlas_annotate_triples.tsv"

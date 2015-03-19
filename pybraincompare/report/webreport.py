@@ -12,14 +12,14 @@ import nibabel as nib
 from nilearn import plotting
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-from template.visual import view, run_webserver
+from pybraincompare.template.visual import view, run_webserver
 from nilearn.masking import compute_epi_mask, apply_mask
-from template.templates import get_template, add_string, save_template
-from template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
-from report.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
+from pybraincompare.template.templates import get_template, add_string, save_template
+from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
+from pybraincompare.report.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
 from qa import header_metrics, central_tendency, outliers, mutual_information_against_standard,\
 get_percent_nonzero, count_voxels, is_thresholded
-from compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
+from pybraincompare.compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
 from nilearn.image import resample_img
 
 '''run_qa: a tool to generate an interactive qa report for statistical maps

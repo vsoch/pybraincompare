@@ -1,6 +1,6 @@
 import sys
 import json
-from template.templates import get_package_dir, get_template, add_string
+from pybraincompare.template.templates import get_package_dir, get_template, add_string
 from JSONEncoder import Node, NodeDict, NodeJSONEncoder
 
 # Annotate and visualize data with an ontology
