@@ -121,7 +121,3 @@ fi
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
-
-
-
-python setup.py install
