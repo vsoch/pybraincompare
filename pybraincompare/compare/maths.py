@@ -11,13 +11,13 @@ import maths
 def percent_to_float(x):
   return float(x.strip('%'))/100
 
-'''Calculate a correlation value for two images, returns correlation
+'''Calculate a correlation value for two vectors, returns correlation
 - image_vector1: single vector of image values
 - image_vector2: single vector of image values
 - corr_type: correlation type [default pearson]
 - atlas_vector: single vector of region labels strings [optional]
 '''
-def do_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atlas_vector=None):   
+def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",atlas_vector=None):   
   correlations = dict()
 
   # If we have atlas labels, return vector with labels

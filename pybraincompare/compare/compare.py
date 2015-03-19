@@ -9,7 +9,7 @@ import numpy
 import os
 import nibabel
 import collections
-from maths import do_pairwise_correlation, do_multi_correlation
+from maths import calculate_pairwise_correlation, do_multi_correlation
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function
 from pybraincompare.template.visual import calculate_similarity_search, show_brainglass_interface
 from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
@@ -64,7 +64,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     # Prepare label (names), correlation values, and colors
     labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
     masked["ATLAS_LABELS"] = labels   
-    corrs = do_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"],corr_type=corr)
+    corrs = calculate_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"],corr_type=corr)
     masked["ATLAS_CORR"] = [corrs[x] for x in masked["ATLAS_LABELS"]]
     masked["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]

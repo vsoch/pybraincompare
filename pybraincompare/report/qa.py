@@ -5,7 +5,6 @@ Functions to check quality of statistical maps
 '''
 import numpy as np
 import nibabel
-from nipy.algorithms.registration.histogram_registration import HistogramRegistration
 
 '''Metrics:
 Extract metrics from the header
@@ -48,15 +47,6 @@ def outliers(masked_data,n_std=6):
   high_outliers = len(np.where(masked_data>=six_dev_up)[0])
   low_outliers = len(np.where(masked_data<=six_dev_down)[0])
   return high_outliers,low_outliers
-
-'''Mutual Information Against Standard
-# mutual information against some mean map that is representative of an # expectation [really low --> something is funky]
-'''
-def mutual_information_against_standard(mr,mean_image):
-  mi = HistogramRegistration(mean_image, mr, similarity='nmi')  
-  T = mi.optimize("affine")
-  return mi.explore(T)[0][0]
-
 
 '''Estimate thresholded
 We basically check to see if number of zero voxels exceeds some percentage (not thresholded)

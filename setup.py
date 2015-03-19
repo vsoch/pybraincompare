@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
 
     # Data
-    package_data = {'pybraincompare.template':['html/*.html'],
+    package_data = {'pybraincompare.template':['html/*.html','static/*.zip'],
                     'pybraincompare.mr':["*.xml","MNI*.nii"],
                     'pybraincompare.testing':['data/*.tsv'],
                     'pybraincompare.mr':['*.nii']},

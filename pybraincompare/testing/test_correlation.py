@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Test that regional and whole brain correlation scores remain consistent
+Test regional and whole brain correlation scores
 """
 from pybraincompare.testing.testing_functions import generate_thresholds, calculate_pybraincompare_pearson
 from pybraincompare.mr.datasets import get_pair_images, get_data_directory

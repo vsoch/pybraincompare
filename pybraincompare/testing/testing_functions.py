@@ -1,5 +1,5 @@
 from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
-from pybraincompare.compare.maths import do_pairwise_correlation
+from pybraincompare.compare.maths import calculate_pairwise_correlation
 from pybraincompare.compare import compare, atlas as Atlas
 from nilearn.image import resample_img
 from pybraincompare.template.visual import view
@@ -20,7 +20,7 @@ def calculate_pybraincompare_pearson(images):
   pdmask = nibabel.Nifti1Image(pdmask,header=images[0].get_header(),affine=images[0].get_affine())
   masked = do_mask(images=images,mask=pdmask)
   masked = pandas.DataFrame(numpy.transpose(masked))
-  pbc_correlation = do_pairwise_correlation(masked[0],masked[1],corr_type="pearson")
+  pbc_correlation = calculate_pairwise_correlation(masked[0],masked[1],corr_type="pearson")
   return pbc_correlation["No Label"]
 
 # Threshold the image

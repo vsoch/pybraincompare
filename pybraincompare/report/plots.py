@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
-from nipy.labs import viz
 from pylab import cm
 import numpy as np
 import pylab as P
@@ -67,18 +66,6 @@ def get_histogram_data(data,width=12,height=4,color=None,ylabel="frequency",xlab
   counts = [membership.tolist().count(x) for x in range(1,len(bins))]
   return {"n":n,"bins":bins,"patches":patches,"counts":counts}
 
-
-'''Plot a map with a red reference outline
-adopted from chrisfilo https://github.com/chrisfilo/mriqc'''
-def plot_epi(mr,reference,width=12,height=4,png_img_file=None):
-  fig = plt.figure(figsize=(width,height))  
-  ax = plt.subplot(1,1,0)
-  affine = mr.get_affine()    
-  slicer = viz.plot_anat(np.asarray(mr.get_data()), np.asarray(affine), black_bg=True,cmap = cm.Greys_r,cut_coords = (-6,3,32),figure = fig,axes = ax,draw_cross = False)
-  slicer.contour_map(np.asarray(reference.get_data()), np.asarray(reference.get_affine()), levels=[.51], colors=['r',])    
-  if png_img_file:
-    fig.savefig(png_img_file)
-  return fig
 
 '''plot histogram (not just return data)
 adopted from chrisfilo https://github.com/chrisfilo/mriqc'''

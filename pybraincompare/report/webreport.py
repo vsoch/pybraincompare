@@ -17,8 +17,7 @@ from nilearn.masking import compute_epi_mask, apply_mask
 from pybraincompare.template.templates import get_template, add_string, save_template
 from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
 from pybraincompare.report.plots import make_glassbrain_image, make_anat_image, make_stat_image, get_histogram_data
-from qa import header_metrics, central_tendency, outliers, mutual_information_against_standard,\
-get_percent_nonzero, count_voxels, is_thresholded
+from qa import header_metrics, central_tendency, outliers, get_percent_nonzero, count_voxels, is_thresholded
 from pybraincompare.compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
 from nilearn.image import resample_img
 
@@ -50,7 +49,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     mask_out = nib.Nifti1Image(mask_out,affine=mask_bin.get_affine())
       
     # We will save qa values for all in a data frame
-    results = pandas.DataFrame(columns=["voxels_in","voxels_out","standard_deviation_resamp","mean_resamp","variance_resamp","median_resamp","mi_score","n_outliers_low_%ssd" %(outlier_sds),"n_outliers_high_%ssd" %(outlier_sds),"nonzero_percent_voxels_in_mask","threshold_flag"])
+    results = pandas.DataFrame(columns=["voxels_in","voxels_out","standard_deviation_resamp","mean_resamp","variance_resamp","median_resamp","n_outliers_low_%ssd" %(outlier_sds),"n_outliers_high_%ssd" %(outlier_sds),"nonzero_percent_voxels_in_mask","threshold_flag"])
 
     # We also need to save distributions for the summary page
     all_histograms = []
@@ -107,9 +106,6 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
       # Counting voxels (should eventually be in/out brain ratios)
       count_in,count_out = count_voxels(masked_in=masked_in_data,masked_out=masked_out_data)
       high_out,low_out = outliers(masked_in_data,n_std=outlier_sds)
-
-      # Mutual information score against average image
-      mi_score = mutual_information_against_standard(mr,mean_image)
           
       # euler characteristics
       # smoothness
@@ -121,7 +117,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
         threshold_flag,percent_nonzero = is_thresholded(mr,mask,threshold=nonzero_thresh)
       
       # Add everything to table, prepare single page template
-      results.loc[m] = [count_in,count_out,metrics["std"],metrics["mean"],metrics["var"],metrics["med"],mi_score,low_out,high_out,percent_nonzero,threshold_flag]
+      results.loc[m] = [count_in,count_out,metrics["std"],metrics["mean"],metrics["var"],metrics["med"],low_out,high_out,percent_nonzero,threshold_flag]
       template = get_template("qa_single_statmap")
 
       # Things to fill into individual template
@@ -140,7 +136,6 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 			"THRESHOLD_FLAG": "%s" % (threshold_flag),
 			"NONZERO_THRESH": "%s" % (nonzero_thresh),
 			"TOTAL_VOXELS":total_voxels,
-			"MI_SCORE":"%0.2f" % mi_score,
 			"MEAN_SCORE":"%0.2f" % metrics["mean"],
 			"MEDIAN_SCORE":"%0.2f" % metrics["med"],
 			"VARIANCE_SCORE":"%0.2f" % metrics["var"],
@@ -192,7 +187,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
       print "FLAGGED:%s" %(flagged)
 
       if flagged == True:
-        statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-danger" href="%s/%s.html"><i class="icon-flag zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["mi_score"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
+        statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-danger" href="%s/%s.html"><i class="icon-flag zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
         if res[1]["n_outliers_high_%ssd" %(outlier_sds)] > 0: 
           alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier High</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
         if res[1]["n_outliers_low_%ssd" %(outlier_sds)] > 0: 
@@ -200,7 +195,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 
       # Image is passing!
       else: 
-        statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-success" href="%s/%s.html"><i class="icon-check zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["mi_score"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
+        statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-success" href="%s/%s.html"><i class="icon-check zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
         alerts_passing.append('<div class="task low"><div class="desc"><div class="title">%s</div><div>This map has no flags as determined by the standards of only this report.</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(image_names[count],time.strftime("%c")))
       count+=1
 
