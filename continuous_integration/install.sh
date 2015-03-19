@@ -36,7 +36,13 @@ install_packages() {
     cd ..
     sudo rm networkx-1.9.1.tar.gz
     sudo rm -rf networkx-1.9.1
-    sudo apt-get install python-nipy
+    wget https://pypi.python.org/packages/source/n/nipy/nipy-0.3.0.tar.gz
+    tar -xzvf nipy-0.3.0.tar.gz
+    cd nipy-0.3.0
+    sudo python setup.py install
+    cd ..
+    sudo rm nipy-0.3.0.tar.gz
+    sudo rm -rf nipy-0.3.0
     git clone http://github.com/scikit-image/scikit-image.git
     cd scikit-image
     sudo -H pip install .
