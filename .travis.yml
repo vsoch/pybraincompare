@@ -20,4 +20,6 @@ script:
     - python continuous_integration/show-python-packages-versions.py
     - bash pybraincompare/testing/run_tests.sh $PWD/pybraincompare/testing $TEST_RUN_FOLDER
 
+after_success:
+    - coveralls
 

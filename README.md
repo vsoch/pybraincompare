@@ -1,6 +1,6 @@
 #pybraincompare
-
 Comparison and Visualization Methods for Brains in Python, using d3
+![build_status](https://travis-ci.org/vsoch/pybraincompare.svg?branch=master)
 
 UNDER DEVELOPMENT
 
