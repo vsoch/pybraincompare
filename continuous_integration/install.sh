@@ -19,6 +19,7 @@ install_packages() {
     sudo -H pip install --upgrade pip
     sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     sudo -H pip install Cython
+    sudo -H pip install nibabel
     # Install several packages from source
     CWD=$PWD
     cd /tmp
