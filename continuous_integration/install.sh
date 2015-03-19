@@ -19,8 +19,6 @@ install_packages() {
     sudo -H pip install --upgrade pip
     sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     sudo -H pip install Cython
-    sudo -H pip install networkx
-    sudo apt-get install python-nipy
     # Install several packages from source
     CWD=$PWD
     cd /tmp
@@ -31,6 +29,14 @@ install_packages() {
     cd ..
     sudo rm six-1.9.0.tar.gz
     sudo rm -rf six-1.9.0
+    wget https://pypi.python.org/packages/source/n/networkx/networkx-1.9.1.tar.gz
+    tar -xzvf networkx-1.9.1.tar.gz
+    cd networkx-1.9.1
+    sudo python setup.py install
+    cd ..
+    sudo rm networkx-1.9.1.tar.gz
+    sudo rm -rf networkx-1.9.1
+    sudo apt-get install python-nipy
     git clone http://github.com/scikit-image/scikit-image.git
     cd scikit-image
     sudo -H pip install .
