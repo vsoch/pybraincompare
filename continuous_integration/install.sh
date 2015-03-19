@@ -20,6 +20,7 @@ install_packages() {
     sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     sudo -H pip install Cython
     sudo -H pip install networkx
+    sudo apt-get install python-nipy
     # Install several packages from source
     CWD=$PWD
     cd /tmp
@@ -59,7 +60,7 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn nilearn"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
