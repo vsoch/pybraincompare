@@ -35,6 +35,7 @@ install_packages() {
     sudo -H pip install .
     cd ..
     sudo rm -rf scikit-image
+    sudo -H pip install nilearn
     cd $CWD
 }
 
