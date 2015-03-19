@@ -27,7 +27,7 @@ def setup_func():
 
   # Use 8mm resampled images for speed
   images = get_pair_images(voxdims=["8","8"])   
-  standard = "%s/MNI152_T1_8mm_brain_mask.nii.gz" %(mr_directory)
+  standard = "%s/MNI152_T1_2mm_brain_mask.nii.gz" %(mr_directory)
   return thresholds,images,standard
 
 '''Test pybraincompare correlation method against neurovault method'''
