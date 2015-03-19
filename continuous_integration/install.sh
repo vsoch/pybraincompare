@@ -15,10 +15,10 @@ set -e
 export CC=gcc
 export CXX=g++
 
-install_from_source() {
+install_packages() {
     sudo -H pip install --upgrade pip
+    sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     sudo -H pip install Cython
-    sudo -H pip install matplotlib
     # Install several packages from source
     CWD=$PWD
     cd /tmp
@@ -105,8 +105,7 @@ create_new_conda_env() {
 
 if [[ "$DISTRIB" == "ubuntu" ]]; then
     create_new_venv
-    install_from_source
-    sudo apt-get install -qq python-numpy python-scipy python-nose python-pip python-sklearn
+    install_packages
 
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
@@ -116,7 +115,7 @@ elif [[ "$DISTRIB" == "neurodebian" ]]; then
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
-    install_from_source
+    install_packages
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
