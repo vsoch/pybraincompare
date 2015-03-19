@@ -14,6 +14,7 @@ env:
     - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
   matrix:
     - DISTRIB="standard-linux" PYTHON_VERSION="2.7"
+      COVERAGE="true"
 
 script: 
     - python continuous_integration/show-python-packages-versions.py

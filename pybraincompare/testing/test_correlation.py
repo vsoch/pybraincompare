@@ -7,7 +7,7 @@ from pybraincompare.testing.testing_functions import generate_thresholds, calcul
 from pybraincompare.mr.datasets import get_pair_images, get_data_directory
 from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask, do_mask
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
-from pybraincompare.compare.maths import do_pairwise_correlation
+from pybraincompare.compare.maths import calculate_pairwise_correlation
 from nose.tools import assert_true, assert_false
 from pybraincompare.compare import compare, atlas as Atlas
 from nilearn.image import resample_img
