@@ -1,5 +1,6 @@
 #pybraincompare
 ![build_status](https://travis-ci.org/vsoch/pybraincompare.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/vsoch/pybraincompare/badge.svg)](https://coveralls.io/r/vsoch/pybraincompare)
 
 Comparison and Visualization Methods for Brains in Python, using d3
 
