@@ -23,7 +23,7 @@ install_from_source() {
     CWD=$PWD
     cd /tmp
     wget http://sourceforge.net/projects/scipy/files/scipy/0.15.1/scipy-0.15.1.tar.gz
-    tar scipy-0.15.1.tar.gz
+    tar -xzvf scipy-0.15.1.tar.gz
     cd scipy-0.15.1
     sudo python setup.py install
     cd ..
