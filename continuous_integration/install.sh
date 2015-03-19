@@ -18,17 +18,8 @@ export CXX=g++
 install_from_source() {
     sudo -H pip install --upgrade pip
     # Install several packages from source
-    sudo -H pip install Cython
-    sudo -H pip install matplotlib
     CWD=$PWD
     cd /tmp
-    wget http://sourceforge.net/projects/scipy/files/scipy/0.15.1/scipy-0.15.1.tar.gz
-    tar -xzvf scipy-0.15.1.tar.gz
-    cd scipy-0.15.1
-    sudo python setup.py install
-    cd ..
-    rm scipy-0.15.1.tar.gz
-    rm -rf scipy-0.15.1
     wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
     tar -xzvf six-1.9.0.tar.gz
     cd six-1.9.0
@@ -110,8 +101,7 @@ create_new_conda_env() {
 if [[ "$DISTRIB" == "ubuntu" ]]; then
     create_new_venv
     install_from_source
-    # Use standard ubuntu packages in their default version
-    sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
+    sudo apt-get install -qq python-numpy python-scipy python-nose python-pip python-sklearn python-matplotlib
 
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
@@ -121,6 +111,7 @@ elif [[ "$DISTRIB" == "neurodebian" ]]; then
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
+    install_from_source
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
