@@ -93,20 +93,13 @@ create_new_conda_env() {
 
 if [[ "$DISTRIB" == "ubuntu" ]]; then
     create_new_venv
+    install_from_source
     # Use standard ubuntu packages in their default version
     sudo apt-get install -qq python-scipy python-nose python-pip python-sklearn
 
-elif [[ "$DISTRIB" == "ubuntu-no-matplotlib" ]]; then
-    create_new_venv
-    # --no-install-recommends only installs explictly mentioned
-    # packages. By default apt-get installs recommended packages and
-    # python-matplotlib is recommended by python-sklearn
-    # Note python-joblib needs to be added explicity because in 12.04
-    # it is marked 'recommends' rather than 'depends' by python-sklearn
-    sudo apt-get install --no-install-recommends -qq python-scipy python-nose python-pip python-sklearn python-joblib
-
 elif [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
+    install_from_source
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
 
@@ -124,8 +117,6 @@ else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
     exit 1
 fi
-
-install_from_source
 
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
