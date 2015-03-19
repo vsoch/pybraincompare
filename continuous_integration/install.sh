@@ -19,6 +19,7 @@ install_from_source() {
     sudo pip install --upgrade pip
     # Install several packages from source
     sudo pip install Cython
+    sudo pip install matplotlib
     CWD=$PWD
     cd /tmp
     wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
