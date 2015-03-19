@@ -16,12 +16,19 @@ export CC=gcc
 export CXX=g++
 
 install_from_source() {
-    sudo pip install --upgrade pip
+    sudo -H pip install --upgrade pip
     # Install several packages from source
-    sudo pip install Cython
-    sudo pip install matplotlib
+    sudo -H pip install Cython
+    sudo -H pip install matplotlib
     CWD=$PWD
     cd /tmp
+    wget http://sourceforge.net/projects/scipy/files/scipy/0.15.1/scipy-0.15.1.tar.gz
+    tar scipy-0.15.1.tar.gz
+    cd scipy-0.15.1
+    sudo python setup.py install
+    cd ..
+    rm scipy-0.15.1.tar.gz
+    rm -rf scipy-0.15.1
     wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
     tar -xzvf six-1.9.0.tar.gz
     cd six-1.9.0
@@ -31,7 +38,7 @@ install_from_source() {
     sudo rm -rf six-1.9.0
     git clone http://github.com/scikit-image/scikit-image.git
     cd scikit-image
-    sudo pip install .
+    sudo -H pip install .
     cd $CWD
 }
 
@@ -42,7 +49,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    pip install nose
+    sudo -H pip install nose
 }
 
 print_conda_requirements() {
