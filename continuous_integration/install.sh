@@ -24,6 +24,8 @@ install_from_source() {
     cd six-1.9.0
     sudo python setup.py install
     cd $CWD
+    rm six-1.9.0.tar.gz
+    rm -rf six-1.9.0
 }
 
 create_new_venv() {
