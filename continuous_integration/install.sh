@@ -35,7 +35,6 @@ install_packages() {
     sudo -H pip install .
     cd ..
     sudo rm -rf scikit-image
-    sudo rm scikit-image.tar.gz
     cd $CWD
 }
 
