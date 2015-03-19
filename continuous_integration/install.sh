@@ -23,7 +23,7 @@ install_from_source() {
     tar -xzvf six-1.9.0.tar.gz
     cd six-1.9.0
     sudo python setup.py install
-    cd $CWD
+    cd ..
     rm six-1.9.0.tar.gz
     rm -rf six-1.9.0
 }
