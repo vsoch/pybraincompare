@@ -26,6 +26,7 @@ install_from_source() {
     cd ..
     sudo rm six-1.9.0.tar.gz
     sudo rm -rf six-1.9.0
+    cd $CWD
 }
 
 create_new_venv() {
