@@ -103,9 +103,9 @@ def do_mask(images,mask):
   # If mask needs to be binarized
   if not (numpy.unique(mask.get_data()) == [0,1]).all():
     empty_nii = numpy.zeros(mask.shape)
-    empty_nii[mask!=0] = 1
+    empty_nii[mask.get_data()!=0] = 1    
     mask = nibabel.nifti1.Nifti1Image(empty_nii,affine=mask.get_affine(),header=mask.get_header())
-    
+
   # if ensure_finite is True, nans and infs get replaced by zeros
   return apply_mask(images_resamp, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
   

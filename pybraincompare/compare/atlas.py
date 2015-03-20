@@ -39,6 +39,12 @@ class atlas:
     self.labels = self.read_xml(atlas_xml)
     self.svg, self.paths, self.svg_file = self.make_svg(views)
 
+  def get_region_names(self):
+    regions = dict()
+    for value,region in self.labels.iteritems():
+      regions[value] = region.label
+    return regions
+
   def read_xml(self,atlas_xml):
     dom = minidom.parse(atlas_xml)
     atlases = []

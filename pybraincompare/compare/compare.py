@@ -26,7 +26,7 @@ from pybraincompare.mr.datasets import get_mni_atlas
 - corr: regional correlation type to include [default pearson]
 - reference_mask: if a different standard mask is desired to resample images to [default None]
 '''
-def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr="pearson",reference_mask=None,resample_dim=[8,8,8]):
+def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr_type="pearson",reference_mask=None,resample_dim=[8,8,8]):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -64,7 +64,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     # Prepare label (names), correlation values, and colors
     labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
     masked["ATLAS_LABELS"] = labels   
-    corrs = calculate_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"],corr_type=corr)
+    corrs = calculate_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"],corr_type=corr_type)
     masked["ATLAS_CORR"] = [corrs[x] for x in masked["ATLAS_LABELS"]]
     masked["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
     masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
