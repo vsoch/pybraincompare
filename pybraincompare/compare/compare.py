@@ -7,14 +7,14 @@ from pybraincompare.template.templates import get_template, add_string, add_java
 from pybraincompare.template.visual import calculate_similarity_search, show_brainglass_interface
 from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
 from pybraincompare.mr.datasets import get_mni_atlas
-from maths import calculate_atlas_correlation
+from maths import calculate_correlation
 import numpy as np
 import collections
 import pandas
 import nibabel
 import os
 
-# Unbiased visual comparison with scatterplot
+# Visual comparison with scatterplot
 '''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
 - image1: full path to image 1, must be in MNI space [required]
 - image2: full path to image 2, must be in MNI space [required]
@@ -23,20 +23,20 @@ import os
 - atlas_rendering: a pybraincompare "atlas" object for rending svg (should be higher res, 2mm) [default None]
 - custom: custom dictionary of {"TEMPLATE_IDS":,"text to substitute"} [default None]
 - corr: regional correlation type to include [default pearson]
-- reference_mask: if a different standard mask is desired to resample images to [default None]
+- reference: if a different standard mask is desired to resample images to [default None]
 '''
 def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,
-                        custom=None,corr_type="pearson",reference_mask=None,resample_dim=[8,8,8]):
+                        custom=None,corr_type="pearson",reference=None,resample_dim=[8,8,8]):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
   images_nii = get_nii_obj(images)
 
-  # Resample to reference (so we can also use as a mask)
-  if reference_mask == None:
-    reference_mask = get_standard_mask(software)
+  # Resample to reference
+  if reference == None:
+    reference = get_standard_mask(software)
   images_resamp, reference_resamp = resample_images_ref(images =images_nii,
-                                                        reference=reference_mask,
+                                                        reference=reference,
                                                         interpolation="continuous",
                                                         resample_dim=resample_dim)
     
@@ -55,8 +55,8 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     else: atlas2mm = atlas_rendering 
 
   # Only do calculations if we have overlapping regions
-  if not (pdmask == 0).all():
-    masked = calculate_atlas_correlation(images=images_resamp,mask=pdmask,
+  if not (pdmask.get_data() == 0).all():
+    masked = calculate_correlation(images=images_resamp,mask=pdmask,
                                          atlas=atlas,corr_type=corr_type)
 
     # Here we return only regions with 3+ points

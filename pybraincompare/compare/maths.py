@@ -37,7 +37,13 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
   if atlas == None:
     corr = calculate_pairwise_correlation(masked[0],masked[1],corr_type=corr_type)
   else:  
-    corr = calculate_atlas_correlation(images,mask,atlas,corr_type=corr_type,summary=summary)
+    corr = calculate_atlas_correlation(image_vector1=masked[0],
+                                       image_vector2=masked[1],
+                                       mask=mask,
+                                       atlas=atlas,
+                                       corr_type=corr_type,
+                                       summary=summary,
+                                       images=images)
   return corr
 
 '''Calculate a correlation value for two vectors
@@ -75,13 +81,14 @@ def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearso
   return correlations
 
 '''Return regional correlations from an atlas object:
-images: list of 2 nibabel nifti objects, already have same space/size
-mask: mask to apply to images, must already have same space/size
-atlas: an atlas object created with compare.atlas, must be in same
+- image_vector1,image_vector2: vectors of equal length with image values
+- images: corresponding nibabel nifti1 images, needed to get header and affine
+- mask: mask to apply to images, must already have same space/size
+- atlas: an atlas object created with compare.atlas, must be in same
        space (e.g. MNI) but will be resampled to images if affine 
        different
-corr_type: pearson or spearman
-summary: If True, return only the regional labels with correlations
+- corr_type: pearson or spearman
+- summary: If True, return only the regional labels with correlations
          If False, return entire dataframe 
 
 if summary == False (default):
@@ -94,29 +101,35 @@ ATLAS_COLOR: a hex value to render in the final d3
 If summary == True
 returns only region labels and corresponding correlations
 '''
-def calculate_atlas_correlation(images,mask,atlas,corr_type="pearson",summary=False):
+def calculate_atlas_correlation(image_vector1,image_vector2,images,mask,atlas,
+                                corr_type="pearson",summary=False):
+
+  df = pandas.DataFrame()
+  df["INPUT_DATA_ONE"] = image_vector1
+  df["INPUT_DATA_TWO"] = image_vector2
 
   atlas_nii = nibabel.load(atlas.file)
   if not (atlas_nii.get_affine() == images[0].get_affine()).all():  
-    atlas_nii, ref_nii = resample_images_ref(atlas.file,images[0],interpolation="nearest")
-  masked_atlas = do_mask(atlas_nii,mask=pdmask)    
-  masked["ATLAS_DATA"] = np.transpose(masked_atlas)
+    atlas_nii, ref_nii = resample_images_ref(atlas.file,images[0].get_affine(),
+                                             interpolation="nearest")
+  masked_atlas = do_mask(atlas_nii,mask=mask)    
+  df["ATLAS_DATA"] = np.transpose(masked_atlas)
 
   # Prepare label (names), correlation values, and colors
   labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
-  masked["ATLAS_LABELS"] = labels   
-  corrs = calculate_pairwise_correlation(masked[0],masked[1],
-                                         atlas_vector=masked["ATLAS_LABELS"],
+  df["ATLAS_LABELS"] = labels   
+  corrs = calculate_pairwise_correlation(image_vector1,image_vector2,
+                                         atlas_vector=df["ATLAS_LABELS"],
                                          corr_type=corr_type)
-  masked["ATLAS_CORR"] = [corrs[x] for x in masked["ATLAS_LABELS"]]
-  masked["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
-  masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA",
-                    "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
+  df["ATLAS_CORR"] = [corrs[x] for x in df["ATLAS_LABELS"]]
+  df["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
+  df.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA",
+                "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
 
   if summary == False: 
-    return masked
+    return df
   else:
-    regional = masked.copy()
+    regional = df.copy()
     regional = regional.loc[:,regional.columns[3:5]]
     regional = regional.drop_duplicates()
     return regional

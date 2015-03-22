@@ -1,10 +1,11 @@
 # Create a scatterplot from two brain images
-from pybraincompare.compare.mrutils import resample_images_ref
-from pybraincompare.compare import compare, atlas as Atlas
 from pybraincompare.mr.datasets import get_pair_images, get_mni_atlas
-from nilearn.image import resample_img
+from pybraincompare.compare.mrutils import resample_images_ref, get_standard_brain
+from pybraincompare.compare import compare, atlas as Atlas
 from pybraincompare.template.visual import view
+from nilearn.image import resample_img
 import numpy
+import nibabel
 
 # SCATTERPLOT COMPARE ---------------------------------------------------------------------------------
 
@@ -14,24 +15,23 @@ images = get_pair_images(voxdims=["2","8"])
 
 html_snippet,data_table = compare.scatterplot_compare(images=images,
                                                      image_names=image_names,
-                                                     corr="pearson") 
+                                                     corr_type="pearson") 
 view(html_snippet)
 
 # CUSTOM ATLAS ---------------------------------------------------------------------------------
 
-# You can specify a custom atlas, including a nifti file and xml file. Give to compare.scatterplot_compare as atlas=atlas
-atlas_file, atlas_xml = get_atlas()
-#atlas_file = "mr/MNI-maxprob-thr25-8mm.nii"
-#atlas_xml = "mr/MNI.xml"
-atlas = Atlas.atlas(atlas_xml,atlas_file) # Default slice views are "coronal","axial","sagittal"
-
+# You can specify a custom atlas, including a nifti file and xml file
+# atlas = Atlas.atlas(atlas_xml="MNI.xml",atlas_file="MNI.nii") 
+# Default slice views are "coronal","axial","sagittal"
+atlas = get_mni_atlas(voxdims=["8"])
+atlas = atlas["8"] 
 
 # RESAMPLING IMAGES ---------------------------------------------------------------------------------
 
-# If you use your own standard brain (arg reference_mask) we recommend resampling to 8mm voxel
-# Here is how you would resample your images if they are differently sized. Both should already be in MNI
-#   -  You will get the resampled images and mask returned
-images_resamp,ref_resamp = resample_images_ref(images_nii,
-                                               reference_mask=standard,
-                                               interpolation="continuous")
+# If you use your own standard brain (arg reference) we recommend resampling to 8mm voxel
+# Here you will get the resampled images and mask returned
+reference = nibabel.load(get_standard_brain("FSL"))
+images_resamp,ref_resamp = resample_images_ref(images,
+                                               reference=reference,
+                                               interpolation="continuous",
                                                resample_dim=[8,8,8])
