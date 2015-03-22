@@ -110,8 +110,9 @@ def calculate_atlas_correlation(image_vector1,image_vector2,images,mask,atlas,
 
   atlas_nii = nibabel.load(atlas.file)
   if not (atlas_nii.get_affine() == images[0].get_affine()).all():  
-    atlas_nii, ref_nii = resample_images_ref(atlas.file,images[0].get_affine(),
+    atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
                                              interpolation="nearest")
+
   masked_atlas = do_mask(atlas_nii,mask=mask)    
   df["ATLAS_DATA"] = np.transpose(masked_atlas)
 

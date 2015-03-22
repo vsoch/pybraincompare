@@ -16,8 +16,7 @@ import os
 
 # Visual comparison with scatterplot
 '''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
-- image1: full path to image 1, must be in MNI space [required]
-- image2: full path to image 2, must be in MNI space [required]
+- images: list with full paths to image 1, image 2, or nibabel nifti1 images. Must be in MNI space [required]
 - software: FSL or FREESURFER [default FSL]
 - atlas: a pybraincompare "atlas" object, will be rendered in vis and color data points [default None]
 - atlas_rendering: a pybraincompare "atlas" object for rending svg (should be higher res, 2mm) [default None]
@@ -35,7 +34,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
   # Resample to reference
   if reference == None:
     reference = get_standard_mask(software)
-  images_resamp, reference_resamp = resample_images_ref(images =images_nii,
+  images_resamp, reference_resamp = resample_images_ref(images = images_nii,
                                                         reference=reference,
                                                         interpolation="continuous",
                                                         resample_dim=resample_dim)

@@ -62,10 +62,10 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
     reference = resample_img(reference, target_affine=affine)
 
   # Resample images to match reference mask affine and shape
-  if isinstance(images,str): images = [images]
+  if not isinstance(images,list): images = [images]
+  images_nii = get_nii_obj(images)
   images_resamp = []
-  for image in images:
-    if not isinstance(image,nibabel.nifti1.Nifti1Image): image = nibabel.load(image)
+  for image in images_nii:
     # Only resample if the image is different from the reference
     if not (image.get_affine() == reference.get_affine()).all():
       resampled_img = resample_img(image,target_affine=reference.get_affine(), 
