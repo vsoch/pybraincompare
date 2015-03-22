@@ -4,14 +4,13 @@ Functions work with brain maps
 
 '''
 
+from pybraincompare.template.futils import get_name
+from pybraincompare.report.plots import make_anat_image
+from nilearn.masking import apply_mask, compute_epi_mask
+from nilearn.image import resample_img
 import subprocess
 import os
 import numpy
-from pybraincompare.template.futils import get_name
-from nilearn.image import resample_img
-from pybraincompare.report.plots import make_anat_image
-from nilearn.masking import apply_mask, compute_epi_mask
-import atlas as Atlas
 import nibabel
 
 
@@ -137,3 +136,30 @@ def make_in_out_mask(mask_bin,mr_folder,masked_in,masked_out,img_dir,save_png=Tr
   os.remove("%s/masked_out.nii" %(mr_folder))
   return mr_in_mask,mr_out_mask
 
+# THRESHOLDING --------------------------------------------------------------------------------
+
+# Generate thresholds
+def generate_thresholds(lower=0,upper=4,by=0.01):
+  thresholds = []
+  for ii in range(lower,upper):
+    thresholds = thresholds + [(float(x) * by)+ii for x in range(0,100)]
+  return thresholds
+
+''' Threshold an image 
+image1: nibabel nifti1 image
+thresh: a threshold value for the image
+direction:  posneg: include both positive and negative values [default]
+            pos: include only positive values
+            neg: include only negative values
+'''
+def apply_threshold(image1,thresh,direction="posneg"):
+  data = image1.get_data()
+  tmp = numpy.zeros(image1.shape)  
+  if direction == "posneg":
+    tmp[numpy.abs(data) >= thresh] = data[numpy.abs(data) >= thresh]  
+  elif direction == "pos":
+    tmp[data >= thresh] = data[data >= thresh]  
+  elif direction == "neg":
+    tmp[data <= thresh] = data[data <= thresh]  
+  new_image = nibabel.Nifti1Image(tmp,affine = image1.get_affine(),header=image1.get_header())
+  return new_image

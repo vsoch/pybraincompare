@@ -3,17 +3,16 @@ compare.py: part of pybraincompare package
 Functions to perform and visualize image comparisons
 
 '''
-
-import pandas
-import numpy
-import os
-import nibabel
-import collections
-from maths import calculate_pairwise_correlation, do_multi_correlation
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function
 from pybraincompare.template.visual import calculate_similarity_search, show_brainglass_interface
 from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
 from pybraincompare.mr.datasets import get_mni_atlas
+from maths import calculate_atlas_correlation
+import numpy as np
+import collections
+import pandas
+import nibabel
+import os
 
 # Unbiased visual comparison with scatterplot
 '''scatterplot_compare: Generate a d3 scatterplot for two registered, standardized images.
@@ -26,7 +25,8 @@ from pybraincompare.mr.datasets import get_mni_atlas
 - corr: regional correlation type to include [default pearson]
 - reference_mask: if a different standard mask is desired to resample images to [default None]
 '''
-def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,custom=None,corr_type="pearson",reference_mask=None,resample_dim=[8,8,8]):
+def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,
+                        custom=None,corr_type="pearson",reference_mask=None,resample_dim=[8,8,8]):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -35,10 +35,15 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
   # Resample to reference (so we can also use as a mask)
   if reference_mask == None:
     reference_mask = get_standard_mask(software)
-  images_resamp, reference_resamp = resample_images_ref(images_nii,reference_mask,interpolation="continuous",resample_dim=resample_dim)
+  images_resamp, reference_resamp = resample_images_ref(images =images_nii,
+                                                        reference=reference_mask,
+                                                        interpolation="continuous",
+                                                        resample_dim=resample_dim)
     
-  # Prepare pairwise deletion mask, apply to data
+  # Prepare pairwise deletion mask to apply to data
   pdmask = make_binary_deletion_mask(images_resamp)
+  pdmask = nibabel.Nifti1Image(pdmask,header=images_resamp[0].get_header(),
+                               affine=images_resamp[0].get_affine())
 
   # If the user doesn't specify a custom atlas, we use MNI 152 2mm for visual, 8mm for regions
   if atlas == None:
@@ -51,24 +56,9 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
 
   # Only do calculations if we have overlapping regions
   if not (pdmask == 0).all():
-    pdmask = nibabel.Nifti1Image(pdmask,header=images_resamp[0].get_header(),affine=images_resamp[0].get_affine())
-    masked = do_mask(images=images_resamp,mask=pdmask)
-    masked = pandas.DataFrame(numpy.transpose(masked))
+    masked = calculate_atlas_correlation(images=images_resamp,mask=pdmask,
+                                         atlas=atlas,corr_type=corr_type)
 
-    atlas_nii = nibabel.load(atlas.file)
-    if not (atlas_nii.get_affine() == images_resamp[0].get_affine()).all():  
-      atlas_nii, ref_nii = resample_images_ref(atlas.file,images_resamp[0],interpolation="nearest")
-    masked_atlas = do_mask(atlas_nii,mask=pdmask)    
-    masked["ATLAS_DATA"] = numpy.transpose(masked_atlas)
-
-    # Prepare label (names), correlation values, and colors
-    labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
-    masked["ATLAS_LABELS"] = labels   
-    corrs = calculate_pairwise_correlation(masked[0],masked[1],atlas_vector=masked["ATLAS_LABELS"],corr_type=corr_type)
-    masked["ATLAS_CORR"] = [corrs[x] for x in masked["ATLAS_LABELS"]]
-    masked["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
-    masked.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
-    
     # Here we return only regions with 3+ points
     counts =  dict(collections.Counter(masked.ATLAS_LABELS.tolist()))
     regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
@@ -79,17 +69,21 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     if masked.shape[0] == 0:
       template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
     else:
-      # Add user custom text (right now only would be image labels)
-      if custom:
+      if custom:  # Add user custom text
         template = add_string(custom,template)
-      # Finally, add image names and links - these names will only fill in if were not filled in for custom above
-      template = add_string({"IMAGE_1":image_names[0],"IMAGE_2":image_names[1],"IMAGE_1_LINK":"#","IMAGE_2_LINK":"#"},template)
+      # These will only fill in if were not filled in as custom
+      template = add_string({"IMAGE_1":image_names[0],
+                             "IMAGE_2":image_names[1],
+                             "IMAGE_1_LINK":"#",
+                             "IMAGE_2_LINK":"#"},template)
+
     # Add SVGs, we render the 2mm atlas that looks nicer
     template = add_string(atlas2mm.svg,template)      
     
   # If there are not overlapping voxels in the pdmask
   else:
-    masked = pandas.DataFrame(columns=["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA","ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"])
+    masked = pandas.DataFrame(columns=["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA",
+                                       "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"])
     template = get_template("scatter_atlas",masked)  
     template = add_string(atlas2mm.svg,template)      
     template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
@@ -101,7 +95,8 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
 """brainglass_interface: interface to see most similar brain images.
 tags: must be a list of lists, one for each image, with tag categories
 """
-def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None,image_paths=None):
+def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],
+                         tags=None,image_paths=None):
 
   if tags:
     if len(tags) != len(mr_paths):
@@ -114,7 +109,7 @@ def brainglass_interface(mr_paths,software="FREESURFER",voxdim=[8,8,8],tags=None
   # Get the reference brain mask
   reference = get_standard_mask(software)
   masked = do_mask(images=mr_paths,mask=reference,resample_dim=voxdim)
-  masked = pandas.DataFrame(numpy.transpose(masked))
+  masked = pandas.DataFrame(np.transpose(masked))
   masked.columns = mr_paths
   # Get template
   template = get_template("brainglass_interface")
@@ -137,7 +132,8 @@ absolute_value: return absolute value of score (default=True)
 top_text: a list of text labels to show on top of images [OPTIONAL]
 bottom_text: a list of text labels to show on bottoms of images [OPTIONAL]
 """
-def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,max_results=100,absolute_value=True,top_text=None,bottom_text=None):
+def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,
+                     image_ids,max_results=100,absolute_value=True,top_text=None,bottom_text=None):
 
   # Get template
   template = get_template("similarity_search")
