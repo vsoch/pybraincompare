@@ -3,15 +3,12 @@
 """
 Test scatterplot compare output
 """
-from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask,do_mask
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
 from pybraincompare.compare.maths import calculate_correlation
 from pybraincompare.mr.datasets import get_data_directory
-from pybraincompare.compare import compare, atlas as Atlas
+from pybraincompare.compare import compare
 from nose.tools import assert_true, assert_false
-from pybraincompare.template.visual import view
-from nilearn.image import resample_img
-from scipy.stats import norm, pearsonr
+from scipy.stats import norm
 import nibabel
 import random
 import pandas
