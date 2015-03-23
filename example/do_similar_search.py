@@ -29,6 +29,7 @@ collection_names = ["collection 1","collection 1","collection 1","collection 1",
 # Calculate your scores however you wish
 image_scores = [1,0.87,0.30,0.2,0.9,0.89]
 
+
 # Calculate similarity search, get html
 html_snippet = similarity_search(image_scores=image_scores,tags=tags,png_paths=png_paths,
                                 button_url=compare_url,image_url=image_url,query_png=query_png,
@@ -37,3 +38,13 @@ html_snippet = similarity_search(image_scores=image_scores,tags=tags,png_paths=p
 
 # Show in browser
 view(html_snippet)
+
+# You can also remove JQUERY or BOOTSTRAP, if you are embedding in a page that already has.
+remove_scripts = ["JQUERY","BOOTSTRAP"]
+html_snippet = similarity_search(image_scores=image_scores,tags=tags,png_paths=png_paths,
+                                button_url=compare_url,image_url=image_url,query_png=query_png,
+                                query_id=query_id,bottom_text=collection_names,
+                                top_text=image_names,image_ids=image_ids,remove_scripts=remove_scripts)
+view(html_snippet)
+
+

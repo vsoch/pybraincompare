@@ -3,7 +3,7 @@ compare.py: part of pybraincompare package
 Functions to perform and visualize image comparisons
 
 '''
-from pybraincompare.template.templates import get_template, add_string, add_javascript_function
+from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
 from pybraincompare.template.visual import calculate_similarity_search, show_brainglass_interface
 from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
 from pybraincompare.mr.datasets import get_mni_atlas
@@ -59,10 +59,10 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
                                    atlas=atlas,corr_type=corr_type)
 
     # Get template, show error messages along way if error in calculations 
-    # Case 1: no overlap in pdmask and images, masked is returned as nan
+    # Case 1: no overlap in images, masked is returned as nan
     if not isinstance(masked,pandas.DataFrame):
       template = get_template("scatter_atlas")
-      template = scatterplot_compare_error(template)
+      template = scatterplot_compare_error(template,"Not enough overlap in union of images!")
     else:
       template = get_template("scatter_atlas",masked)
       # Here we return only regions with 3+ points
@@ -72,7 +72,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     
       # Case 2: all regions have fewer than 3 values
       if masked.shape[0] == 0:
-        template = scatterplot_compare_error(template)
+        template = scatterplot_compare_error(template,"Fewer than three values in all regions shared by images!")
       else:
         if custom:  # Add user custom text
           template = add_string(custom,template)
@@ -92,14 +92,14 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     template = get_template("scatter_atlas",masked)  
     template = add_string(atlas2mm.svg,template)      
     # Case 3: no overlap in two images, period
-    template = scatterplot_compare_error(template)
+    template = scatterplot_compare_error(template,"Not enough overlap in union of images!")
 
   # Return complete html and raw data
   return template,masked  
 
 # Add message to scatterplot compare that calculation was not possible
-def scatterplot_compare_error(template):
-  template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
+def scatterplot_compare_error(template,specific_error):
+  template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Scatterplot Comparison Correlations Not Possible: %s!")' %(specific_error),template)
   return template
 
 # Show images in brain glass interface and sort by tags [IN DEV]
@@ -142,9 +142,10 @@ max_results: maximum number of results to return
 absolute_value: return absolute value of score (default=True)
 top_text: a list of text labels to show on top of images [OPTIONAL]
 bottom_text: a list of text labels to show on bottoms of images [OPTIONAL]
+remove_scripts: list of strings corresponding to js or css template tags to remove [OPTIONAL]
 """
-def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,
-                     image_ids,max_results=100,absolute_value=True,top_text=None,bottom_text=None):
+def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,
+                     max_results=100,absolute_value=True,top_text=None,bottom_text=None,remove_scripts=None):
 
   # Get template
   template = get_template("similarity_search")
@@ -170,6 +171,11 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
   corr_df["bottom_text"] = bottom_text
   corr_df.index = image_ids
 
-  return calculate_similarity_search(template=template,corr_df=corr_df,query_png=query_png,
+  html_snippet = calculate_similarity_search(template=template,corr_df=corr_df,query_png=query_png,
                                        query_id=query_id,button_url=button_url,image_url=image_url,
                                        max_results=max_results,absolute_value=absolute_value)
+
+  if remove_scripts != None:
+    if isinstance(remove_scripts,str): remove_scripts = [remove_scripts]
+    html_snippet = remove_resources(html_snippet,script_names=remove_scripts)
+  return html_snippet

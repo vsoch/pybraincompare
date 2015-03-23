@@ -1,6 +1,7 @@
-import os
 from futils import get_package_dir
 import pandas
+import os
+import re
 
 def get_template(html_name,data_frame=None):
   template = read_template(html_name)
@@ -18,6 +19,12 @@ def get_template(html_name,data_frame=None):
 def add_javascript_function(function_code,template):
   template.append("<script>\n%s\n</script>" % (function_code))
   return template
+
+# Remove scripts (css or js) from html_snippet
+def remove_resources(html_snippet,script_names):
+  expression = re.compile("|".join(script_names))
+  filtered_template = [x for x in html_snippet if not expression.search(x)]
+  return filtered_template
 
 def save_template(html_snippet,output_file):
   filey = open(output_file,"wb")

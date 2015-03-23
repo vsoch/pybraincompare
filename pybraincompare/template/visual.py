@@ -100,7 +100,6 @@ absolute_value: return absolute value of score (default=True)
 
 def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,image_url,max_results,absolute_value):
   """calculate_similarity_search_df starts with pandas data frame to make similarity interface"""
-  #if not image_paths: image_paths = make_png_paths(mr_files)
   query_row = corr_df[corr_df["png"] == query_png]
     
   # Sort based on (absolute value of) similarity score

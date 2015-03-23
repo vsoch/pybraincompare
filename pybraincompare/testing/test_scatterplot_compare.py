@@ -14,6 +14,7 @@ import numpy
 import re
 
 # https://github.com/NeuroVault/NeuroVault/issues/133#issuecomment-74464393
+# This test works locally, does not work on Travis. Removed from run_tests
 '''Test that scatterplot compare returns error message for the following cases:
 Case 1: no overlap in the images
 Case 2: fewer than three surviving values for all regions
