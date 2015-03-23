@@ -66,7 +66,7 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
   images_nii = get_nii_obj(images)
 
   # Make sure we don't have any with singleton dimension
-  images = squeeze_fourth_dimension(images)
+  images = squeeze_fourth_dimension(images_nii)
 
   images_resamp = []
   for image in images_nii:
@@ -102,7 +102,7 @@ def do_mask(images,mask):
   if isinstance(images,nibabel.nifti1.Nifti1Image): images = [images]
 
   # Make sure images are 3d (squeeze out extra dimension)
-  images_resamp = squeeze_fourth_dimension(images)
+  images = squeeze_fourth_dimension(images)
   
   # If mask needs to be binarized
   if not (numpy.unique(mask.get_data()) == [0,1]).all():
@@ -112,7 +112,7 @@ def do_mask(images,mask):
 
   # if ensure_finite is True, nans and infs get replaced by zeros
   try:
-    masked_data = apply_mask(images_resamp, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
+    masked_data = apply_mask(images, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
     return masked_data
   except ValueError:
     print "Given mask and images, all data is masked." 

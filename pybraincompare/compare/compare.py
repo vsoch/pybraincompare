@@ -56,7 +56,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
   # Only do calculations if we have overlapping regions
   if not (pdmask.get_data() == 0).all():
     masked = calculate_correlation(images=images_resamp,mask=pdmask,
-                                         atlas=atlas,corr_type=corr_type)
+                                   atlas=atlas,corr_type=corr_type)
 
     # Get template, show error messages along way if error in calculations 
     # Case 1: no overlap in pdmask and images, masked is returned as nan

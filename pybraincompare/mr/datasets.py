@@ -5,7 +5,7 @@ Return sets of images or atlas files
 '''
 
 import os
-from pybraincompare.compare import atlas as Atlas
+import pybraincompare.compare.atlas as Atlas
 
 # Get data directory
 def get_data_directory():

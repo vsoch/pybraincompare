@@ -21,7 +21,6 @@ Case 2: fewer than three surviving values for all regions
 def test_scatterplot_error_message():
 
   # Get standard brain mask
-  numpy.random.seed(9191986)
   mr_directory = get_data_directory()
   standard = "%s/MNI152_T1_8mm_brain_mask.nii.gz" %(mr_directory)
   standard = nibabel.load(standard)
