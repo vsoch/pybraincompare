@@ -4,16 +4,13 @@
 Test scatterplot compare output
 """
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
-from pybraincompare.compare.maths import calculate_correlation
 from pybraincompare.mr.datasets import get_data_directory
 from pybraincompare.compare import compare
 from nose.tools import assert_true, assert_false
 from scipy.stats import norm
 import nibabel
 import random
-import pandas
 import numpy
-import os
 
 # https://github.com/NeuroVault/NeuroVault/issues/133#issuecomment-74464393
 '''Test that scatterplot compare returns error message for the following cases:
