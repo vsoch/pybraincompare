@@ -18,7 +18,7 @@ setup(
     package_data = {'pybraincompare.template':['html/*.html','static/*.zip','js/*.js','css/*.css'],
                     'pybraincompare.mr':["*.xml","MNI*.nii"],
                     'pybraincompare.testing':['data/*.tsv'],
-                    'pybraincompare.mr':['*.nii']},
+                    'pybraincompare.mr':['*.nii','*.nii.gz']},
 
     # Details
     url="http://www.github.com/vsoch/pybraincompare",
