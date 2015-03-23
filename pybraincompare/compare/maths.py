@@ -31,13 +31,17 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
     masked = do_mask(images=images,mask=mask)
   else:
     masked =  np.vstack((np.array(images[0].flatten()),np.array(images[1].flatten())))
-  masked = pandas.DataFrame(np.transpose(masked))
 
-  # If we want a whole brain correlation score, (no atlas specified)
-  if atlas == None:
-    corr = calculate_pairwise_correlation(masked[0],masked[1],corr_type=corr_type)
-  else:  
-    corr = calculate_atlas_correlation(image_vector1=masked[0],
+  # A return value of "nan" indicates that there was not overlap between mask and images
+  if np.isnan(masked).all():
+    corr = masked
+  else:
+    masked = pandas.DataFrame(np.transpose(masked))
+    # If we want a whole brain correlation score, (no atlas specified)
+    if atlas == None:
+      corr = calculate_pairwise_correlation(masked[0],masked[1],corr_type=corr_type)
+    else:  
+      corr = calculate_atlas_correlation(image_vector1=masked[0],
                                        image_vector2=masked[1],
                                        mask=mask,
                                        atlas=atlas,

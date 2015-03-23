@@ -58,20 +58,26 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
     masked = calculate_correlation(images=images_resamp,mask=pdmask,
                                          atlas=atlas,corr_type=corr_type)
 
-    # Here we return only regions with 3+ points
-    counts =  dict(collections.Counter(masked.ATLAS_LABELS.tolist()))
-    regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
-    masked = masked[masked.ATLAS_LABELS.isin(regions_to_eliminate)==False]
-    
-    # Get template, show error message if there are no surviving correlations
-    template = get_template("scatter_atlas",masked)
-    if masked.shape[0] == 0:
-      template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
+    # Get template, show error messages along way if error in calculations 
+    # Case 1: no overlap in pdmask and images, masked is returned as nan
+    if not isinstance(masked,pandas.DataFrame):
+      template = get_template("scatter_atlas")
+      template = scatterplot_compare_error(template)
     else:
-      if custom:  # Add user custom text
-        template = add_string(custom,template)
-      # These will only fill in if were not filled in as custom
-      template = add_string({"IMAGE_1":image_names[0],
+      template = get_template("scatter_atlas",masked)
+      # Here we return only regions with 3+ points
+      counts =  dict(collections.Counter(masked.ATLAS_LABELS.tolist()))
+      regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
+      masked = masked[masked.ATLAS_LABELS.isin(regions_to_eliminate)==False]
+    
+      # Case 2: all regions have fewer than 3 values
+      if masked.shape[0] == 0:
+        template = scatterplot_compare_error(template)
+      else:
+        if custom:  # Add user custom text
+          template = add_string(custom,template)
+        # These will only fill in if were not filled in as custom
+        template = add_string({"IMAGE_1":image_names[0],
                              "IMAGE_2":image_names[1],
                              "IMAGE_1_LINK":"#",
                              "IMAGE_2_LINK":"#"},template)
@@ -85,10 +91,16 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
                                        "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"])
     template = get_template("scatter_atlas",masked)  
     template = add_string(atlas2mm.svg,template)      
-    template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
-  
+    # Case 3: no overlap in two images, period
+    template = scatterplot_compare_error(template)
+
   # Return complete html and raw data
   return template,masked  
+
+# Add message to scatterplot compare that calculation was not possible
+def scatterplot_compare_error(template):
+  template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")',template)
+  return template
 
 # Show images in brain glass interface and sort by tags [IN DEV]
 """brainglass_interface: interface to see most similar brain images.

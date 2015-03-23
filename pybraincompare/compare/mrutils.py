@@ -106,7 +106,12 @@ def do_mask(images,mask):
     mask = nibabel.nifti1.Nifti1Image(empty_nii,affine=mask.get_affine(),header=mask.get_header())
 
   # if ensure_finite is True, nans and infs get replaced by zeros
-  return apply_mask(images_resamp, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
+  try:
+    masked_data = apply_mask(images_resamp, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
+    return masked_data
+  except ValueError:
+    print "Given mask and images, all data is masked." 
+    return np.nan
   
 '''Make binary deletion mask (pairwise deletion) - intersection of nonzero and non-nan values'''
 def make_binary_deletion_mask(images):
