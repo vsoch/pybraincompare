@@ -117,27 +117,30 @@ def calculate_atlas_correlation(image_vector1,image_vector2,images,mask,atlas,
     atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
                                              interpolation="nearest")
 
-  masked_atlas = do_mask(atlas_nii,mask=mask)    
-  df["ATLAS_DATA"] = np.transpose(masked_atlas)
+  masked_atlas = do_mask(atlas_nii,mask=mask)
+  if not np.isnan(masked_atlas).all():
+    df["ATLAS_DATA"] = np.transpose(masked_atlas)
 
-  # Prepare label (names), correlation values, and colors
-  labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
-  df["ATLAS_LABELS"] = labels   
-  corrs = calculate_pairwise_correlation(image_vector1,image_vector2,
+    # Prepare label (names), correlation values, and colors
+    labels = ['"%s"' %(atlas.labels[str(int(x))].label) for x in masked_atlas[0]]
+    df["ATLAS_LABELS"] = labels   
+    corrs = calculate_pairwise_correlation(image_vector1,image_vector2,
                                          atlas_vector=df["ATLAS_LABELS"],
                                          corr_type=corr_type)
-  df["ATLAS_CORR"] = [corrs[x] for x in df["ATLAS_LABELS"]]
-  df["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
-  df.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA",
-                "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
+    df["ATLAS_CORR"] = [corrs[x] for x in df["ATLAS_LABELS"]]
+    df["ATLAS_COLORS"] = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in labels]
+    df.columns = ["INPUT_DATA_ONE","INPUT_DATA_TWO","ATLAS_DATA",
+                  "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"]
 
-  if summary == False: 
-    return df
+    if summary == False: 
+      return df
+    else:
+      regional = df.copy()
+      regional = regional.loc[:,regional.columns[3:5]]
+      regional = regional.drop_duplicates()
+      return regional
   else:
-    regional = df.copy()
-    regional = regional.loc[:,regional.columns[3:5]]
-    regional = regional.drop_duplicates()
-    return regional
+    return np.nan
 
 '''comparison for an entire pandas data frame'''
 def do_multi_correlation(image_df,corr_type="pearson"):
