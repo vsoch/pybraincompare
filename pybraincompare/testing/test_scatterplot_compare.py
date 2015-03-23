@@ -11,6 +11,7 @@ from scipy.stats import norm
 import nibabel
 import random
 import numpy
+import re
 
 # https://github.com/NeuroVault/NeuroVault/issues/133#issuecomment-74464393
 '''Test that scatterplot compare returns error message for the following cases:
@@ -27,7 +28,7 @@ def test_scatterplot_error_message():
   unzip = lambda l:tuple(zip(*l))
 
   # This is the error message we should see
-  error ='<script>\nd3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Not enough overlap in regions to calculate correlations!")\n</script>'
+  error = re.compile('Not enough overlap in regions to calculate correlations!')
 
   # Case 1: provided pdmask masks all voxels (eg, no overlap in images) 
   data1 = norm.rvs(size=500)
@@ -46,7 +47,8 @@ def test_scatterplot_error_message():
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
-  assert_true(error == html_snippet[-1])
+  html_snippet = " ".join(html_snippet)
+  assert_true(bool(error.search(html_snippet)))
 
   # Case 2: fewer than 3 voxels overlapping
   data1 = norm.rvs(size=2)
@@ -64,7 +66,8 @@ def test_scatterplot_error_message():
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
-  assert_true(error == html_snippet[-1])
+  html_snippet = " ".join(html_snippet)
+  assert_true(bool(error.search(html_snippet)))
 
   # Case 2: But 3 should work
   data1 = norm.rvs(size=3)
@@ -82,4 +85,5 @@ def test_scatterplot_error_message():
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
-  assert_false(error == html_snippet[-1])
+  html_snippet = " ".join(html_snippet)
+  assert_false(bool(error.search(html_snippet)))

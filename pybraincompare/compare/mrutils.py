@@ -64,6 +64,10 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
   # Resample images to match reference mask affine and shape
   if not isinstance(images,list): images = [images]
   images_nii = get_nii_obj(images)
+
+  # Make sure we don't have any with singleton dimension
+  images = squeeze_fourth_dimension(images)
+
   images_resamp = []
   for image in images_nii:
     # Only resample if the image is different from the reference
@@ -77,11 +81,15 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
 
 '''squeeze out extra fourth dimension'''
 def squeeze_fourth_dimension(images):
-  squeezed=[]
-  for image in images:
-    squeezed_image = nibabel.Nifti1Image(numpy.squeeze(image.get_data()),affine=image.get_affine(),header=image.get_header())
-    squeezed.append(squeezed_image)
-  return squeezed
+  shapes = [len(i.shape) == 4 for i in images]
+  if any(v is True for v in shapes):
+    squeezed=[]
+    for image in images:
+      squeezed_image = nibabel.Nifti1Image(numpy.squeeze(image.get_data()),affine=image.get_affine(),header=image.get_header())
+      squeezed.append(squeezed_image)
+    return squeezed
+  else:
+    return images
 
 # MASKING --------------------------------------------------------------------------------
 '''Mask registered images - should already be in same space
@@ -94,11 +102,8 @@ def do_mask(images,mask):
   if isinstance(images,nibabel.nifti1.Nifti1Image): images = [images]
 
   # Make sure images are 3d (squeeze out extra dimension)
-  shapes = [len(i.shape) == 4 for i in images]
-  if any(v is True for v in shapes):
-    images_resamp = squeeze_fourth_dimension(images)
-  else: images_resamp = images
-
+  images_resamp = squeeze_fourth_dimension(images)
+  
   # If mask needs to be binarized
   if not (numpy.unique(mask.get_data()) == [0,1]).all():
     empty_nii = numpy.zeros(mask.shape)
