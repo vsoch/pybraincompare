@@ -16,33 +16,33 @@ export CC=gcc
 export CXX=g++
 
 install_packages() {
-    sudo -H pip install --upgrade pip
-    sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
-    sudo -H pip install Cython
-    sudo -H pip install nibabel
+    pip install --upgrade pip
+    apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
+    pip install Cython
+    pip install nibabel
     # Install several packages from source
     CWD=$PWD
     cd /tmp
     wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
     tar -xzvf six-1.9.0.tar.gz
     cd six-1.9.0
-    sudo python setup.py install
+    python setup.py install
     cd ..
-    sudo rm six-1.9.0.tar.gz
-    sudo rm -rf six-1.9.0
+    rm six-1.9.0.tar.gz
+    rm -rf six-1.9.0
     wget https://pypi.python.org/packages/source/n/networkx/networkx-1.9.1.tar.gz
     tar -xzvf networkx-1.9.1.tar.gz
     cd networkx-1.9.1
-    sudo python setup.py install
+    python setup.py install
     cd ..
-    sudo rm networkx-1.9.1.tar.gz
-    sudo rm -rf networkx-1.9.1
+    rm networkx-1.9.1.tar.gz
+    rm -rf networkx-1.9.1
     git clone http://github.com/scikit-image/scikit-image.git
     cd scikit-image
-    sudo -H pip install .
+    pip install .
     cd ..
-    sudo rm -rf scikit-image
-    sudo -H pip install nilearn
+    rm -rf scikit-image
+    pip install nilearn
     cd $CWD
 }
 
@@ -53,7 +53,7 @@ create_new_venv() {
     deactivate
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
-    sudo -H pip install nose
+    pip install nose
 }
 
 if [[ "$DISTRIB" == "standard-linux" ]]; then
@@ -66,7 +66,7 @@ else
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then
-    sudo pip install coverage coveralls
+    pip install coverage coveralls
 fi
 
 python setup.py install
