@@ -1,5 +1,4 @@
-# Create a scatterplot from two brain images
-from pybraincompare.compare import compare, atlas as Atlas
+from pybraincompare.compare import atlas as Atlas
 from pybraincompare.mr.datasets import get_mni_atlas
 
 # Color based on atlas labels

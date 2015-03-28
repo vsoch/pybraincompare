@@ -14,7 +14,7 @@ import numpy as np
 import pylab as P
 
 
-# Plot brain imaages
+# Plot brain images
 
 """Make roi (mask) image"""
 def make_roi_image(nifti_file,png_img_file=None):

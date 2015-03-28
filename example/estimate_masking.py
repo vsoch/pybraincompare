@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 
-import pandas
+from pybraincompare.report.qa import is_thresholded, is_only_positive, get_voxel_range, central_tendency
 from glob import glob
 import nibabel as nib
-from pybraincompare.report.qa import is_thresholded, is_only_positive, get_voxel_range, central_tendency
+import pandas
+
 
 # Here is a set of 144 images, these are 9 openfmri studies in Neurovault, resampled to MNI 2mm
 mrs = glob("/home/vanessa/Documents/Work/BRAINMETA/IMAGE_COMPARISON/mr/resampled/*.nii.gz")

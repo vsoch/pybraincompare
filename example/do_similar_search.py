@@ -1,9 +1,8 @@
 # This will generate an interactive web interface to find similar images
 from pybraincompare.template.visual import view
-from pybraincompare.compare.compare import similarity_search
+from pybraincompare.compare.search import similarity_search
 from glob import glob
 import pandas
-
 
 # Here are pre-generated png images, order should correspond to order of your data
 png_paths = glob("/home/vanessa/Packages/vagrant/neurovault2/image_data/images/1/*.png")
@@ -28,7 +27,6 @@ collection_names = ["collection 1","collection 1","collection 1","collection 1",
 
 # Calculate your scores however you wish
 image_scores = [1,0.87,0.30,0.2,0.9,0.89]
-
 
 # Calculate similarity search, get html
 html_snippet = similarity_search(image_scores=image_scores,tags=tags,png_paths=png_paths,

@@ -4,7 +4,7 @@
 Test that pairwise deletion mask (intersection) returns expected values
 """
 from pybraincompare.mr.datasets import get_pair_images, get_data_directory
-from pybraincompare.compare.mrutils import get_standard_mask,resample_images_ref, make_binary_deletion_mask, do_mask
+from pybraincompare.compare.mrutils import make_binary_deletion_mask
 from pybraincompare.mr.datasets import get_data_directory
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
 from nose.tools import assert_true, assert_false

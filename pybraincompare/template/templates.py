@@ -1,3 +1,9 @@
+'''
+templates.py: part of pybraincompare package
+Functions to work with html templates
+
+'''
+
 from futils import get_package_dir
 import pandas
 import os

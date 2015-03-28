@@ -103,20 +103,18 @@ def do_mask(images,mask):
 
   # Make sure images are 3d (squeeze out extra dimension)
   images = squeeze_fourth_dimension(images)
-  
-  # If mask needs to be binarized
-  if not (numpy.unique(mask.get_data()) == [0,1]).all():
-    empty_nii = numpy.zeros(mask.shape)
-    empty_nii[mask.get_data()!=0] = 1    
-    mask = nibabel.nifti1.Nifti1Image(empty_nii,affine=mask.get_affine(),header=mask.get_header())
+
+  # Don't trust that mask is binary  
+  mask_bin = mask.get_data().astype(bool).astype(int)
+  mask = nibabel.nifti1.Nifti1Image(mask_bin,affine=mask.get_affine(),header=mask.get_header())
 
   # if ensure_finite is True, nans and infs get replaced by zeros
   try:
     masked_data = apply_mask(images, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
     return masked_data
   except ValueError:
-    print "Given mask and images, all data is masked." 
-    return np.nan
+    print "Reference and images affines do not match, or given mask and images, all data is masked." 
+    return numpy.nan
   
 '''Make binary deletion mask (pairwise deletion) - intersection of nonzero and non-nan values'''
 def make_binary_deletion_mask(images):

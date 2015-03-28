@@ -3,14 +3,13 @@ network.py: part of pybraincompare package
 Functions for visualization of functional MRI
 
 '''
-
-import nibabel
 from pybraincompare.template.templates import get_template, add_string
-from pybraincompare.template.futils import get_name
 from pybraincompare.report.colors import random_colors
+from pybraincompare.template.futils import get_name
+import nibabel
 import pandas
-import json
 import numpy
+import json
 import os
 
 # Connectogram data visualization

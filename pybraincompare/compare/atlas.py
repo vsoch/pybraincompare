@@ -3,23 +3,23 @@ atlas.py: part of pybraincompare package
 Functions to integrate atlases in image comparison
 
 '''
-
+from skimage.segmentation import mark_boundaries, find_boundaries
+from pybraincompare.template.futils import make_tmp_folder
+from scipy.spatial.distance import pdist, squareform
+from pybraincompare.report.colors import get_colors
+from skimage.segmentation import felzenszwalb
+from skimage.util import img_as_float
+from maths import percent_to_float
+from nilearn import plotting
+from xml.dom import minidom
+import pylab as pl
 import nibabel
 import pandas
+import cairo
 import numpy
 import os
 import re
-import cairo
-from xml.dom import minidom
-from nilearn import plotting
-from scipy.spatial.distance import pdist, squareform
-from skimage.segmentation import felzenszwalb
-from skimage.segmentation import mark_boundaries, find_boundaries
-from skimage.util import img_as_float
-import pylab as pl
-from pybraincompare.template.futils import make_tmp_folder
-from maths import percent_to_float
-from pybraincompare.template.visual import get_colors
+
 
 class region:
   def __init__(self,label,index,x,y,z):
