@@ -46,9 +46,6 @@ install_packages() {
 }
 
 create_new_venv() {
-    # At the time of writing numpy 1.9.1 is included in the travis
-    # virtualenv but we want to be in control of the numpy version
-    # we are using for example through apt-get install
     sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     deactivate
     virtualenv --system-site-packages testvenv
