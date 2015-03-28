@@ -16,7 +16,7 @@ export CC=gcc
 export CXX=g++
 
 install_packages() {
-    pip install --upgrade pip
+    #sudo -H pip install --upgrade pip
     apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     pip install Cython
     pip install nibabel
