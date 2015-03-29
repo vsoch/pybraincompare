@@ -126,6 +126,13 @@ def make_binary_deletion_mask(images):
         mask *= (image_data != 0) & ~numpy.isnan(image_data)
     return mask
 
+'''Make binary deletion vector (pairwise deletion) - intersection of nonzero and non-nan values'''
+def make_binary_deletion_vector(image_vectors):
+    mask = numpy.ones(image_vectors[0].shape)
+    mask *= (image_vectors[0] != 0) & ~numpy.isnan(image_vectors[0])
+    mask *= (image_vectors[1] != 0) & ~numpy.isnan(image_vectors[1])
+    return mask
+
 '''make in out mask
 Generate masked image, return two images: voxels in mask, and voxels outside
 '''
