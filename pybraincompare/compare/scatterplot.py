@@ -22,9 +22,17 @@ based on an anatomical (MNI) atlas
 the generated d3 plot. Atlas rendering object (atlas) is required for svg data
 '''
 def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas,atlas_vector,
-                               atlas_labels,atlas_colors,custom=None,corr_type="pearson"):
+                               atlas_labels,atlas_colors,custom=None,corr_type="pearson",subsample_every=None):
 
   if len(image_vector1) == len(image_vector2) == len(atlas_vector) == len(atlas_labels) == len(atlas_colors):
+    if subsample_every != None:
+      sample_index = np.arange(0,len(image_vector1),int(subsample_every))
+      image_vector1 = np.array(image_vector1)[sample_index]
+      image_vector2 = np.array(image_vector2)[sample_index]
+      atlas_vector = np.array(atlas_vector)[sample_index]
+      atlas_labels = np.array(atlas_labels)[sample_index]
+      atlas_colors = np.array(atlas_colors)[sample_index]
+      
     corrs_df = calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
                                 atlas_colors,corr_type="pearson",summary=False)
     error = None

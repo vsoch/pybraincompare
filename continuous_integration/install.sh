@@ -46,8 +46,8 @@ install_packages() {
 }
 
 create_new_venv() {
-    sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     deactivate
+    sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
     virtualenv --system-site-packages testvenv
     source testvenv/bin/activate
     pip install nose

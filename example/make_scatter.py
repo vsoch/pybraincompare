@@ -49,7 +49,7 @@ html_snippet,data_table = scatterplot.scatterplot_compare_vector(image_vector1=c
                                                                  atlas_vector = corrs_df.ATLAS_DATA,
                                                                  atlas_labels=corrs_df.ATLAS_LABELS,
                                                                  atlas_colors=corrs_df.ATLAS_COLORS,
-                                                                 corr_type="pearson") 
+                                                                 corr_type="pearson")
 view(html_snippet)
 
 
