@@ -28,10 +28,12 @@ software: currently only freesurfer is supporte [default:FREESURFER]
 voxdim: a list of x,y,z dimensions to resample data when normalizing [default [2,2,2]]
 outlier_sds: the number of standard deviations from the mean to define an outlier [default:6]
 investigator: the name (string) of an investigator to add to alerts summary page [defauflt:None]
-nonzero_thresh: images with # of nonzero voxels in brain mask < this value will be flagged as thresholded [default:0.8] 
+nonzero_thresh: images with # of nonzero voxels in brain mask < this value will be flagged as thresholded [default:0.25] 
+calculate_mean_image: Default True, should be set to False for larger datasets where memory is an issue
 
 '''
-def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investigator="brainman",nonzero_thresh=0.95):
+def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investigator="brainman",
+           nonzero_thresh=0.25,calculate_mean_image=True):
 
     # First resample to standard space
     print "Resampling all data to %s using %s standard brain..." %(voxdim,software)
@@ -54,28 +56,34 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     # We also need to save distributions for the summary page
     all_histograms = []
     image_names = []
-
-    # Calculate a mean image for the entire set
-    print "Calculating mean image..."
-    mean_image = np.zeros(mask_bin.shape)
+    
     all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True) # we replace nan with 0, but do not count 0s in counts
     all_masked_data_nan = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=False)
-    mean_image[mask_bin.get_data()==1] = np.mean(all_masked_data,axis=0)
-    mean_image = nib.Nifti1Image(mean_image,affine=mask_bin.get_affine())
-    mean_intensity = np.mean(mean_image.get_data()[mask_bin.get_data()==1])
-    histogram_data_mean = get_histogram_data(mean_image.get_data()[mask_bin.get_data()==1])
-    histogram_mean_counts = ",".join([str(x) for x in histogram_data_mean["counts"]])
-    pwd = get_package_dir() 
 
+    # Set up directories
+    pwd = get_package_dir() 
     images_dir = "%s/img" %(html_dir)
     make_dir(images_dir)
+   
+
+    # Calculate a mean image for the entire set
+    if calculate_mean_image == True:
+        print "Calculating mean image..."
+        mean_image = np.zeros(mask_bin.shape)
+        mean_image[mask_bin.get_data()==1] = np.mean(all_masked_data,axis=0)
+        mean_image = nib.Nifti1Image(mean_image,affine=mask_bin.get_affine())
+        mean_intensity = np.mean(mean_image.get_data()[mask_bin.get_data()==1])
+        histogram_data_mean = get_histogram_data(mean_image.get_data()[mask_bin.get_data()==1])
+        histogram_mean_counts = ",".join([str(x) for x in histogram_data_mean["counts"]])
+        nib.save(mean_image,"%s/mean.nii" %(html_dir))
+        make_stat_image("%s/mean.nii" %(html_dir),png_img_file="%s/mean.png" %(html_dir))    
+
     nib.save(reference_resamp,"%s/standard.nii" %(html_dir))
     nib.save(mask_bin,"%s/mask.nii" %(html_dir))
     nib.save(mask_out,"%s/mask_out.nii" %(html_dir))
-    nib.save(mean_image,"%s/mean.nii" %(html_dir))
     make_anat_image("%s/mask.nii" %(html_dir),png_img_file="%s/mask.png" %(html_dir))
     make_anat_image("%s/mask_out.nii" %(html_dir),png_img_file="%s/mask_out.png" %(html_dir))
-    make_stat_image("%s/mean.nii" %(html_dir),png_img_file="%s/mean.png" %(html_dir))
+    
     unzip("%s/static/qa_report.zip" %(pwd),html_dir)
 
     for m in range(0,len(mr_paths)):
@@ -118,7 +126,11 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
       
       # Add everything to table, prepare single page template
       results.loc[m] = [count_in,count_out,metrics["std"],metrics["mean"],metrics["var"],metrics["med"],low_out,high_out,percent_nonzero,threshold_flag]
-      template = get_template("qa_single_statmap")
+
+      if calculate_mean_image == True:
+          template = get_template("qa_single_statmap_mean")
+      else:
+          template = get_template("qa_single_statmap")
 
       # Things to fill into individual template
       if m != 0: last_page = m-1;
@@ -144,24 +156,32 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 			"OUTLIERS_STANDARD_DEVIATION":outlier_sds,
 			"STANDARD_DEVIATION_SCORE":"%0.2f" % metrics["std"],
 			"STATMAP_HISTOGRAM":histogram_in_counts,
-			"MEAN_IMAGE_HISTOGRAM":histogram_mean_counts,
 			"NEXT_PAGE":"../%s/%s.html" %(next_page,next_page),
 			"LAST_PAGE":"../%s/%s.html" %(last_page,last_page),
                         "OVERLAY_IMAGE":"%s/masked.nii" %(mr_folder),
                         "INVESTIGATOR":investigator
                       }
       template = add_string(substitutions,template)
+      if calculate_mean_image == True:
+          template = add_string({"MEAN_IMAGE_HISTOGRAM":histogram_mean_counts},template)
       save_template(template,"%s/%s.html" %(mr_folder,m))
 
     # Individual pages done, now make summary pages, first the histograms
     template = get_template("qa_histograms")
-    statmap_histograms = ['<div class="span2 statbox purple" onTablet="span2" onDesktop="span2">\n<div class="boxchart">%s</div><div class="number" style="font-size:30px">%s</div><div class="title">images</div><div class="footer"></div></div>' %(histogram_mean_counts,len(mr_paths))]
+    if calculate_mean_image == True:
+        statmap_histograms = ['<div class="span2 statbox purple" onTablet="span2" onDesktop="span2">\n<div class="boxchart">%s</div><div class="number" style="font-size:30px">%s</div><div class="title">images</div><div class="footer"></div></div>' %(histogram_mean_counts,len(mr_paths))]
+    else:
+        statmap_histograms = [] 
+       
     m = 0
     for mean in results["mean_resamp"]:
-      if mean >= mean_intensity:    
-        statmap_histograms.append('<div class="span2 statbox blue" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"><i class="icon-arrow-up"></i></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
+      if calculate_mean_image == True:
+          if mean >= mean_intensity:    
+              statmap_histograms.append('<div class="span2 statbox blue" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"><i class="icon-arrow-up"></i></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
+          else:
+              statmap_histograms.append('<div class="span2 statbox red" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"><i class="icon-arrow-down"></i></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
       else:
-        statmap_histograms.append('<div class="span2 statbox red" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"><i class="icon-arrow-down"></i></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
+          statmap_histograms.append('<div class="span2 statbox red" onTablet="span2"\n onDesktop="span2"><div class="boxchart">%s</div><div class="number" style="font-size:30px"></div><div class="title">%s</div><div class="footer"><a href="%s/%s.html"> detail</a></div></div>' %(all_histograms[m],m,m,m))
       m+=1
     template = add_string({"STATMAP_HISTOGRAMS":"\n".join(statmap_histograms),
                            "NUMBER_IMAGES":len(mr_paths),
@@ -183,8 +203,6 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
       # If the image has outliers or is thresholded:
       total_outliers = res[1]["n_outliers_low_%ssd" %(outlier_sds)] + res[1]["n_outliers_high_%ssd" %(outlier_sds)]
       flagged = (total_outliers > 0) | res[1]["threshold_flag"]
-      print "Total outliers are %s, threshold flag is %s" %(total_outliers,res[1]["threshold_flag"]) 
-      print "FLAGGED:%s" %(flagged)
 
       if flagged == True:
         statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-danger" href="%s/%s.html"><i class="icon-flag zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
@@ -236,14 +254,15 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     # Finally, save the index
     index_template = get_template("qa_index")
     image_gallery = ['<div id="image-%s" class="masonry-thumb"><a style="background:url(%s/img/glassbrain.png) width=200px" title="%s" href="%s/%s.html"><img class="grayscale" src="%s/img/glassbrain.png" alt="%s"></a></div>' %(m,m,image_names[m],m,m,m,image_names[m]) for m in range(0,len(mr_paths)) ]
-    substitutions = {"MEAN_IMAGE_HISTOGRAM":histogram_mean_counts,
-		     "GLASSBRAIN_GALLERY":"\n".join(image_gallery),
+    substitutions = {"GLASSBRAIN_GALLERY":"\n".join(image_gallery),
                      "NUMBER_OUTLIERS":number_outliers,
                      "NUMBER_THRESH":number_thresh,
                      "NUMBER_IMAGES":len(mr_paths),
                      "INVESTIGATOR":investigator
                     }
     index_template = add_string(substitutions,index_template)
+    if calculate_mean_image == True:
+        index_template = add_string({"MEAN_IMAGE_HISTOGRAM":histogram_mean_counts},index_template)
     save_template(index_template,"%s/index.html" %(html_dir))
 
     # Save results to file

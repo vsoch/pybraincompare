@@ -198,7 +198,16 @@ document.onkeydown = function(evt) {
             								highlightFill: "rgba(220,220,220,0.75)",
             								highlightStroke: "rgba(220,220,220,1)",
             								data: [[STATMAP_HISTOGRAM]]
-        							}]
+        							},
+        							{
+            								label: "Mean image",
+							                fillColor: "rgba(151,187,205,0.5)",
+            								strokeColor: "rgba(151,187,205,0.8)",
+            								highlightFill: "rgba(151,187,205,0.75)",
+            								highlightStroke: "rgba(151,187,205,1)",
+            								data: [[MEAN_IMAGE_HISTOGRAM]]
+        							}
+    								]
 							};
 
 			histogram = new Chart(ctx).Bar(data, { multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>", scaleFontColor: "#fff"});

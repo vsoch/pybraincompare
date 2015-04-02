@@ -73,7 +73,7 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
     # Only resample if the image is different from the reference
     if not (image.get_affine() == reference.get_affine()).all():
       resampled_img = resample_img(image,target_affine=reference.get_affine(), 
-                                 target_shape=reference.get_shape(),
+                                 target_shape=reference.shape,
                                  interpolation=interpolation)
     else: resampled_img = image
     images_resamp.append(resampled_img)
