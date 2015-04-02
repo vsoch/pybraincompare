@@ -30,10 +30,11 @@ outlier_sds: the number of standard deviations from the mean to define an outlie
 investigator: the name (string) of an investigator to add to alerts summary page [defauflt:None]
 nonzero_thresh: images with # of nonzero voxels in brain mask < this value will be flagged as thresholded [default:0.25] 
 calculate_mean_image: Default True, should be set to False for larger datasets where memory is an issue
+view: view the web report in a browser at the end [default:True]
 
 '''
 def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investigator="brainman",
-           nonzero_thresh=0.25,calculate_mean_image=True):
+           nonzero_thresh=0.25,calculate_mean_image=True,view=True):
 
     # First resample to standard space
     print "Resampling all data to %s using %s standard brain..." %(voxdim,software)
@@ -56,9 +57,6 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     # We also need to save distributions for the summary page
     all_histograms = []
     image_names = []
-    
-    all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True) # we replace nan with 0, but do not count 0s in counts
-    all_masked_data_nan = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=False)
 
     # Set up directories
     pwd = get_package_dir() 
@@ -69,6 +67,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     # Calculate a mean image for the entire set
     if calculate_mean_image == True:
         print "Calculating mean image..."
+        all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True)
         mean_image = np.zeros(mask_bin.shape)
         mean_image[mask_bin.get_data()==1] = np.mean(all_masked_data,axis=0)
         mean_image = nib.Nifti1Image(mean_image,affine=mask_bin.get_affine())
@@ -267,5 +266,6 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 
     # Save results to file
     results.to_csv("%s/allMetrics.tsv" %(html_dir),sep="\t")
-    os.chdir(html_dir)
-    run_webserver(PORT=8091)
+    if view==True:
+        os.chdir(html_dir)
+        run_webserver(PORT=8091)
