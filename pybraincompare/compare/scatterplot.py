@@ -3,8 +3,8 @@ scatterplot.py: part of pybraincompare package
 Functions to perform and create scatterplot comparisons
 
 '''
-from pybraincompare.template.templates import get_template, add_string, add_javascript_function
-from mrutils import get_standard_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
+from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
+from mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
 from pybraincompare.mr.datasets import get_mni_atlas
 from maths import calculate_correlation, calculate_atlas_correlation
 import numpy as np
@@ -19,32 +19,53 @@ based on an anatomical (MNI) atlas
 '''
 
 '''scatterplot_compare_vector: Generate a d3 scatterplot with all arguments as vectors to outputs html with
-the generated d3 plot. Atlas rendering object (atlas) is required for svg data
+the generated d3 plot. If atlas==None, no atlas will be rendered on the page. If you want to speed up
+page performance, it is recommended to generate the atlas svg ahead of time, and embed in your page.
 '''
-def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas,atlas_vector,
-                               atlas_labels,atlas_colors,custom=None,corr_type="pearson",subsample_every=None):
+def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas_vector,atlas_labels,atlas_colors,
+                               custom=None,corr_type="pearson",atlas=None,subsample_every=None,remove_scripts=None):
 
   if len(image_vector1) == len(image_vector2) == len(atlas_vector) == len(atlas_labels) == len(atlas_colors):
-    if subsample_every != None:
-      sample_index = np.arange(0,len(image_vector1),int(subsample_every))
-      image_vector1 = np.array(image_vector1)[sample_index]
-      image_vector2 = np.array(image_vector2)[sample_index]
-      atlas_vector = np.array(atlas_vector)[sample_index]
-      atlas_labels = np.array(atlas_labels)[sample_index]
-      atlas_colors = np.array(atlas_colors)[sample_index]
+
+    # Calculate a binary deletion vector - eliminating zeros and nans.
+    pdmask = make_binary_deletion_vector([image_vector1,image_vector2])
+    
+    # If we have more than three values to compare
+    if len(np.where(pdmask!=0)[0]) > 3:    
+
+        # Mask images to those voxels
+        pdmask_idx = np.where(pdmask!=0)[0]
+        image_vector1 = image_vector1[pdmask_idx]
+        image_vector2 = image_vector2[pdmask_idx]
+        atlas_vector = np.array(atlas_vector)[pdmask_idx]
+        atlas_labels = np.array(atlas_labels)[pdmask_idx]
+        atlas_colors = np.array(atlas_colors)[pdmask_idx]
+
+        if subsample_every != None:
+            sample_index = np.arange(0,len(image_vector1),int(subsample_every))
+            image_vector1 = image_vector1[sample_index]
+            image_vector2 = image_vector2[sample_index]
+            atlas_vector = atlas_vector[sample_index]
+            atlas_labels = atlas_labels[sample_index]
+            atlas_colors = atlas_colors[sample_index]
       
-    corrs_df = calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
+        corrs_df = calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
                                 atlas_colors,corr_type="pearson",summary=False)
-    error = None
+        error = None
+
+    else:
+        error = "Images have fewer than three values overlapping, and cannot be compared."
+
   else:
-    error = "Lengths of image vectors, atlas vector, atlas labels, and color labels are not equal."
+      error = "Lengths of image vectors, atlas vector, atlas labels, and color labels are not equal."
 
   # Here are all the string elements to add
-  elements = [atlas.svg,custom,{"IMAGE_1":image_names[0]},
+  elements = [custom,{"IMAGE_1":image_names[0]},
                                {"IMAGE_2":image_names[1]},
                                {"IMAGE_1_LINK":"#"},
                                {"IMAGE_2_LINK":"#"}]
-  if custom == None: elements.pop(1)
+  if custom == None: elements.pop(0)
+  if atlas != None: elements.append(atlas)
 
   # If we have an error, generate empty dataframe
   if error != None:
@@ -52,7 +73,7 @@ def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas,atl
                                        "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"])
 
   # Prepare template from correlation data frame
-  template = make_scatterplot_interface(corrs_df,error=error,elements=elements)
+  template = make_scatterplot_interface(corrs_df,error=error,elements=elements,remove_scripts=remove_scripts)
       
   # Return complete html and raw data
   return template,corrs_df  
@@ -67,9 +88,11 @@ def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas,atl
 - corr: regional correlation type to include [default pearson]
 - reference: if a different standard mask is desired to resample images to [default None]
 - resample_dim: the dimension to resample the reference, and then images, to
+- remove_scripts: will remove resources from template, if you have your own versions
 '''
 def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,
-                        custom=None,corr_type="pearson",reference=None,resample_dim=[8,8,8]):
+                        custom=None,corr_type="pearson",reference=None,resample_dim=[8,8,8],
+                        remove_scripts=None):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -118,7 +141,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
                                        "ATLAS_LABELS","ATLAS_CORR","ATLAS_COLORS"])
 
   # Prepare template from correlation data frame
-  template = make_scatterplot_interface(corr_df,error=error,elements=elements)
+  template = make_scatterplot_interface(corr_df,error=error,elements=elements,remove_scripts=remove_scripts)
       
   # Return complete html and raw data
   return template,corr_df  
@@ -132,7 +155,7 @@ elements: a list of string elements to add to the template, each element is a di
   value corresponding to the text that will replace the tag
 error: if specified, will replace scatterplot with error to show user
 '''
-def make_scatterplot_interface(corr_df,elements,error=None):
+def make_scatterplot_interface(corr_df,elements,error=None,remove_scripts=None):
 
   # We want to return only regions with 3+ points
   counts =  dict(collections.Counter(corr_df.ATLAS_LABELS.tolist()))
@@ -149,6 +172,10 @@ def make_scatterplot_interface(corr_df,elements,error=None):
 
   if error != None:
     template = scatterplot_compare_error(template,error)
+
+  if remove_scripts != None:
+    if isinstance(remove_scripts,str): remove_scripts = [remove_scripts]
+    template = remove_resources(template,script_names=remove_scripts)
 
   return template
 
