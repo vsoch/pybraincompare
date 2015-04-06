@@ -3,10 +3,13 @@ scatterplot.py: part of pybraincompare package
 Functions to perform and create scatterplot comparisons
 
 '''
-from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
+from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources, save_template
 from mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
-from pybraincompare.mr.datasets import get_mni_atlas
+from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
 from maths import calculate_correlation, calculate_atlas_correlation
+from pybraincompare.template.visual import run_webserver
+from pybraincompare.mr.datasets import get_mni_atlas
+from nilearn.masking import apply_mask
 import numpy as np
 import collections
 import pandas
@@ -18,12 +21,53 @@ import os
 based on an anatomical (MNI) atlas
 '''
 
+''' Generate a canvas (whole brain) scatterplot, meaning we render ALL the data and the browser does not explode.
+Currently only using images registered to mni 2mm template is supported, as the atlas is part of the page template,
+and currently only option is to provide output directory (to save output)
+'''
+def scatterplot_canvas(image_vector1,image_vector2,image_names,atlas_vector,atlas_labels,atlas_colors,output_directory,view=True):
+
+    # Prepare output directory and files
+    make_dir(output_directory)
+    data_directory = "%s/data" % output_directory
+    make_dir(data_directory)
+    pwd = get_package_dir()
+    unzip("%s/static/scatter.zip" %(pwd),output_directory)
+
+    # Prepare data table with all points for initial rendering                           
+    data_table = calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
+                                atlas_colors,corr_type="pearson",summary=False)
+    data_table_summary = calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
+                                atlas_colors,corr_type="pearson",summary=True)
+
+    # Write data to tsv file, first for all regions
+    data_table.columns = ["x","y","atlas","label","corr","color"]
+    data_table_summary.columns = ["labels","corr"]
+
+    # Write data to tsv file, now for individual regions
+    for region in data_table_summary["labels"]:
+        subset = data_table[data_table.label==region]
+        subset.to_csv("%s/%s_data.tsv" %(data_directory,region.replace('"','')),sep="\t",index=False)
+
+    data_table.label = [x.replace('"','') for x in data_table.label]
+    data_table.color = [x.replace('"','') for x in data_table.color]    
+    data_table.to_csv("%s/scatterplot_data.tsv" %(data_directory),sep="\t",index=False)
+
+    template = get_template("scatter_canvas")  
+    save_template(template,"%s/index.html" % output_directory)
+    
+    if view==True:
+        os.chdir(output_directory)
+        run_webserver(PORT=8091)    
+
+
 '''scatterplot_compare_vector: Generate a d3 scatterplot with all arguments as vectors to outputs html with
 the generated d3 plot. If atlas==None, no atlas will be rendered on the page. If you want to speed up
 page performance, it is recommended to generate the atlas svg ahead of time, and embed in your page.
 '''
 def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas_vector,atlas_labels,atlas_colors,
-                               custom=None,corr_type="pearson",atlas=None,subsample_every=None,remove_scripts=None):
+                               custom=None,corr_type="pearson",atlas=None,subsample_every=None,remove_scripts=None,
+                               summary=False):
 
   if len(image_vector1) == len(image_vector2) == len(atlas_vector) == len(atlas_labels) == len(atlas_colors):
 

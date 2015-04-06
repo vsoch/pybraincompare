@@ -42,6 +42,18 @@ atlas_rendering = atlases["2"]
 # The images must already be registered / in same space as reference
 corrs_df = calculate_correlation(images=images_resamp,mask=ref_resamp,atlas=atlas,corr_type="pearson")
 
+# Option 1: Canvas based, no mouseover of points, will render 100,000's of points
+output_directory = "/home/vanessa/Desktop/test"
+scatterplot.scatterplot_canvas(image_vector1=corrs_df.INPUT_DATA_ONE,
+                              image_vector2=corrs_df.INPUT_DATA_TWO,
+                              image_names=image_names,
+                              atlas_vector = corrs_df.ATLAS_DATA,
+                              atlas_labels=corrs_df.ATLAS_LABELS,
+                              atlas_colors=corrs_df.ATLAS_COLORS,
+                              output_directory=output_directory)
+
+
+# Option 2: D3 based, with mouseover of points, limited sampling of images
 html_snippet,data_table = scatterplot.scatterplot_compare_vector(image_vector1=corrs_df.INPUT_DATA_ONE,
                                                                  image_vector2=corrs_df.INPUT_DATA_TWO,
                                                                  image_names=image_names,
