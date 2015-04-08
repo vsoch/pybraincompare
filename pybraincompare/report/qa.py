@@ -95,3 +95,38 @@ def count_voxels(masked_in,masked_out):
   count_out = len(masked_out[masked_out!=0])
   return count_in,count_out
 
+# Convert to Z Scores (return entire images) ------------------------------------------------
+def t_to_z(mr, dof):
+  
+  data = mr.get_data()
+
+  # Select just the nonzero voxels
+  nonzero = data[data!=0]
+
+  # We will store our results here
+  Z = np.zeros(len(nonzero))
+
+  # Select values less than or == 0, and greater than zero
+  c  = np.zeros(len(nonzero))
+  k1 = (nonzero <= c)
+  k2 = (nonzero > c)
+
+  # Subset the data into two sets
+  t1 = nonzero[k1]
+  t2 = nonzero[k2]
+
+  # Calculate p values for <=0
+  p_values_t1 = t.cdf(t1, df = dof)
+  z_values_t1 = norm.ppf(p_values_t1)
+
+  # Calculate p values for > 0
+  p_values_t2 = t.cdf(-t2, df = dof)
+  z_values_t2 = -norm.ppf(p_values_t2)
+  Z[k1] = z_values_t1
+  Z[k2] = z_values_t2
+
+  # Create new nifti
+  empty_nii = np.zeros(mr.shape)
+  empty_nii[mr.get_data()!=0] = Z
+  Z_nii_fixed = nib.nifti1.Nifti1Image(empty_nii,affine=mr.get_affine(),header=mr.get_header())
+  return Z_nii_fixed

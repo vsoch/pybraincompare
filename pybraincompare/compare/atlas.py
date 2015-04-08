@@ -13,9 +13,9 @@ from maths import percent_to_float
 from nilearn import plotting
 from xml.dom import minidom
 import pylab as pl
+import cairocffi as cairo
 import nibabel
 import pandas
-import cairo
 import numpy
 import os
 import re
