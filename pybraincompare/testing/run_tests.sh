@@ -12,3 +12,7 @@ fi
 
 cd $TEST_RUN_FOLDER
 nosetests --verbosity=3 --with-doctest --with-coverage --cover-package=pybraincompare $TESTDIR/test_correlation.py $TESTDIR/test_masking.py
+ls $TESTDIR/* -1
+ls $TEST_RUN_FOLDER/* -1
+echo $PWD
+ls $PWD -1
