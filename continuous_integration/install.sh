@@ -17,40 +17,45 @@ export CXX=g++
 
 install_packages() {
     pip install --upgrade pip
-    pip install Cython
-    pip install nibabel
+    conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython six networkx scikit-learn scikit-image matplotlib nilearn numexpr
+    conda install --yes -c dan_blanchard python-coveralls
+    #pip install Cython
+    #pip install nibabel
     # Install several packages from source
-    CWD=$PWD
-    cd /tmp
-    wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
-    tar -xzvf six-1.9.0.tar.gz
-    cd six-1.9.0
-    python setup.py install
-    cd ..
-    rm six-1.9.0.tar.gz
-    rm -rf six-1.9.0
-    wget https://pypi.python.org/packages/source/n/networkx/networkx-1.9.1.tar.gz
-    tar -xzvf networkx-1.9.1.tar.gz
-    cd networkx-1.9.1
-    python setup.py install
-    cd ..
-    rm networkx-1.9.1.tar.gz
-    rm -rf networkx-1.9.1
-    git clone http://github.com/scikit-image/scikit-image.git
-    cd scikit-image
-    pip install .
-    cd ..
-    rm -rf scikit-image
-    pip install nilearn
-    cd $CWD
+    #CWD=$PWD
+    #cd /tmp
+    #wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
+    #tar -xzvf six-1.9.0.tar.gz
+    #cd six-1.9.0
+    #python setup.py install
+    #cd ..
+    #rm six-1.9.0.tar.gz
+    #rm -rf six-1.9.0
+    #wget https://pypi.python.org/packages/source/n/networkx/networkx-1.9.1.tar.gz
+    #tar -xzvf networkx-1.9.1.tar.gz
+    #cd networkx-1.9.1
+    #python setup.py install
+    #cd ..
+    #rm networkx-1.9.1.tar.gz
+    #rm -rf networkx-1.9.1
+    #git clone http://github.com/scikit-image/scikit-image.git
+    #cd scikit-image
+    #pip install .
+    #cd ..
+    #rm -rf scikit-image
+    #pip install nilearn
+    #cd $CWD
 }
 
 create_new_venv() {
-    deactivate
-    sudo apt-get install python-nose python-numpy python-scipy python-matplotlib python-pandas python-sympy python-sklearn
-    virtualenv --system-site-packages testvenv
-    source testvenv/bin/activate
-    pip install nose
+    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    chmod +x miniconda.sh
+    ./miniconda.sh -b
+    export PATH=/home/travis/miniconda/bin:$PATH
+    conda update --yes conda
+    conda create --yes -n condaenv python=2.7
+    conda install --yes -n condaenv pip
+    source activate condaenv
 }
 
 if [[ "$DISTRIB" == "standard-linux" ]]; then
