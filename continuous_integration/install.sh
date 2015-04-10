@@ -19,32 +19,6 @@ install_packages() {
     pip install --upgrade pip
     conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython six networkx scikit-learn scikit-image matplotlib numexpr
     conda install --yes -c dan_blanchard python-coveralls
-    #pip install Cython
-    #pip install nibabel
-    # Install several packages from source
-    #CWD=$PWD
-    #cd /tmp
-    #wget https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz
-    #tar -xzvf six-1.9.0.tar.gz
-    #cd six-1.9.0
-    #python setup.py install
-    #cd ..
-    #rm six-1.9.0.tar.gz
-    #rm -rf six-1.9.0
-    #wget https://pypi.python.org/packages/source/n/networkx/networkx-1.9.1.tar.gz
-    #tar -xzvf networkx-1.9.1.tar.gz
-    #cd networkx-1.9.1
-    #python setup.py install
-    #cd ..
-    #rm networkx-1.9.1.tar.gz
-    #rm -rf networkx-1.9.1
-    #git clone http://github.com/scikit-image/scikit-image.git
-    #cd scikit-image
-    #pip install .
-    #cd ..
-    #rm -rf scikit-image
-    #pip install nilearn
-    #cd $CWD
 }
 
 create_new_venv() {
