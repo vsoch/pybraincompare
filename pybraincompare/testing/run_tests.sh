@@ -15,4 +15,4 @@ nosetests --verbosity=3 --with-doctest --with-coverage --cover-package=pybrainco
 ls $TESTDIR/* -1
 ls $TEST_RUN_FOLDER/* -1
 echo $PWD
-ls $PWD -1
+ls $PWD/pip_build_travis/* -1
