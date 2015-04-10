@@ -17,7 +17,7 @@ export CXX=g++
 
 install_packages() {
     pip install --upgrade pip
-    conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython six networkx scikit-learn scikit-image matplotlib nilearn numexpr
+    conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython six networkx scikit-learn scikit-image matplotlib numexpr
     conda install --yes -c dan_blanchard python-coveralls
     #pip install Cython
     #pip install nibabel
