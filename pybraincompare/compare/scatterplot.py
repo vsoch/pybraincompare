@@ -226,7 +226,7 @@ def make_scatterplot_interface(corr_df,elements,error=None,remove_scripts=None):
 
 # Add message to scatterplot compare that calculation was not possible
 def scatterplot_compare_error(template,specific_error):
-  template = add_javascript_function('d3.selectAll("svg.svglegend").remove();\nd3.selectAll("svg.svgplot").remove();\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Scatterplot Comparison Correlations Not Possible: %s!")' %(specific_error),template)
+  template = add_javascript_function('d3.selectAll("svg.svglegend").remove()\nd3.selectAll("svg.svgplot").remove()\nd3.selectAll("pybrain").append("div").attr("class","alert alert-danger").attr("role","alert").attr("style","width:90%; margin-top:30px").text("Scatterplot Comparison Correlations Not Possible: %s!")' %(specific_error),template)
   return template
 
 # Get atlas objects based on what user has provided
