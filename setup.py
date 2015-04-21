@@ -16,7 +16,7 @@ setup(
 
     # Data
     package_data = {'pybraincompare.template':['html/*.html','static/*.zip','js/*.js','css/*.css'],
-                    'pybraincompare.testing':['data/*.tsv'],
+                    'pybraincompare.testing':['data/*.tsv','data/*.csv'],
                     'pybraincompare.mr':['*.nii','*.nii.gz','*.xml']},
 
     # Details
