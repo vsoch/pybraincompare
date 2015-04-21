@@ -5,7 +5,7 @@ Test scatterplot compare output
 """
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
 from pybraincompare.mr.datasets import get_data_directory
-from pybraincompare.compare import compare
+from pybraincompare.compare.scatterplot import scatterplot_compare
 from nose.tools import assert_true, assert_false
 from scipy.stats import norm
 import nibabel
@@ -28,7 +28,7 @@ def test_scatterplot_error_message():
   unzip = lambda l:tuple(zip(*l))
 
   # This is the error message we should see
-  error = re.compile('Not enough overlap in regions to calculate correlations!')
+  error = re.compile('Scatterplot Comparison Correlations Not Possible')
 
   # Case 1: provided pdmask masks all voxels (eg, no overlap in images) 
   data1 = norm.rvs(size=500)
@@ -43,7 +43,7 @@ def test_scatterplot_error_message():
   image2[image2_voxels] = data2
   image1 = nibabel.nifti1.Nifti1Image(image1,affine=standard.get_affine(),header=standard.get_header())  
   image2 = nibabel.nifti1.Nifti1Image(image2,affine=standard.get_affine(),header=standard.get_header())  
-  html_snippet,data_table = compare.scatterplot_compare(images=[image1,image2],
+  html_snippet,data_table = scatterplot_compare(images=[image1,image2],
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
@@ -62,7 +62,7 @@ def test_scatterplot_error_message():
   image2[idx] = data2
   image1 = nibabel.nifti1.Nifti1Image(image1,affine=standard.get_affine(),header=standard.get_header())  
   image2 = nibabel.nifti1.Nifti1Image(image2,affine=standard.get_affine(),header=standard.get_header())  
-  html_snippet,data_table = compare.scatterplot_compare(images=[image1,image2],
+  html_snippet,data_table = scatterplot_compare(images=[image1,image2],
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
@@ -81,7 +81,7 @@ def test_scatterplot_error_message():
   image2[idx] = data2
   image1 = nibabel.nifti1.Nifti1Image(image1,affine=standard.get_affine(),header=standard.get_header())  
   image2 = nibabel.nifti1.Nifti1Image(image2,affine=standard.get_affine(),header=standard.get_header())  
-  html_snippet,data_table = compare.scatterplot_compare(images=[image1,image2],
+  html_snippet,data_table = scatterplot_compare(images=[image1,image2],
                                                         reference = standard,
                                                         image_names=["image 1","image 2"],
                                                         corr_type="pearson")
