@@ -1,0 +1,24 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+
+<!-- Image Histogram-->
+<div id = "imagehistogram" class="span12 widget blue" onTablet="span11" onDesktop="span12">
+<div class="clearfix"></div><br>
+<canvas id="histogram" width="[HISTOGRAM_WIDTH]" height="[HISTOGRAM_HEIGHT]"></canvas>
+    <script>
+	var ctx = document.getElementById("histogram").getContext("2d");
+        var data = {
+    	labels: [[HISTOGRAM_LABELS]],
+		width: 400,
+   	 	datasets: [
+        	{
+            	    label: "[HISTOGRAM_TITLE]",
+            	    fillColor: "rgba(220,220,220,0.5)",
+            	    strokeColor: "rgba(220,220,220,0.8)",
+            	    highlightFill: "rgba(220,220,220,0.75)",
+            	    highlightStroke: "rgba(220,220,220,1)",
+            	    data: [[HISTOGRAM_DATA]]
+                }]
+	};
+        histogram = new Chart(ctx).Bar(data, { multiTooltipTemplate: "<%= datasetLabel %> - <%= value %>", scaleFontColor: "#000"});    					
+    </script>
+</div>

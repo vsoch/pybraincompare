@@ -5,7 +5,7 @@ Functions work with brain maps
 '''
 
 from pybraincompare.template.futils import get_name
-from pybraincompare.report.plots import make_anat_image
+from pybraincompare.report.image import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.image import resample_img
 import subprocess
