@@ -5,7 +5,7 @@ from glob import glob
 import pandas
 
 # Here are pre-generated png images, order should correspond to order of your data
-png_paths = glob("/home/vanessa/Packages/vagrant/neurovault2/image_data/images/1/*.png")
+png_paths = glob("/home/vanessa/Packages/vagrant/neurovault3/image_data/images/3/*.png")[0:6]
 
 # Create a list of tags for each image, same order as data
 tags = [["Z","brain"],["Z","brain"],["brain"],["Z","brain"],["Z","brain"],["Other"]]

@@ -150,8 +150,12 @@ def create_glassbrain_portfolio(image_paths,all_tags,unique_tags,placeholders,va
       else: button_url = image
       for it in image_tags:
         portfolio_items = '%s %s ' %(portfolio_items,placeholders[it])
-      portfolio_items = '%s" style="position: absolute; left: 303px; top: 0px;">\n<div class="item-inner">\n<h5><span style="color:#FF8C00; align:right">%s</span></h5>\n<img src="%s" alt="">\n' %(portfolio_items,ttext,image)
-      portfolio_items = '%s\n<h5>Score: %s <span style="color:#FF8C00;">%s</span></h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,btext,button_url,image_url)
+      if i != (len(image_paths)-1):
+          portfolio_items = '%s" style="position: absolute; left: 303px; top: 0px;">\n<div class="item-inner">\n<h5><span style="color:#FF8C00; align:right">%s</span></h5>\n<img src="%s" alt="">\n' %(portfolio_items,ttext,image)
+          portfolio_items = '%s\n<h5>Score: %s <span style="color:#FF8C00;">%s</span></h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,btext,button_url,image_url)
+      else:
+          portfolio_items = '%s" style="position: absolute; left: 303px; top: 0px;">\n<div class="item-inner">\n<h5><span style="color:#FF8C00; align:right">%s</span></h5>\n<img src="%s" alt="" onload="imgLoaded(this)">\n' %(portfolio_items,ttext,image)
+          portfolio_items = '%s\n<h5>Score: %s <span style="color:#FF8C00;">%s</span></h5>\n<div class="overlay"><a class="preview btn btn-danger" href="%s">compare</i></a><a class="preview btn btn-success" href="%s">view</i></a></div></div></li><!--/.portfolio-item-->' %(portfolio_items,value,btext,button_url,image_url)
     portfolio_items = '%s\n</ul>' %(portfolio_items)                
     portfolio = '%s%s' %(portfolio_filters,portfolio_items)
     return portfolio

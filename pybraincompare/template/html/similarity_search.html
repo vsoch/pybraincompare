@@ -1,11 +1,11 @@
 <!--[BOOTSTRAP]--><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">
-<!--[FONT_AWESOME]--><link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<!--[FONT_AWESOME]--><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 <!--[ANIMATE.CSS]--><link href="https://raw.githubusercontent.com/daneden/animate.css/master/animate.css" rel="stylesheet">
 <style>
 
 .clearfix {
   *zoom: 1;
-}
+} 
 .clearfix:before,
 .clearfix:after {
   display: table;
@@ -131,8 +131,20 @@ body > section {
   margin: 0 20px 20px 0;
   position: relative;
 }
+.item-inner img {
+  top: 0;
+  opacity: 0;
+ 
+  -webkit-transition: opacity 150ms;
+  -moz-transition: opacity 150ms;
+  -ms-transition: opacity 150ms;
+  transition: opacity 150ms;
+}
 .portfolio-item img {
   width: 100%;
+}
+.item-inner.loaded img{
+  opacity: 1;
 }
 .portfolio-item h5 {
   background: #fff;
@@ -322,6 +334,14 @@ ul.rss li::before {
 </style>
 </head><!--/head-->
 <body>
+    <script>
+    function imgLoaded(img){
+        items = document.getElementsByClassName("item-inner")
+        for (i = 0; i < items.length; i++) { 
+          items[i].className += items[i].className ? ' loaded' : 'loaded';
+        }
+    };
+    </script>
     <section id="portfolio" class="nvcontainer">
 
    [SIMILARITY_PORTFOLIO]
@@ -331,7 +351,7 @@ ul.rss li::before {
 <!--[BOOTSTRAP]--><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>    
 <!--[BOOTSTRAP]--><script src="https://tunidesign.googlecode.com/files/jquery.prettyPhoto.min.js"></script>
     <script>
-jQuery(function($) {
+    jQuery(function($) {
 
 	//#main-slider
 	$(function(){
