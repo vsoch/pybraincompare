@@ -5,11 +5,11 @@ Return sets of images or atlas files
 '''
 
 import os
-import pybraincompare.compare.scatterplot as scatter
+import pybraincompare.compare.atlas as Atlas
 
 # Get data directory
 def get_data_directory():
-  mr_directory = os.path.join(os.path.abspath(os.path.dirname(scatter.__file__) + "/.."),"mr") 
+  mr_directory = os.path.join(os.path.abspath(os.path.dirname(Atlas.__file__) + "/.."),"mr") 
   return mr_directory
 
 # Return paths to pybraincompare atlas
