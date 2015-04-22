@@ -11,4 +11,4 @@ if [ "$#" -ne 2 ]; then
 fi
 
 cd $TEST_RUN_FOLDER
-nosetests --verbosity=3 --with-doctest --with-coverage --cover-package=pybraincompare $TESTDIR/test_scatterplot_compare.py $TESTDIR/test_histogram.py
+nosetests --verbosity=3 --with-doctest --with-coverage --cover-package=pybraincompare $TESTDIR/test_histogram.py
