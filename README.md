@@ -30,3 +30,7 @@ This module will work with visualization of functional connectivity data, demo i
 
 ### QA for Statistical Maps 
 This module will generate a web report for a list of statistical maps, demo [is available](http://www.vbmis.com/bmi/project/qa/index.html). Much work to be done! Please submit an issue if you have feedback.
+
+### histogram
+An example histogram using python and chartJS from a sigle brain map [is available](http://vbmis.com/bmi/share/neurovault/histogram.html).
+
