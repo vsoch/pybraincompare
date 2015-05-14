@@ -67,7 +67,7 @@ hr {
   max-width: 900px;
 }
 .container {
-  width: 940px;
+  width: [CONTAINER_WIDTH]px;
 }
 .btn-transparent {
   border: 3px solid #fff;
@@ -338,27 +338,10 @@ ul.rss li::before {
 </head><!--/head-->
 <body>
 <!--[JQUERY]--><script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-<!--[BOOTSTRAP]--><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>    
-<!--[BOOTSTRAP]--><script src="https://tunidesign.googlecode.com/files/jquery.prettyPhoto.min.js"></script>
+<!--[BOOTSTRAP_MIN]--><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>    
+<!--[PRETTY_PHOTO]--><script src="https://tunidesign.googlecode.com/files/jquery.prettyPhoto.min.js"></script>
     <script>
     jQuery(function($) {
-
-	//#main-slider
-	$(function(){
-		$('#main-slider.carousel').carousel({
-			interval: 8000
-		});
-	});
-
-	$( '.centered' ).each(function( e ) {
-		$(this).css('margin-top',  ($('#main-slider').height() - $(this).height())/2);
-	});
-
-	$(window).resize(function(){
-		$( '.centered' ).each(function( e ) {
-			$(this).css('margin-top',  ($('#main-slider').height() - $(this).height())/2);
-		});
-	});
 
 	//portfolio
 	$(window).load(function(){
@@ -377,16 +360,6 @@ ul.rss li::before {
 				return false;
 			});
 		}
-	});
-
-	//contact form
-	var form = $('.contact-form');
-	form.submit(function () {
-		$this = $(this);
-		$.post($(this).attr('action'), function(data) {
-			$this.prev().text(data.message).fadeIn().delay(3000).fadeOut();
-		},'json');
-		return false;
 	});
 
 	//goto top

@@ -5,7 +5,7 @@ from glob import glob
 import pandas
 
 # Here are pre-generated png images, order should correspond to order of your data
-png_paths = glob("/home/vanessa/Packages/vagrant/neurovault3/image_data/images/3/*.png")[0:6]
+png_paths = glob("/home/vanessa/Packages/vagrant/neurovault/image_data/images/3/*.png")[0:6]
 
 # Create a list of tags for each image, same order as data
 tags = [["Z","brain"],["Z","brain"],["brain"],["Z","brain"],["Z","brain"],["Other"]]
@@ -44,5 +44,3 @@ html_snippet = similarity_search(image_scores=image_scores,tags=tags,png_paths=p
                                 query_id=query_id,bottom_text=collection_names,
                                 top_text=image_names,image_ids=image_ids,remove_scripts=remove_scripts)
 view(html_snippet)
-
-
