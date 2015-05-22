@@ -51,3 +51,8 @@ def add_string(svg,template):
   for tag,code in svg.iteritems():
     template = [t.replace("[%s]" %(tag),"%s" %(code)) for t in template]
   return template
+
+'''Get an image by name in the img directory'''
+def get_image(image_name):
+  ppwd = get_package_dir()  
+  return os.path.join(ppwd,'img', image_name)

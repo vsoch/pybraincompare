@@ -67,7 +67,7 @@ page performance, it is recommended to generate the atlas svg ahead of time, and
 '''
 def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas_vector,atlas_labels,atlas_colors,
                                custom=None,corr_type="pearson",atlas=None,subsample_every=None,remove_scripts=None,
-                               summary=False):
+                               summary=False,width=1200):
 
   if len(image_vector1) == len(image_vector2) == len(atlas_vector) == len(atlas_labels) == len(atlas_colors):
 
@@ -107,7 +107,9 @@ def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas_vec
   elements = [custom,{"IMAGE_1":image_names[0]},
                                {"IMAGE_2":image_names[1]},
                                {"IMAGE_1_LINK":"#"},
-                               {"IMAGE_2_LINK":"#"}]
+                               {"IMAGE_2_LINK":"#"},
+                               {"SCATTER_WIDTH":width}]
+
   if custom == None: elements.pop(0)
   if atlas != None: elements.append(atlas)
 
@@ -136,7 +138,7 @@ def scatterplot_compare_vector(image_vector1,image_vector2,image_names,atlas_vec
 '''
 def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rendering=None,
                         custom=None,corr_type="pearson",reference=None,resample_dim=[8,8,8],
-                        remove_scripts=None):
+                        remove_scripts=None,width=1200):
 
   # Ensure that images are nibabel Nifti1Image objects
   if isinstance(images,str): images = [images]
@@ -176,7 +178,9 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
   elements = [atlas2mm.svg,custom,{"IMAGE_1":image_names[0]},
                                     {"IMAGE_2":image_names[1]},
                                     {"IMAGE_1_LINK":"#"},
-                                    {"IMAGE_2_LINK":"#"}]
+                                    {"IMAGE_2_LINK":"#"},
+                                    {"SCATTER_WIDTH",width}]
+
   if custom == None: elements.pop(1)
 
   # If we have an error, generate empty dataframe
