@@ -5,7 +5,7 @@ setup(
     name="pybraincompare",
 
     # Version number (initial):
-    version="0.1.05",
+    version="0.1.06",
 
     # Application author details:
     author="Vanessa Sochat",
@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
 
     # Data
-    package_data = {'pybraincompare.template':['html/*.html','static/*.zip','js/*.js','css/*.css'],
+    package_data = {'pybraincompare.template':['html/*.html','static/*.zip','js/*.js','css/*.css','img/*'],
                     'pybraincompare.testing':['data/*.tsv','data/*.csv'],
                     'pybraincompare.mr':['*.nii','*.nii.gz','*.xml']},
 

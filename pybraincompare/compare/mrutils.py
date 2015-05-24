@@ -38,14 +38,17 @@ def get_standard_mat(software):
 
 '''Returns nibabel nifti objects from a list of filenames and/or nibabel objects'''
 def get_nii_obj(images):
-  images_nii = []
-  if isinstance(images,str): images = [images]
-  for i in range(0,len(images)):
-    image = images[i]    
-    if not isinstance(image,nibabel.nifti1.Nifti1Image): 
-      image = nibabel.load(image)
-    images_nii.append(image)
-  return images_nii
+    images_nii = []
+    if isinstance(images,str): 
+        images = [images]
+    if isinstance(images,nibabel.nifti1.Nifti1Image):
+        return [images]
+    for i in range(0,len(images)):
+        image = images[i]    
+        if not isinstance(image,nibabel.nifti1.Nifti1Image): 
+            image = nibabel.load(image)
+        images_nii.append(image)
+    return images_nii
 
 
 # RESAMPLING -----------------------------------------------------------------------------
