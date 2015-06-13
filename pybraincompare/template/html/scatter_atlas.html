@@ -240,7 +240,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       })
        // On click, show or hide the points
       .on("click",function(d){
-          if (d3.select(this).classed("hidden") == false) {
+          if (d3.select(this).classed("pbchidden") == false) {
             d3.selectAll("circle." + d.label)
               .style("stroke-opacity",0)
               .style("fill-opacity",0)
@@ -248,7 +248,7 @@ raw = {"val1":[INPUT_DATA_ONE],
             d3.selectAll(".legend_corr_" + d.label )
               .style("stroke","black")
               .style("fill","black")
-            d3.select(this).classed("hidden",true)
+            d3.select(this).classed("pbchidden",true)
             // hide brain region
             d3.selectAll("path#" + d.label)
               .style("stroke","#F5F5F5")
@@ -261,7 +261,7 @@ raw = {"val1":[INPUT_DATA_ONE],
             d3.selectAll(".legend_corr_" + d.label )
               .style("stroke","white")
               .style("fill","white")
-            d3.select(this).classed("hidden",false) 
+            d3.select(this).classed("pbchidden",false) 
             // add brain region
             d3.selectAll("path#" + d.label)
                .style("stroke",d.color )
