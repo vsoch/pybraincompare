@@ -5,7 +5,7 @@ setup(
     name="pybraincompare",
 
     # Version number (initial):
-    version="0.1.07",
+    version="0.1.09",
 
     # Application author details:
     author="Vanessa Sochat",
