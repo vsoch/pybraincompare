@@ -179,7 +179,7 @@ def scatterplot_compare(images,image_names,software="FSL",atlas=None,atlas_rende
                                     {"IMAGE_2":image_names[1]},
                                     {"IMAGE_1_LINK":"#"},
                                     {"IMAGE_2_LINK":"#"},
-                                    {"SCATTER_WIDTH",width}]
+                                    {"SCATTER_WIDTH":width}]
 
   if custom == None: elements.pop(1)
 
