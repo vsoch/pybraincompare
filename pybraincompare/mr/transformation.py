@@ -22,7 +22,7 @@ def make_resampled_transformation_vector(nii_obj,resample_dim=[4,4,4],standard_m
 
 
 # Make a resampled image transformation
-def make_resampled_transformation(nii_obj,resample_dim=[4,4,4],standard_mask=True):
+def make_resampled_transformation(nii_obj,resample_dim=[4,4,4],standard_mask=True,vector=True):
 
     nii_obj = get_nii_obj(nii_obj)[0]
 
@@ -45,9 +45,14 @@ def make_resampled_transformation(nii_obj,resample_dim=[4,4,4],standard_mask=Tru
         masked_true_zeros[standard.get_data()!=0] = true_zeros.get_data()[standard.get_data()!=0]
         true_zeros = nib.nifti1.Nifti1Image(masked_true_zeros,affine=true_zeros.get_affine())
 
+        if vector == True:
+            true_zeros = true_zeros.get_data()[standard.get_data()!=0]
+
     # or just resample
     else: 
         if (resample_dim != numpy.diag(true_zeros.get_affine())[0:3]).all():
             true_zeros = resample_img(true_zeros,target_affine=numpy.diag(resample_dim))
+            if vector == True:
+                true_zeros = true_zeros.get_data().flatten()
 
     return true_zeros

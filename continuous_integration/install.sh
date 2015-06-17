@@ -26,16 +26,17 @@ create_new_venv() {
     chmod +x miniconda.sh
     ./miniconda.sh -b
     export PATH=/home/travis/miniconda/bin:$PATH
+    which python
     conda update --yes conda
     conda create --yes -n condaenv python=2.7
     conda install --yes -n condaenv pip
     source activate condaenv
+    python setup.py install
 }
 
 if [[ "$DISTRIB" == "standard-linux" ]]; then
     create_new_venv
     install_packages
-
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
     exit 1
@@ -44,5 +45,3 @@ fi
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
-
-python setup.py install
