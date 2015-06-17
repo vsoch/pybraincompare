@@ -1,0 +1,13 @@
+six
+pydicom
+Cython
+networkx
+numpy
+scipy
+scikit-learn
+nilearn
+nibabel
+pandas
+matplotlib
+scikit-image
+cairocffi

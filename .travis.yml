@@ -24,8 +24,7 @@ before_install:
 install:
  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
  - conda install --yes -c dan_blanchard python-coveralls
- - pip install nilearn
- - pip install nibabel
+ - cat requirements.txt | xargs -n 1 -L 1 -I{} pip install '{}'
 before_script:
 script: 
  - python continuous_integration/show-python-packages-versions.py
