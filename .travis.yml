@@ -12,7 +12,6 @@ addons:
   apt:
     packages:
     - libhdf5-serial-dev
-    - default-jre
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -23,7 +22,7 @@ before_install:
   - conda install --yes -n condaenv pip
   - source activate condaenv
 install:
- - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
+ - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image nilearn nibabel matplotlib h5py lxml numexpr
  - conda install --yes -c dan_blanchard python-coveralls
 before_script:
 script: 
