@@ -1,26 +1,32 @@
+sudo: false
 language: python
-
 python:
-  - "2.7"
-
-virtualenv:
-  system_site_packages: true
-
-install:
-    - source continuous_integration/install.sh
-
+  - 2.7
+cache:
+  directories:
+    - $HOME/.cache/pip
 env:
   global:
     - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
-  matrix:
-    - DISTRIB="standard-linux" PYTHON_VERSION="2.7" COVERAGE="true"
-
+addons:
+  apt:
+    packages:
+    - libhdf5-serial-dev
+    - default-jre
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  - conda create --yes -n condaenv python=2.7
+  - conda install --yes -n condaenv pip
+  - source activate condaenv
+install:
+ - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
+ - conda install --yes -c dan_blanchard python-coveralls
+before_script:
 script: 
-    - python continuous_integration/show-python-packages-versions.py
-    - bash pybraincompare/testing/run_tests.sh $PWD/pybraincompare/testing $TEST_RUN_FOLDER
-
-after_success:
-    - coveralls
-    - echo $PWD
-    - ls $PWD/* -1
+ - python continuous_integration/show-python-packages-versions.py
+ - bash pybraincompare/testing/run_tests.sh $PWD/pybraincompare/testing $TEST_RUN_FOLDER
 
