@@ -22,8 +22,10 @@ before_install:
   - conda install --yes -n condaenv pip
   - source activate condaenv
 install:
- - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image nilearn nibabel matplotlib h5py lxml numexpr
+ - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
  - conda install --yes -c dan_blanchard python-coveralls
+ - pip install nilearn
+ - pip install nibabel
 before_script:
 script: 
  - python continuous_integration/show-python-packages-versions.py
