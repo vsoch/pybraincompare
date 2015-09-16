@@ -6,7 +6,7 @@ Functions to visualize ontology trees
 import sys
 import json
 from pybraincompare.template.templates import get_package_dir, get_template, add_string
-from JSONEncoder import Node, NodeDict, NodeJSONEncoder
+from pybraincompare.ontology.graph import Node, get_json, check_pandas_columns, find_circular_reference
 
 # Annotate and visualize data with an ontology
 '''ontology_tree_from_tsv: create annotation json for set of images to visualize hierarchy, with nodes being names/counts for each category.  Image table should be organized in the following format:
@@ -38,7 +38,20 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
 
     return data_structure
 
-'''named_ontology_tree_from_tsv: equivalent to the above, except with structured "name", "id" and "children" fields. Format should be:
+'''named_ontology_tree_from_tsv: generate a tree from a data structure with the following format:
+
+relationship_table: either a file or pandas data frame with this format
+delim: the delimiter use to separate values
+meta_data [OPTIONAL]: if defined, should be a dictionary of dictionaries, with:
+      key = the node id
+      value = a dictionary of meta data. For example:
+
+      {
+        "trm_12345":{"defined_by":"squidward","score":1.2},
+        "node_54321":{"date":"12/15/15"}
+      }
+
+Meta data will be shown via mouseover of the nodes in the tree.
 
 id	parent	name
 1	none BRAINMETA
@@ -47,43 +60,44 @@ id	parent	name
 4	2	DS000009
 
 '''
-def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=None):
+def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=None,delim="\t"):
     nodes = []
 
-    if meta_data:
-        with open(relationship_table) as f:
-            for row in f.readlines()[1:]:
-                meta = dict()
-                nid, parent, name = row.strip().split()
-                if name in meta_data.keys():
-                    meta[name] = meta_data[name]
-                else: meta[name] = ""
-                nodes.append(Node(nid, parent, name, meta))
-    else:
-        with open(relationship_table) as f:
-            for row in f.readlines()[1:]:
-                nid, parent, name = row.strip().split()
-                nodes.append(Node(nid, parent, name))
+    if not isinstance(relationship_table,pandas.DataFrame):
+        relationship_table = pandas.read_csv(relationship_table,sep="\t")
 
-    nodeDict = NodeDict()
-    nodeDict.addNodes(nodes)
+    # check for correct columns and circular references
+    check_pandas_columns(df=relationship_table,column_names=["id","name","parent"])
+    find_circular_reference(relationship_table)
 
-    rootNode = [node for nid, node in nodeDict.items() if node.parent == "none"]
-    data_structure = NodeJSONEncoder().encode(rootNode[0])
+    # Generate nodes
+    unique_nodes = relationship_table.id.unique().tolist()
+    print "%s unique nodes found." %(len(unique_nodes))
+    for node in unique_nodes:
+        parents = relationship_table.parent[relationship_table.id==node].tolist()
+        name = relationship_table.name[relationship_table.id==node].unique().tolist()
+        if len(name) > 1:
+            raise ValueError("Error, node %s is defined with multiple names." %node)
+        meta = ""
+        if meta_data:
+           if node in meta_data:
+               meta = meta_data[node]
+        nodes.append(Node(node, parents, name[0], meta))
+
+    # Generate json
+    graph = get_json(nodes)
 
     if output_json:
-        filey = open(output_json,"wb")
-        filey.writelines(data_structure)
-        filey.close()
+        with open(output_json, 'wb') as outfile:
+            json.dump(graph, outfile)
  
-    return data_structure
+    return graph
 
 '''Render d3 of ontology tree, return html with embedded data'''
 def make_ontology_tree_d3(data_structure):
     temp = get_template("ontology_tree")
     temp = add_string({"INPUT_ONTOLOGY_JSON":data_structure},temp)
     return temp
-
 
 '''Render d3 of ontology tree, return html with embedded data'''
 def make_reverse_inference_tree_d3(data_structure):
