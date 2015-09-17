@@ -5,6 +5,7 @@ Functions to visualize ontology trees
 '''
 import sys
 import json
+import pandas
 from pybraincompare.template.templates import get_package_dir, get_template, add_string
 from pybraincompare.ontology.graph import Node, get_json, check_pandas_columns, find_circular_reference
 
