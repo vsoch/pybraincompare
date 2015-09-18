@@ -241,7 +241,7 @@ def calculate_regional_priors_in_ranges(region_df,ranges_df):
         # [Overall] probability that the image voxel (region) is in the range given entire image set
         numerator = (bool_df.shape[0] - bool_df.isnull().sum())
         numerator_laplace_smoothed = numerator + 1
-        denominator = numpy.sum(numerator) + bool_df.shape[0]
+        denominator = numpy.sum(numerator) + bool_df.shape[1]
         priors[row[0]] = numerator_laplace_smoothed / denominator
     return priors
 
@@ -259,11 +259,11 @@ return reverse inference value for each threshold in priors matrix
 
 p_in: priors in table, columns are thresholds, rows are voxels
 p_out: priors out table, ""  ""
-num_in: number of brain images used to generate p_in table
-num_out: number of brain images used to generate p_out table
+in_count: number of brain images used to generate p_in table
+out_count: number of brain images used to generate p_out table
 
 '''
-def calculate_reverse_inference_threshes(p_in,p_out,num_in,num_out):
+def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count):
     total = in_count + out_count # total number of nifti images
     p_process_in = float(in_count) / total   # percentage of niftis in
     p_process_out = float(out_count) / total # percentage out
@@ -284,7 +284,7 @@ range_table: will be used to define ranges of interest. The image will be thresh
 
 '''
 
-def calculate_reverse_inference(mrtable,range_table,p_in,p_out,num_in,num_out):
+def calculate_reverse_inference(mrtable,range_table,p_in,p_out,in_count,out_count):
     
     if not isinstance(mrtable,pandas.core.frame.DataFrame):
         mrtable = pandas.DataFrame(mrtable)
