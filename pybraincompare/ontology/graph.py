@@ -37,7 +37,11 @@ def get_json(nodes):
         # Get json of node
         node = tree[current.nid]
         # Remove child from the tree
-        tree = {k:v for (k,v) in tree.iteritems() if k != current.nid}
+        new_tree = dict() # This has to be done for python 2.6 support
+        for k,v in tree.iteritems():
+           if k != current.nid:
+               new_tree[k] = v
+        tree = new_tree
         # Append as child to all parent json
         parents = current.parent
         for parent in parents:
