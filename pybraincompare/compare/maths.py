@@ -166,7 +166,7 @@ def calc_rows_columns(ratio, n_images):
 
 
 # Also provided for command line https://github.com/vsoch/TtoZ
-def TtoZ(t_stat_map)
+def TtoZ(t_stat_map):
 
     print "Converting map %s to Z-Scores..." %(t_stat_map)
   
