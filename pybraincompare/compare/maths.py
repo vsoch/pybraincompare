@@ -5,14 +5,17 @@ Simple math functions
 '''
 
 from mrutils import resample_images_ref, apply_threshold, generate_thresholds, do_mask
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr, spearmanr, norm, t
 import numpy as np
 import maths
 import pandas
 import nibabel
+import sys
+import os
+
 
 def percent_to_float(x):
-  return float(x.strip('%'))/100
+    return float(x.strip('%'))/100
 
 '''Calculate a correlation between two images
 - images: list of 2 nibabel objects
@@ -160,3 +163,61 @@ def calc_rows_columns(ratio, n_images):
             break
         rows += 1
     return rows, columns
+
+
+# Also provided for command line https://github.com/vsoch/TtoZ
+def TtoZ(t_stat_map)
+
+    print "Converting map %s to Z-Scores..." %(t_stat_map)
+  
+    mr = nibabel.load(t_stat_map)
+    data = mr.get_data()
+
+    # Select just the nonzero voxels
+    nonzero = data[data!=0]
+
+    # We will store our results here
+    Z = np.zeros(len(nonzero))
+
+    # Select values less than or == 0, and greater than zero
+    c  = np.zeros(len(nonzero))
+    k1 = (nonzero <= c)
+    k2 = (nonzero > c)
+
+    # Subset the data into two sets
+    t1 = nonzero[k1]
+    t2 = nonzero[k2]
+
+    # Calculate p values for <=0
+    p_values_t1 = t.cdf(t1, df = args.dof)
+    z_values_t1 = norm.ppf(p_values_t1)
+
+    # Calculate p values for > 0
+    p_values_t2 = t.cdf(-t2, df = args.dof)
+    z_values_t2 = -norm.ppf(p_values_t2)
+    Z[k1] = z_values_t1
+    Z[k2] = z_values_t2
+
+    # Write new image to file
+    empty_nii = np.zeros(mr.shape)
+    empty_nii[mr.get_data()!=0] = Z
+    Z_nii_fixed = nibabel.nifti1.Nifti1Image(empty_nii,affine=mr.get_affine(),header=mr.get_header())
+    nibabel.save(Z_nii_fixed,args.output_nii)
+
+# From Chrisfilo alleninf
+def nifti_file(string):
+    if not os.path.exists(string):
+        msg = "%r does not exist" % string
+        raise argparse.ArgumentTypeError(msg)
+    try:
+        nii = nibabel.load(string)
+    except IOError as e:
+        raise argparse.ArgumentTypeError(str(e))
+    except:
+        msg = "%r is not a nifti file" % string
+        raise argparse.ArgumentTypeError(msg)
+    else:
+        if len(nii.shape) == 4 and nii.shape[3] > 1:
+            msg = "%r is four dimensional" % string
+            raise argparse.ArgumentTypeError(msg)
+    return string

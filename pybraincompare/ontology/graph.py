@@ -106,3 +106,26 @@ def find_circular_reference(relationship_table):
             if node in parent_parents:
                 raise ValueError("ERROR: circular reference between %s and %s" %(node,parent))
     
+
+# This function will "grab" a node by the name ( a subset of the tree )
+def get_node_by_name(myjson,name):
+    if myjson.get('name',None) == name:
+        return myjson
+    for child in myjson.get('children',[]):
+        result = get_node_by_name(child,name)
+        if result is not None:
+            return result
+    return None
+
+# This function will get all the names of the nodes
+def get_node_fields(myjson,field="name",nodes=[]):
+    if myjson.get(field,None) == None:
+        return nodes
+    else: 
+        nodes.append(myjson.get(field))
+        for child in myjson.get('children',[]):
+            nodes = get_node_fields(myjson=child,field=field,nodes=nodes)
+    if not nodes: 
+          return None
+    return nodes
+

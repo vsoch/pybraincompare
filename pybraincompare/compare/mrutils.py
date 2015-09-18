@@ -9,10 +9,10 @@ from pybraincompare.report.image import make_anat_image
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.image import resample_img
 import subprocess
-import os
-import numpy
 import nibabel
-
+import pandas
+import numpy
+import os
 
 # GET MR IMAGE FUNCTIONS------------------------------------------------------------------
 '''Returns reference mask from FSL or FREESURFER'''
@@ -50,6 +50,18 @@ def get_nii_obj(images):
         images_nii.append(image)
     return images_nii
 
+
+    mr = get_images_df(file_paths=files.path,mask=standard_mask)
+
+def get_images_df(file_paths,mask,dtype="f",smoothing_fwhm=None,ensure_finite=True):
+    return pandas.DataFrame(apply_mask(file_paths, mask, dtype, smoothing_fwhm,ensure_finite))
+
+
+def make_nii(data_vector,mask_template):
+    mask_nii = get_nii_obj(mask_template)[0]
+    empty_nii = numpy.zeros(shape=mask_nii.shape)
+    empty_nii[mask_nii.get_data()!=0] = data_vector
+    return nibabel.Nifti1Image(empty_nii,affine=mask_nii.get_affine())
 
 # RESAMPLING -----------------------------------------------------------------------------
 
