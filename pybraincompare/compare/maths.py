@@ -164,9 +164,17 @@ def calc_rows_columns(ratio, n_images):
         rows += 1
     return rows, columns
 
+"""
+TtoZ: for details see
+https://github.com/vsoch/TtoZ
+Also provided for command line.
 
-# Also provided for command line https://github.com/vsoch/TtoZ
-def TtoZ(t_stat_map):
+t_stat_map: file path to t stat image
+output_nii: output nifti file
+dof: degrees of freedom (typically number subjects - 2)
+
+"""
+def TtoZ(t_stat_map,output_nii,dof):
 
     print "Converting map %s to Z-Scores..." %(t_stat_map)
   
@@ -189,11 +197,11 @@ def TtoZ(t_stat_map):
     t2 = nonzero[k2]
 
     # Calculate p values for <=0
-    p_values_t1 = t.cdf(t1, df = args.dof)
+    p_values_t1 = t.cdf(t1, df = dof)
     z_values_t1 = norm.ppf(p_values_t1)
 
     # Calculate p values for > 0
-    p_values_t2 = t.cdf(-t2, df = args.dof)
+    p_values_t2 = t.cdf(-t2, df = dof)
     z_values_t2 = -norm.ppf(p_values_t2)
     Z[k1] = z_values_t1
     Z[k2] = z_values_t2
@@ -202,7 +210,7 @@ def TtoZ(t_stat_map):
     empty_nii = np.zeros(mr.shape)
     empty_nii[mr.get_data()!=0] = Z
     Z_nii_fixed = nibabel.nifti1.Nifti1Image(empty_nii,affine=mr.get_affine(),header=mr.get_header())
-    nibabel.save(Z_nii_fixed,args.output_nii)
+    nibabel.save(Z_nii_fixed,output_nii)
 
 # From Chrisfilo alleninf
 def nifti_file(string):
