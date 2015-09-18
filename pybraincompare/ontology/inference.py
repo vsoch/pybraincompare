@@ -4,13 +4,14 @@ Functions to calculate reverse inference
 
 '''
 
-from pybraincompare.ontology.graph import get_node_fields, get_node_by_name, get_all_children
+from pybraincompare.ontology.graph import get_node_fields, get_node_by_name
 from pybraincompare.compare.mrutils import get_images_df
 from glob import glob
 import nibabel
 import pickle
 import pandas
 import numpy
+import math
 import re
 import os
 
