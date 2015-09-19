@@ -158,7 +158,9 @@ def make_range_table(mr,ranges=None):
 """
 save_priors_df
 
-will calculate priors and save to a pandas df pickle
+will calculate priors and save to a pandas df pickle, including both:
+    - priors in all thresholds defined in image (calculate_priors in ranges)
+    - priors above / below a certain level [threshold, default=2.96]
 
 nid: a unique identifier, typically a node ID from a pybraincompare.ontology.tree
 in_images: a list of files for the "in" group relevant to some concept
@@ -175,8 +177,7 @@ EACH VOXEL IS p(activation in voxel is in threshold)
 
 """
 
-def save_priors_df(nid,in_images,out_images,standard_mask,output_folder,range_table):
-    
+def save_priors_df(nid,in_images,out_images,standard_mask,output_folder,range_table,threshold=2.96):
     # Read all images into one data frame
     if len(numpy.intersect1d(in_images,out_images)) > 0:
         raise ValueError("ERROR: in_images and out_images should not share images!")
@@ -185,14 +186,17 @@ def save_priors_df(nid,in_images,out_images,standard_mask,output_folder,range_ta
     mr.index = all_images
     in_subset = mr.loc[in_images]
     out_subset = mr.loc[out_images] 
-    priors_in = calculate_regional_priors_in_ranges(in_subset,range_table)         
-    priors_out = calculate_regional_priors_in_ranges(out_subset,range_table)
-    outfile_out = "%s/pbc_priors_%s_df_out.pkl" %(output_folder,nid)
-    outfile_in = "%s/pbc_priors_%s_df_in.pkl" %(output_folder,nid)
-    priors_in.to_pickle(outfile_in)
-    priors_out.to_pickle(outfile_out)
-    return {"out":outfile_out,"in":outfile_in}
+    priors_in_ranges = save_priors_pickle(calculate_priors_in_ranges(in_subset,range_table),output_folder,nid,"in_ranges")         
+    priors_out_ranges = save_priors_pickle(calculate_priors_in_ranges(out_subset,range_table),output_folder,nid,"out_ranges")         
+    priors_in_bin = save_priors_pickle(calculate_priors_binary(in_subset,threshold),output_folder,nid,"in_%s" %threshold)         
+    priors_out_bin = save_priors_pickle(calculate_priors_binary(out_subset,threshold),output_folder,nid,"out_%s" %threshold)         
+    return {"out_ranges":priors_out_ranges,"in_ranges":priors_in_ranges,"in_bin":priors_in_bin,"out_bin":priors_out_bin}
 
+
+def save_priors_pickle(priors_df,output_folder,nid,suffix):
+    outfile = "%s/pbc_priors_%s_df_%s.pkl" %(output_folder,nid,suffix)
+    priors_df.to_pickle(outfile)
+    return outfile
 
 """
 save_priors_nii
@@ -216,30 +220,33 @@ def save_priors_nii(input_pkl,output_folder,standard_mask):
 
     for range_group in ranges:
         empty_nii = numpy.zeros(shape=standard_brain.shape)
-        range_group_str = range_group.replace(",","_to_").replace("[","").replace("]","")
+        try:
+            range_group_str = range_group.replace(",","_to_").replace("[","").replace("]","")
+        except:
+            range_group_str = range_group
         probs = priors[range_group]
         empty_nii[standard_brain.get_data()!=0] = probs
         out_nii = nibabel.Nifti1Image(empty_nii,affine=standard_brain.get_affine())
-        nibabel.save(out_nii,"%s/pbc_priors_%s_df_in.nii.gz" %(output_folder,range_group_str))
+        nibabel.save(out_nii,"%s/pbc_priors_%s_df.nii.gz" %(output_folder,range_group_str))
 
 '''
-calculate_regional_priors_in_ranges: Function to calculate priors from a regionally-based df for ranges of values
+calculate_priors_in_ranges: Function to calculate priors from a regionally-based df for ranges of values
 
 region_df: a pandas data frame with voxels/regions in columns, images in rows
 range_df: a pandas data frame with columns ["start","stop"], 
           and each row corresponding to a particular range of values
 '''
 
-def calculate_regional_priors_in_ranges(region_df,ranges_df):
+def calculate_priors_in_ranges(region_df,ranges_df):
     # A table of priors, columns --> thresholds, rows --> regions)
     priors = pandas.DataFrame(columns=ranges_df.index)  
     for row in ranges_df.iterrows(): 
         # Nan means that value does not pass
-        bool_df = region_df[(region_df >= row[1].start) & (region_df <=row[1].stop)]    
-        # [Numerator] Count the non-NaN values in each column, add 1 for laplace smoothing
+        bin_df = (region_df >= row[1].start) & (region_df <=row[1].stop)   
+        # [Numerator] Count the number of True in each column (meaning within range) add 1 for laplace smoothing
         # [Denominator] sum(numerator with no laplace) + V (words in vocabulary --> regions/voxels)
         # [Overall] probability that the image voxel (region) is in the range given entire image set
-        numerator = (bool_df.shape[0] - bool_df.isnull().sum())
+        numerator = bin_df.sum(axis=0)
         numerator_laplace_smoothed = numerator + 1
         denominator = numpy.sum(numerator) + bool_df.shape[1]
         priors[row[0]] = numerator_laplace_smoothed / denominator
@@ -247,9 +254,30 @@ def calculate_regional_priors_in_ranges(region_df,ranges_df):
 
 
 '''
+calculate_priors_binary: Function to calculate priors for activation above/below some single threshold
+
+region_df: a pandas data frame with voxels/regions in columns, images in rows
+threshold: a value that will be used to generate binary matrix (default is Z=2.96)
+
+'''
+def calculate_priors_binary(region_df,threshold=2.96):
+    bool_df = region_df.abs()
+    bin_df = bool_df>=threshold
+    # [Numerator] Count the non-NaN values in each column, add 1 for laplace smoothing
+    # [Denominator] sum(numerator with no laplace) + V (words in vocabulary --> regions/voxels)
+    # [Overall] probability that the image voxel (region) is in the range given entire image set
+    numerator = bin_df.sum(axis=0)
+    numerator_laplace_smoothed = numerator + 1
+    denominator = numpy.sum(numerator) + bool_df.shape[1]
+    result = pandas.DataFrame(numerator_laplace_smoothed / denominator)
+    result.columns = [threshold] # store threshold with data frame
+    return result
+
+
+'''
 calculate_reverse_inferences_threshes: 
 
-return reverse inference value for each threshold in priors matrix
+return reverse inference value based on a priors matrix (no stat map as a query image)
 
 # Reverse Inference Calculation ------------------------------------------------------------------
 # P(node mental process|activation) = P(activation|mental process) * P(mental process)
@@ -276,28 +304,61 @@ def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count):
     return (numerators / denominators)
 
 '''
-calculate_reverse_inference: Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set) - this will return one value!
+calculate_reverse_inference: Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set) - this will return one value! If a range table is provided, a reverse inference value is returned for each range defined in the table. If not, the priors table are assumed to be done for a binary value,
+and this value (stored in the column name of the priors table) is used to threshold the image, and return a score
+based on that threshold.
 
 mrtable: should be a table, with images in rows, and voxels/regions in columns
          if there is more than one image, a mean will be used
-range_table: will be used to define ranges of interest. The image will be thresholded for these ranges
+p_in: the priors table for images that are relevant to the concept
+p_out: the priors table for images not relevant to the concept
+in_count: the number of images used to generate the priors in table
+out_count: the number of images used to generate the priors out table
+range_table: will be used to define ranges of interest. The image will be thresholded for these ranges.
+             if not provided, image will be thresholded using threshold defined as column name in priors tables
 
 '''
 
-def calculate_reverse_inference(mrtable,range_table,p_in,p_out,in_count,out_count):
-    
+def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_table=None):
     if not isinstance(mrtable,pandas.core.frame.DataFrame):
         mrtable = pandas.DataFrame(mrtable)
-
     # If we are given a DataFrame with multiple rows, take mean
-
     total = in_count + out_count # total number of nifti images
     p_process_in = float(in_count) / total   # percentage of niftis in
     p_process_out = float(out_count) / total # percentage out
-
     # If we multiply, we will get 0, so we take sum of logs
     if mrtable.shape[1]>1:
         mrtable = pandas.DataFrame(mrtable.mean())
+    if isinstance(range_table,pandas.core.frame.DataFrame):
+        p_in_vector,p_out_vector = _calculate_reverse_inference_vectors_ranges(mrtable,p_in,p_out,
+                                                                   in_count,out_count,range_table)
+    else:
+        p_in_vector,p_out_vector = _calculate_reverse_inference_vectors_binary(mrtable,p_in,p_out,
+                                                                               in_count,out_count)
+    # Convert to logs
+    p_in_log = numpy.log(p_in_vector)
+    p_out_log = numpy.log(p_out_vector)
+    if len(p_in_log)==0:
+        numerator = 0.0
+    else:
+        numerator = p_in_log.sum(axis=0) * p_process_in
+    if len(p_out_log)==0 and len(p_in_log)==0:
+        denominator = 0.0 
+    elif len(p_in_log)==0:
+        denominator = (p_out_log.sum(axis=0) * p_process_out)
+    else:       
+        denominator = (p_in_log.sum(axis=0) * p_process_in) + (p_out_log.sum(axis=0) * p_process_out)
+    if numerator == 0.0 and denominator == 0.0:
+        return 0.0
+    else: 
+        return (numerator / denominator)
+
+"""
+Internal function to return two strings of probabilities: one for probabilities from priors table for voxels with activations [p_in_vector], and the other to return probabilities for voxels without activation [p_out_vector]. These 
+probabilities can go into a reverse inference calculation for calculating a score based on binarizing an image. 
+
+"""
+def _calculate_reverse_inference_vectors_ranges(mrtable,p_in,p_out,in_count,out_count,range_table):
 
     # For each ACTUAL voxel value, assign to its threshold
     stat_map_levels = pandas.DataFrame(columns=mrtable.columns,index=mrtable.index)
@@ -316,9 +377,23 @@ def calculate_reverse_inference(mrtable,range_table,p_in,p_out,in_count,out_coun
         p_in_vector.append(p_in.loc[v,level])
         p_out_vector.append(p_out.loc[v,level])
 
-    # Convert to logs
-    p_in_log = numpy.log(p_in_vector)
-    p_out_log = numpy.log(p_out_vector)
-    numerator = p_in_log.sum(axis=0) * p_process_in
-    denominator = (p_in_log.sum(axis=0) * p_process_in) + (p_out_log.sum(axis=0) * p_process_out)
-    return (numerator / denominator)
+    return p_in_vector,p_out_vector
+
+"""
+Internal function to return two strings of probabilities: one for probabilities from priors table derived from images
+relevant to a contrast, and the other from a priors table from images not relevant - both are limited to voxels with activation for the image, defined as above/below the threshold defined in the columns of the priors table.
+This will be use for reverse inference calculation of a single image based on an absolute threshold to define activation. 
+
+"""
+def _calculate_reverse_inference_vectors_binary(mrtable,p_in,p_out,in_count,out_count):
+    # What voxels is the image > < the threshold?
+    stat_map_abs = mrtable.abs()
+    # Threshold should be equivalent in both p_in and p_out
+    if p_in.columns[0] != p_out.columns[0]:
+        raise ValueError("ERROR: threshold defined in priors in and priors out tables is different (%s vs %s)" %(p_in.columns[0],p_out.columns[0]))
+    else:
+        threshold = p_out.columns[0]
+    bin_df = stat_map_abs[0] >= threshold
+    p_in_vector = p_in[bin_df==True][threshold].tolist()
+    p_out_vector = p_out[bin_df==True][threshold].tolist()
+    return p_in_vector,p_out_vector
