@@ -157,7 +157,7 @@ def make_range_table(mr,ranges=None):
     return range_table
 
 """
-save_likelihood_df
+get_likelihood_df
 
 will calculate likelihoods and save to a pandas df pickle, including both:
     - likelihood in all thresholds defined in image (calculate_priors in ranges)
@@ -167,18 +167,22 @@ nid: a unique identifier, typically a node ID from a pybraincompare.ontology.tre
 in_images: a list of files for the "in" group relevant to some concept
 out_images: the rest
 standard_mask: the standard mask images are in space of
-output_folder: folder to save likelihood pickles
 range_table: a data frame of ranges with "start" and "stop" to calculate
              the range is based on the mins and max of the entire set of images
              can be generated with pybraincompare.inference.make_range_table
+output_folder: folder to save likelihood pickles [default is None]
 
 OUTPUT:
-pbc_likelihood_trm12345_df_in.pkl
+If output_folder is not specified, the pickle objects are returned.
+If specified, will return paths to saved pickle objects:
+    pbc_likelihood_trm12345_df_in.pkl
+
 EACH VOXEL IS p(activation in voxel is in threshold)
 
 """
 
-def save_likelihood_df(nid,in_images,out_images,standard_mask,output_folder,range_table,threshold=2.96):
+def get_likelihood_df(nid,in_images,out_images,standard_mask,range_table,threshold=2.96,output_folder=None):
+
     # Read all images into one data frame
     if len(numpy.intersect1d(in_images,out_images)) > 0:
         raise ValueError("ERROR: in_images and out_images should not share images!")
@@ -187,10 +191,18 @@ def save_likelihood_df(nid,in_images,out_images,standard_mask,output_folder,rang
     mr.index = all_images
     in_subset = mr.loc[in_images]
     out_subset = mr.loc[out_images] 
-    likelihood_in_ranges = save_likelihood_pickle(calculate_likelihood_in_ranges(in_subset,range_table),output_folder,nid,"in_ranges")         
-    likelihood_out_ranges = save_likelihood_pickle(calculate_likelihood_in_ranges(out_subset,range_table),output_folder,nid,"out_ranges")         
-    likelihood_in_bin = save_likelihood_pickle(calculate_likelihood_binary(in_subset,threshold),output_folder,nid,"in_%s" %threshold)         
-    likelihood_out_bin = save_likelihood_pickle(calculate_likelihood_binary(out_subset,threshold),output_folder,nid,"out_%s" %threshold)         
+    
+    # Calculate likelihood for binary and ranges
+    likelihood_in_ranges = calculate_likelihood_in_ranges(in_subset,range_table)
+    likelihood_out_ranges = calculate_likelihood_in_ranges(out_subset,range_table)
+    likelihood_in_bin = calculate_likelihood_binary(in_subset,threshold)
+    likelihood_out_bin = calculate_likelihood_binary(out_subset,threshold)
+    
+    if output_folder:
+        likelihood_in_ranges = save_likelihood_pickle(likelihood_in_ranges,output_folder,nid,"in_ranges")         
+        likelihood_out_ranges = save_likelihood_pickle(likelihood_out_ranges,output_folder,nid,"out_ranges")         
+        likelihood_in_bin = save_likelihood_pickle(likelihood_in_bin,output_folder,nid,"in_%s" %threshold)         
+        likelihood_out_bin = save_likelihood_pickle(likelihood_out_bin,output_folder,nid,"out_%s" %threshold)         
     return {"out_ranges":likelihood_out_ranges,"in_ranges":likelihood_in_ranges,"in_bin":likelihood_in_bin,"out_bin":likelihood_out_bin}
 
 
