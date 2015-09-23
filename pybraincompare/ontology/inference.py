@@ -16,14 +16,15 @@ import re
 import os
 
 '''
-priors_groups_from_tree: Function to generate priors groups from a pybraincompare.ontology.tree object
-output as pickle objects. This is done because it is ideal to calculate priors in a cluster environment.
+likelihood_groups_from_tree: Function to generate likelihood groups from a pybraincompare.ontology.tree object. These groups can then be used to calculate likelihoods (eg, p(activation|cognitive process)
+
+The groups are output as pickle objects. This is done because it is ideal to calculate likelihoods in a cluster environment.
 
 INPUTS:
 
 tree: a dictionary of nodes, with base nodes matching a particular pattern assumed to be image (.nii.gz) files.
 standard_mask: standard image mask that images are registered to
-output_folder: a folder path to save priors images
+output_folder: a folder path to save likelihood groups
 input_folder: the folder of images to be matched to the nodes of the tree.
 pattern: the pattern to match to find the base image nodes. Default is a number of any length [neurovault image primary keys].
 image_pattern: a regular expression to find image files in images_folder. Default will match any number of leading zeros, any number, and any extension.
@@ -31,7 +32,7 @@ node_pattern: a regular expression to find image nodes in the tree, matched to n
 
 OUTPUT: a pickle with the following
 
-pbc_priors_groups_trm_12345.pkl
+pbc_likelihood_groups_trm_12345.pkl
 group["nid"] = "trm_12345"
 group["in"] = ["path1","path2",..."pathN"]
 group["out"] = ["path3","path4",..."pathM"]
@@ -41,7 +42,7 @@ group["range_table"]: a data frame of ranges with "start" and "stop" to calculat
 
 '''
 
-def priors_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%s[.]",
+def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%s[.]",
                             output_folder=None,node_pattern="[0-9]+",):
 
     # Find all nodes in the tree, match to images in folder
@@ -78,12 +79,12 @@ def priors_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%
 
     range_table = make_range_table(mr)
 
-    # PRIORS GROUPS ----------------------------------------------------
-    # Find priors groups for image sets at each node (**node names must be unique) 
+    # LIKELIHOOD GROUPS ----------------------------------------------------
+    # Find likelihood groups for image sets at each node (**node names must be unique) 
     # This is images at (and in lower levels) of node vs. everything else
-    # will be used to calculate p[activation in range | region (voxel)]
+    # will be used to calculate p([activation in range | region (voxel)]
 
-    priors_groups = []
+    likelihood_groups = []
 
     for concept_node in concept_nodes:
         node = get_node_by_name(tree,concept_node)
@@ -94,7 +95,7 @@ def priors_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%
             children_in = [child for child in all_children if child in files.index]
             children_out = [child for child in files.index if child not in children_in]
             if len(children_in) > 0 and len(children_out) > 0:
-                print "Generating priors group for concept node %s" %(concept_node)
+                print "Generating likelihood group for concept node %s" %(concept_node)
                 group = {"in": files.path.loc[children_in].tolist(),
                          "out": files.path.loc[children_out].tolist(),
                          "range_table": range_table,
@@ -102,11 +103,11 @@ def priors_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%
                          "nid": node_id,
                          "name": concept_node}                
 
-                priors_groups.append(group)
+                likelihood_groups.append(group)
                 if output_folder != None:
-                    pickle.dump(group,open("%s/pbc_priors_group_%s.pkl" %(output_folder,node_id),"wb"))
+                    pickle.dump(group,open("%s/pbc_likelihood_group_%s.pkl" %(output_folder,node_id),"wb"))
 
-    return priors_groups
+    return likelihood_groups
 
 """
 Generate a table of ranges, in format:
@@ -156,28 +157,28 @@ def make_range_table(mr,ranges=None):
     return range_table
 
 """
-save_priors_df
+save_likelihood_df
 
-will calculate priors and save to a pandas df pickle, including both:
-    - priors in all thresholds defined in image (calculate_priors in ranges)
-    - priors above / below a certain level [threshold, default=2.96]
+will calculate likelihoods and save to a pandas df pickle, including both:
+    - likelihood in all thresholds defined in image (calculate_priors in ranges)
+    - likelihood above / below a certain level [threshold, default=2.96]
 
 nid: a unique identifier, typically a node ID from a pybraincompare.ontology.tree
 in_images: a list of files for the "in" group relevant to some concept
 out_images: the rest
 standard_mask: the standard mask images are in space of
-output_folder: folder to save priors images
+output_folder: folder to save likelihood pickles
 range_table: a data frame of ranges with "start" and "stop" to calculate
              the range is based on the mins and max of the entire set of images
              can be generated with pybraincompare.inference.make_range_table
 
 OUTPUT:
-pbc_priors_trm12345_df_in.pkl
+pbc_likelihood_trm12345_df_in.pkl
 EACH VOXEL IS p(activation in voxel is in threshold)
 
 """
 
-def save_priors_df(nid,in_images,out_images,standard_mask,output_folder,range_table,threshold=2.96):
+def save_likelihood_df(nid,in_images,out_images,standard_mask,output_folder,range_table,threshold=2.96):
     # Read all images into one data frame
     if len(numpy.intersect1d(in_images,out_images)) > 0:
         raise ValueError("ERROR: in_images and out_images should not share images!")
@@ -186,36 +187,36 @@ def save_priors_df(nid,in_images,out_images,standard_mask,output_folder,range_ta
     mr.index = all_images
     in_subset = mr.loc[in_images]
     out_subset = mr.loc[out_images] 
-    priors_in_ranges = save_priors_pickle(calculate_priors_in_ranges(in_subset,range_table),output_folder,nid,"in_ranges")         
-    priors_out_ranges = save_priors_pickle(calculate_priors_in_ranges(out_subset,range_table),output_folder,nid,"out_ranges")         
-    priors_in_bin = save_priors_pickle(calculate_priors_binary(in_subset,threshold),output_folder,nid,"in_%s" %threshold)         
-    priors_out_bin = save_priors_pickle(calculate_priors_binary(out_subset,threshold),output_folder,nid,"out_%s" %threshold)         
-    return {"out_ranges":priors_out_ranges,"in_ranges":priors_in_ranges,"in_bin":priors_in_bin,"out_bin":priors_out_bin}
+    likelihood_in_ranges = save_likelihood_pickle(calculate_likelihood_in_ranges(in_subset,range_table),output_folder,nid,"in_ranges")         
+    likelihood_out_ranges = save_likelihood_pickle(calculate_likelihood_in_ranges(out_subset,range_table),output_folder,nid,"out_ranges")         
+    likelihood_in_bin = save_likelihood_pickle(calculate_likelihood_binary(in_subset,threshold),output_folder,nid,"in_%s" %threshold)         
+    likelihood_out_bin = save_likelihood_pickle(calculate_likelihood_binary(out_subset,threshold),output_folder,nid,"out_%s" %threshold)         
+    return {"out_ranges":likelihood_out_ranges,"in_ranges":likelihood_in_ranges,"in_bin":likelihood_in_bin,"out_bin":likelihood_out_bin}
 
 
-def save_priors_pickle(priors_df,output_folder,nid,suffix):
-    outfile = "%s/pbc_priors_%s_df_%s.pkl" %(output_folder,nid,suffix)
-    priors_df.to_pickle(outfile)
+def save_likelihood_pickle(likelihood_df,output_folder,nid,suffix):
+    outfile = "%s/pbc_likelihood_%s_df_%s.pkl" %(output_folder,nid,suffix)
+    likelihood_df.to_pickle(outfile)
     return outfile
 
 """
-save_priors_nii
+save_likelihood_nii
 
 save a nii image for each threshold (column) across all voxels (rows)
 
-input_pkl: the input pickle with all priors saved by pybraincompare.ontology.inference.save_priors_df
+input_pkl: the input pickle with likelihood saved by pybraincompare.ontology.inference.save_likelihood_df
 output_folder: folder for output nifti, one per threshold range
 
 OUTPUT:
-pbc_priors_trm12345_df_in_[start]_[stop].nii
+pbc_likelihood_trm12345_df_in_[start]_[stop].nii
 EACH VOXEL IS p(activation in voxel is in threshold) for group [in or out]
 
 """
 
-def save_priors_nii(input_pkl,output_folder,standard_mask):
+def save_likelihood_nii(input_pkl,output_folder,standard_mask):
 
-    priors = pandas.read_pickle(input_pkl)
-    ranges = priors.columns.tolist()
+    likelihood = pandas.read_pickle(input_pkl)
+    ranges = likelihood.columns.tolist()
     standard_brain = nibabel.load(standard_mask)
 
     for range_group in ranges:
@@ -224,22 +225,22 @@ def save_priors_nii(input_pkl,output_folder,standard_mask):
             range_group_str = range_group.replace(",","_to_").replace("[","").replace("]","")
         except:
             range_group_str = range_group
-        probs = priors[range_group]
+        probs = likelihood[range_group]
         empty_nii[standard_brain.get_data()!=0] = probs
         out_nii = nibabel.Nifti1Image(empty_nii,affine=standard_brain.get_affine())
-        nibabel.save(out_nii,"%s/pbc_priors_%s_df.nii.gz" %(output_folder,range_group_str))
+        nibabel.save(out_nii,"%s/pbc_likelihood_%s_df.nii.gz" %(output_folder,range_group_str))
 
 '''
-calculate_priors_in_ranges: Function to calculate priors from a regionally-based df for ranges of values
+calculate_likelihood_in_ranges: Function to calculate likelihood from a regionally-based df for ranges of values
 
 region_df: a pandas data frame with voxels/regions in columns, images in rows
 range_df: a pandas data frame with columns ["start","stop"], 
           and each row corresponding to a particular range of values
 '''
 
-def calculate_priors_in_ranges(region_df,ranges_df):
-    # A table of priors, columns --> thresholds, rows --> regions)
-    priors = pandas.DataFrame(columns=ranges_df.index)  
+def calculate_likelihood_in_ranges(region_df,ranges_df):
+    # A table of likelihood, columns --> thresholds, rows --> regions)
+    likelihood = pandas.DataFrame(columns=ranges_df.index)  
     for row in ranges_df.iterrows(): 
         # Nan means that value does not pass
         bin_df = (region_df >= row[1].start) & (region_df <=row[1].stop)   
@@ -248,19 +249,19 @@ def calculate_priors_in_ranges(region_df,ranges_df):
         # [Overall] probability that the image voxel (region) is in the range given entire image set
         numerator = bin_df.sum(axis=0)
         numerator_laplace_smoothed = numerator + 1
-        denominator = numpy.sum(numerator) + bool_df.shape[1]
-        priors[row[0]] = numerator_laplace_smoothed / denominator
-    return priors
+        denominator = numpy.sum(numerator) + bin_df.shape[1]
+        likelihood[row[0]] = numerator_laplace_smoothed / denominator
+    return likelihood
 
 
 '''
-calculate_priors_binary: Function to calculate priors for activation above/below some single threshold
+calculate_likelihood_binary: Function to calculate likelihood for activation above/below some single threshold
 
 region_df: a pandas data frame with voxels/regions in columns, images in rows
 threshold: a value that will be used to generate binary matrix (default is Z=2.96)
 
 '''
-def calculate_priors_binary(region_df,threshold=2.96):
+def calculate_likelihood_binary(region_df,threshold=2.96):
     bool_df = region_df.abs()
     bin_df = bool_df>=threshold
     # [Numerator] Count the non-NaN values in each column, add 1 for laplace smoothing
@@ -277,7 +278,7 @@ def calculate_priors_binary(region_df,threshold=2.96):
 '''
 calculate_reverse_inferences_threshes: 
 
-return reverse inference value based on a priors matrix (no stat map as a query image)
+return reverse inference value based on a likelihood matrix (no stat map as a query image)
 
 # Reverse Inference Calculation ------------------------------------------------------------------
 # P(node mental process|activation) = P(activation|mental process) * P(mental process)
@@ -285,8 +286,8 @@ return reverse inference value based on a priors matrix (no stat map as a query 
 # P(activation|mental process) * P(mental process) + P(A|~mental process) * P(~mental process)
 # P(activation|mental process): my voxelwise prior map
 
-p_in: priors in table, columns are thresholds, rows are voxels
-p_out: priors out table, ""  ""
+p_in: likelihood in table, columns are thresholds, rows are voxels
+p_out: likelihood out table, ""  ""
 in_count: number of brain images used to generate p_in table
 out_count: number of brain images used to generate p_out table
 
@@ -304,18 +305,18 @@ def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count):
     return (numerators / denominators)
 
 '''
-calculate_reverse_inference: Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set) - this will return one value! If a range table is provided, a reverse inference value is returned for each range defined in the table. If not, the priors table are assumed to be done for a binary value,
-and this value (stored in the column name of the priors table) is used to threshold the image, and return a score
+calculate_reverse_inference: Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set) - this will return one value! If a range table is provided, a reverse inference value is returned for each range defined in the table. If not, the likelihood table are assumed to be done for a binary value,
+and this value (stored in the column name of the likelihood table) is used to threshold the image, and return a score
 based on that threshold.
 
-mrtable: should be a table, with images in rows, and voxels/regions in columns
+mrtable: should be a table, with the query image(s) in rows, and voxels/regions in columns
          if there is more than one image, a mean will be used
-p_in: the priors table for images that are relevant to the concept
-p_out: the priors table for images not relevant to the concept
-in_count: the number of images used to generate the priors in table
-out_count: the number of images used to generate the priors out table
+p_in: the likelihood table for images that are relevant to the concept
+p_out: the likelihood table for images not relevant to the concept
+in_count: the number of images used to generate the likelihood in table
+out_count: the number of images used to generate the likelihood out table
 range_table: will be used to define ranges of interest. The image will be thresholded for these ranges.
-             if not provided, image will be thresholded using threshold defined as column name in priors tables
+             if not provided, image will be thresholded using threshold defined as column name in likelihood tables
 
 '''
 
@@ -354,7 +355,7 @@ def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_tabl
         return (numerator / denominator)
 
 """
-Internal function to return two strings of probabilities: one for probabilities from priors table for voxels with activations [p_in_vector], and the other to return probabilities for voxels without activation [p_out_vector]. These 
+Internal function to return two strings of probabilities: one for probabilities from likelihood table for voxels with activations [p_in_vector], and the other to return probabilities for voxels without activation [p_out_vector]. These 
 probabilities can go into a reverse inference calculation for calculating a score based on binarizing an image. 
 
 """
@@ -380,8 +381,8 @@ def _calculate_reverse_inference_vectors_ranges(mrtable,p_in,p_out,in_count,out_
     return p_in_vector,p_out_vector
 
 """
-Internal function to return two strings of probabilities: one for probabilities from priors table derived from images
-relevant to a contrast, and the other from a priors table from images not relevant - both are limited to voxels with activation for the image, defined as above/below the threshold defined in the columns of the priors table.
+Internal function to return two strings of probabilities: one for probabilities from likelihood table derived from images
+relevant to a contrast, and the other from a likelihood table from images not relevant - both are limited to voxels with activation for the image, defined as above/below the threshold defined in the columns of the likelihood table.
 This will be use for reverse inference calculation of a single image based on an absolute threshold to define activation. 
 
 """
@@ -390,7 +391,7 @@ def _calculate_reverse_inference_vectors_binary(mrtable,p_in,p_out,in_count,out_
     stat_map_abs = mrtable.abs()
     # Threshold should be equivalent in both p_in and p_out
     if p_in.columns[0] != p_out.columns[0]:
-        raise ValueError("ERROR: threshold defined in priors in and priors out tables is different (%s vs %s)" %(p_in.columns[0],p_out.columns[0]))
+        raise ValueError("ERROR: threshold defined in likelihood 'in' and likelihood 'out' tables is different (%s vs %s)" %(p_in.columns[0],p_out.columns[0]))
     else:
         threshold = p_out.columns[0]
     bin_df = stat_map_abs[0] >= threshold
