@@ -96,8 +96,8 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
             children_out = [child for child in files.index if child not in children_in]
             if len(children_in) > 0 and len(children_out) > 0:
                 print "Generating likelihood group for concept node %s" %(concept_node)
-                group = {"in": files.path.loc[children_in].tolist(),
-                         "out": files.path.loc[children_out].tolist(),
+                group = {"in": files.path.loc[children_in].unique().tolist(),
+                         "out": files.path.loc[children_out].unique().tolist(),
                          "range_table": range_table,
                          "meta": node_meta,
                          "nid": node_id,
@@ -216,7 +216,7 @@ save_likelihood_nii
 
 save a nii image for each threshold (column) across all voxels (rows)
 
-input_pkl: the input pickle with likelihood saved by pybraincompare.ontology.inference.save_likelihood_df
+input_pkl: the input pickle with likelihood saved by pybraincompare.ontology.inference.get_likelihood_df
 output_folder: folder for output nifti, one per threshold range
 
 OUTPUT:
