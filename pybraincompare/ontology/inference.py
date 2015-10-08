@@ -301,7 +301,7 @@ def calculate_likelihood_binary(region_df,threshold=2.96):
     return result
 
 '''
-calculate_reverse_inferences_distance: 
+calculate_reverse_inference_distance: 
 
 return reverse inference value based on generating likelihood scores using distance
 of the query image from the group
@@ -319,7 +319,7 @@ equal_priors: use 0.5 as a prior for each group [default True]. If set to False,
 frequency of the concept in the total set will be used. "True" is recommended for small sets.
 
 '''
-def calculate_reverse_inference_distance(query_image,in_images,out_images,equal_priors=True):    
+def calculate_reverse_inference_distance(query_image,in_images,out_images,standard_mask,equal_priors=True):    
     if len(numpy.intersect1d(in_images,out_images)) > 0:
         raise ValueError("ERROR: in_images and out_images should not share images!")
     all_images = in_images + out_images
