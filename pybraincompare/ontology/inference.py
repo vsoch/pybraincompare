@@ -315,9 +315,11 @@ of the query image from the group
 query_image = image that we want to calculate reverse inference score for
 subset_in: brain maps that are defined for the concept
 subset_out: the rest
+equal_priors: use 0.5 as a prior for each group [default True]. If set to False, the
+frequency of the concept in the total set will be used. "True" is recommended for small sets.
 
 '''
-def calculate_reverse_inference_distance(query_image,in_images,out_images):    
+def calculate_reverse_inference_distance(query_image,in_images,out_images,equal_priors=True):    
     if len(numpy.intersect1d(in_images,out_images)) > 0:
         raise ValueError("ERROR: in_images and out_images should not share images!")
     all_images = in_images + out_images
@@ -325,11 +327,15 @@ def calculate_reverse_inference_distance(query_image,in_images,out_images):
     mr.index = all_images
     in_subset = mr.loc[in_images]
     out_subset = mr.loc[out_images] 
-    in_count = len(in_images)
-    out_count = len(out_images) 
-    total = in_count + out_count              # total number of nifti images
-    p_process_in = float(in_count) / total    # percentage of niftis in
-    p_process_out = float(out_count) / total  # percentage out
+    if equal_priors:
+        p_process_in = 0.5
+        p_process_out = 0.5
+    else:
+        in_count = len(in_images)
+        out_count = len(out_images) 
+        total = in_count + out_count              # total number of nifti images
+        p_process_in = float(in_count) / total    # percentage of niftis in
+        p_process_out = float(out_count) / total  # percentage out
     # Read in the query image
     query = get_images_df(file_paths=query_image,mask=standard_mask)
     # Generate a mean image for each group
