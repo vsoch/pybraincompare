@@ -5,6 +5,7 @@ Functions to calculate reverse inference
 '''
 
 from pybraincompare.ontology.graph import get_node_fields, get_node_by_name
+from pybraincompare.compare.maths import calculate_pairwise_correlation
 from pybraincompare.compare.mrutils import get_images_df
 from glob import glob
 import nibabel
@@ -159,10 +160,16 @@ def make_range_table(mr,ranges=None):
 """
 get_likelihood_df
 
-will calculate likelihoods and save to a pandas df pickle, including both:
+will calculate likelihoods and save to a pandas df pickle. The user must specify the method [default is binary]. Method details:
+
+ranges:
     - likelihood in all thresholds defined in image (calculate_priors in ranges)
+binary
     - likelihood above / below a certain level [threshold, default=2.96]
 
+Note: you do not need to calculate likelihoods in advance for the mean metric
+(using a derivation of the distance from a mean image as a probability score)
+In this case, use calculate_reverse_inference_distance
 nid: a unique identifier, typically a node ID from a pybraincompare.ontology.tree
 in_images: a list of files for the "in" group relevant to some concept
 out_images: the rest
@@ -173,7 +180,7 @@ range_table: a data frame of ranges with "start" and "stop" to calculate
 output_folder: folder to save likelihood pickles [default is None]
 
 OUTPUT:
-If output_folder is not specified, the pickle objects are returned.
+If output_folder is not specified, the df objects are returned.
 If specified, will return paths to saved pickle objects:
     pbc_likelihood_trm12345_df_in.pkl
 
@@ -181,7 +188,8 @@ EACH VOXEL IS p(activation in voxel is in threshold)
 
 """
 
-def get_likelihood_df(nid,in_images,out_images,standard_mask,range_table,threshold=2.96,output_folder=None):
+def get_likelihood_df(nid,in_images,out_images,standard_mask,range_table,
+                      threshold=2.96,output_folder=None,method=["binary"]):
 
     # Read all images into one data frame
     if len(numpy.intersect1d(in_images,out_images)) > 0:
@@ -191,19 +199,25 @@ def get_likelihood_df(nid,in_images,out_images,standard_mask,range_table,thresho
     mr.index = all_images
     in_subset = mr.loc[in_images]
     out_subset = mr.loc[out_images] 
-    
-    # Calculate likelihood for binary and ranges
-    likelihood_in_ranges = calculate_likelihood_in_ranges(in_subset,range_table)
-    likelihood_out_ranges = calculate_likelihood_in_ranges(out_subset,range_table)
-    likelihood_in_bin = calculate_likelihood_binary(in_subset,threshold)
-    likelihood_out_bin = calculate_likelihood_binary(out_subset,threshold)
-    
-    if output_folder:
-        likelihood_in_ranges = save_likelihood_pickle(likelihood_in_ranges,output_folder,nid,"in_ranges")         
-        likelihood_out_ranges = save_likelihood_pickle(likelihood_out_ranges,output_folder,nid,"out_ranges")         
-        likelihood_in_bin = save_likelihood_pickle(likelihood_in_bin,output_folder,nid,"in_%s" %threshold)         
-        likelihood_out_bin = save_likelihood_pickle(likelihood_out_bin,output_folder,nid,"out_%s" %threshold)         
-    return {"out_ranges":likelihood_out_ranges,"in_ranges":likelihood_in_ranges,"in_bin":likelihood_in_bin,"out_bin":likelihood_out_bin}
+
+    # Calculate likelihood for user defined methods
+    df = dict()    
+    if "ranges" in method:
+        df["out_ranges"] = calculate_likelihood_in_ranges(in_subset,range_table)
+        df["in_ranges"] = calculate_likelihood_in_ranges(out_subset,range_table)
+        if output_folder:
+            df["in_ranges"] = save_likelihood_pickle(df["in_ranges"],output_folder,nid,"in_ranges")         
+            df["out_ranges"] = save_likelihood_pickle(df["out_ranges"],output_folder,nid,"out_ranges")         
+
+    if "binary" in method:
+        df["in_bin"] = calculate_likelihood_binary(in_subset,threshold)
+        df["out_bin"] = calculate_likelihood_binary(out_subset,threshold)
+        if output_folder:
+            df["in_bin"] = save_likelihood_pickle(df["in_bin"],output_folder,nid,"in_bin_%s" %threshold)         
+            df["in_out"] = save_likelihood_pickle(df["out_bin"],output_folder,nid,"out_bin_%s" %threshold)         
+     
+    return df 
+
 
 
 def save_likelihood_pickle(likelihood_df,output_folder,nid,suffix):
@@ -285,6 +299,49 @@ def calculate_likelihood_binary(region_df,threshold=2.96):
     result = pandas.DataFrame(numerator_laplace_smoothed / denominator)
     result.columns = [threshold] # store threshold with data frame
     return result
+
+'''
+calculate_reverse_inferences_distance: 
+
+return reverse inference value based on generating likelihood scores using distance
+of the query image from the group
+
+# Reverse Inference Calculation ------------------------------------------------------------------
+# P(node mental process|activation) = P(activation|mental process) * P(mental process)
+# divided by
+# P(activation|mental process) * P(mental process) + P(A|~mental process) * P(~mental process)
+# P(activation|mental process): my voxelwise prior map
+
+query_image = image that we want to calculate reverse inference score for
+subset_in: brain maps that are defined for the concept
+subset_out: the rest
+
+'''
+def calculate_reverse_inference_distance(query_image,in_images,out_images):    
+    if len(numpy.intersect1d(in_images,out_images)) > 0:
+        raise ValueError("ERROR: in_images and out_images should not share images!")
+    all_images = in_images + out_images
+    mr = get_images_df(file_paths=all_images,mask=standard_mask)
+    mr.index = all_images
+    in_subset = mr.loc[in_images]
+    out_subset = mr.loc[out_images] 
+    in_count = len(in_images)
+    out_count = len(out_images) 
+    total = in_count + out_count              # total number of nifti images
+    p_process_in = float(in_count) / total    # percentage of niftis in
+    p_process_out = float(out_count) / total  # percentage out
+    # Read in the query image
+    query = get_images_df(file_paths=query_image,mask=standard_mask)
+    # Generate a mean image for each group
+    mean_image_in = pandas.DataFrame(in_subset.mean())
+    mean_image_out = pandas.DataFrame(out_subset.mean())
+    # p in/out is similarity between query image and groups
+    p_in = numpy.abs(calculate_pairwise_correlation(mean_image_in[0],query[0]))
+    p_out = numpy.abs(calculate_pairwise_correlation(mean_image_out[0],query[0]))
+    # Calculate inference
+    numerators = p_in * p_process_in
+    denominators = (p_in * p_process_in) + (p_out * p_process_out)
+    return (numerators / denominators)
 
 
 '''
