@@ -342,8 +342,8 @@ def calculate_reverse_inference_distance(query_image,in_images,out_images,equal_
     mean_image_in = pandas.DataFrame(in_subset.mean())
     mean_image_out = pandas.DataFrame(out_subset.mean())
     # p in/out is similarity between query image and groups
-    p_in = numpy.abs(calculate_pairwise_correlation(mean_image_in[0],query[0]))
-    p_out = numpy.abs(calculate_pairwise_correlation(mean_image_out[0],query[0]))
+    p_in = numpy.power(calculate_pairwise_correlation(mean_image_in[0],query[0]),2)
+    p_out = numpy.power(calculate_pairwise_correlation(mean_image_out[0],query[0]),2)
     # Calculate inference
     numerators = p_in * p_process_in
     denominators = (p_in * p_process_in) + (p_out * p_process_out)
