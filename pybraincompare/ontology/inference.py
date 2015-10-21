@@ -367,11 +367,14 @@ in_count: number of brain images used to generate p_in table
 out_count: number of brain images used to generate p_out table
 
 '''
-def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count):
+def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_priors=True):
     total = in_count + out_count # total number of nifti images
-    p_process_in = float(in_count) / total   # percentage of niftis in
-    p_process_out = float(out_count) / total # percentage out
-    
+    if equal_priors:
+        p_process_in = 0.5
+        p_process_out = 0.5
+    else:
+        p_process_in = float(in_count) / total   # percentage of niftis in
+        p_process_out = float(out_count) / total # percentage out    
     # If we multiply, we will get 0, so we take sum of logs
     p_in_log = numpy.log(p_in)
     p_out_log = numpy.log(p_out)
@@ -395,13 +398,17 @@ range_table: will be used to define ranges of interest. The image will be thresh
 
 '''
 
-def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_table=None):
+def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_table=None,equal_priors=True):
     if not isinstance(mrtable,pandas.core.frame.DataFrame):
         mrtable = pandas.DataFrame(mrtable)
     # If we are given a DataFrame with multiple rows, take mean
     total = in_count + out_count # total number of nifti images
-    p_process_in = float(in_count) / total   # percentage of niftis in
-    p_process_out = float(out_count) / total # percentage out
+    if equal_priors:
+        p_process_in = 0.5
+        p_process_out = 0.5
+    else:
+        p_process_in = float(in_count) / total   # percentage of niftis in
+        p_process_out = float(out_count) / total # percentage out
     # If we multiply, we will get 0, so we take sum of logs
     if mrtable.shape[1]>1:
         mrtable = pandas.DataFrame(mrtable.mean())
