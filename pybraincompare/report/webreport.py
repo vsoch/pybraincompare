@@ -16,7 +16,7 @@ from pybraincompare.template.visual import view, run_webserver
 from nilearn.masking import compute_epi_mask, apply_mask
 from pybraincompare.template.templates import get_template, add_string, save_template
 from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
-from pybraincompare.report.static import make_glassbrain_image, make_anat_image, make_stat_image
+from pybraincompare.report.image import make_glassbrain_image, make_anat_image, make_stat_image
 from pybraincompare.report.histogram import get_histogram_data
 from qa import header_metrics, central_tendency, outliers, get_percent_nonzero, count_voxels, is_thresholded
 from pybraincompare.compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
