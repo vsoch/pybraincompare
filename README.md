@@ -1,7 +1,7 @@
 #pybraincompare
 ![build_status](https://travis-ci.org/vsoch/pybraincompare.svg?branch=master)
 
-Semantic and computational comparison methods for brain imaging data, and visualization of outputs. Modules include:
+Semantic and computational comparison methods for brain imaging data, and visualization of outputs.
 
 ## Installation
 
