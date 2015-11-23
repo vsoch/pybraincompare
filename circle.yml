@@ -8,7 +8,7 @@ test:
 
 dependencies:
   pre:
-    - echo "Pyneurovault!"
+    - echo "Pybraincompare!"
     - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
     - ./miniconda.sh -b
@@ -21,4 +21,3 @@ dependencies:
     - source activate condaenv
     - $HOME/miniconda2/bin/pip install setuptools
     - $HOME/miniconda2/bin/conda install --yes pip numpy scipy nose pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
-    - $HOME/miniconda2/bin/conda install --yes -c dan_blanchard python-coveralls
