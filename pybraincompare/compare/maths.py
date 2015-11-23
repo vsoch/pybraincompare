@@ -57,8 +57,8 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
         else:  
             atlas_nii = nibabel.load(atlas.file)
             if not (atlas_nii.get_affine() == images[0].get_affine()).all():  
-            atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
-                                             interpolation="nearest")
+                atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
+                                                         interpolation="nearest")
 
         atlas_vector = do_mask(atlas_nii,mask=mask)[0]
         atlas_labels =  ['"%s"' %(atlas.labels[str(int(x))].label) for x in atlas_vector]
@@ -74,7 +74,7 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
                                                corr_type=corr_type,
                                                summary=summary)
         else:
-        corr = np.nan
+            corr = np.nan
         return corr
 
 def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",

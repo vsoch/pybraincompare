@@ -186,7 +186,7 @@ def generate_thresholds(lower=0,upper=4,by=0.01):
     thresholds = []
     for ii in range(lower,upper):
         thresholds = thresholds + [(float(x) * by)+ii for x in range(0,100)]
-     return thresholds
+    return thresholds
 
 def apply_threshold(image1,thresh,direction="posneg"):
     '''apply_threshold
