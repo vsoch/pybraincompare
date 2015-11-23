@@ -1,5 +1,6 @@
 #pybraincompare
-![build_status](https://travis-ci.org/vsoch/pybraincompare.svg?branch=master)
+[![Circle CI](https://circleci.com/gh/vsoch/pybraincompare.svg?style=svg)](https://circleci.com/gh/vsoch/pybraincompare)
+[Documentation](http://pybraincompare.readthedocs.org/)
 
 Semantic and computational comparison methods for brain imaging data, and visualization of outputs.
 
@@ -10,6 +11,7 @@ Semantic and computational comparison methods for brain imaging data, and visual
      git clone https://github.com/vsoch/pybraincompare
      cd pybraincompare
      sudo python setup.py install
+
 
 #### pip Installation
 

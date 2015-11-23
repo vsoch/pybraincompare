@@ -21,3 +21,4 @@ dependencies:
     - source activate condaenv
     - $HOME/miniconda2/bin/pip install setuptools
     - $HOME/miniconda2/bin/conda install --yes pip numpy scipy nose pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
+    - $HOME/miniconda2/bin/conda install --yes -c dan_blanchard python-coveralls
