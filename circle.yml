@@ -1,0 +1,24 @@
+machine:
+  environment:
+    TEST_RUN_FOLDER: /tmp
+
+test:
+  override:
+    - bash pybraincompare/testing/run_tests.sh $PWD/pybraincompare/testing $TEST_RUN_FOLDER
+
+dependencies:
+  pre:
+    - echo "Pyneurovault!"
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - echo "export PATH=$HOME/miniconda2/bin:\\$PATH" >> $HOME/.bashrc
+    - echo "export PATH=$HOME/miniconda2/bin:\\$PATH" >> $HOME/.env
+    - source $HOME/.bashrc
+    - conda update --yes conda
+    - conda create --yes -n condaenv python=2.7
+    - conda install --yes -n condaenv pip
+    - source activate condaenv
+    - $HOME/miniconda2/bin/pip install setuptools
+    - $HOME/miniconda2/bin/conda install --yes pip numpy scipy nose pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
+    - $HOME/miniconda2/bin/conda install --yes -c dan_blanchard python-coveralls
