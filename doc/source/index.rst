@@ -12,7 +12,7 @@ compare
 -------
 An example scatterplot image comparison, dynamically rendered using python and d3 from two raw statstical brain maps and an atlas image, [is available](http://vbmis.com/bmi/share/neurovault/scatter_atlas.html). A new addition (beta) is a [canvas based scatterplot](http://vbmis.com/bmi/project/brainatlas) that can render 150K + points.
 
-annotate
+ontology
 --------
 This module will let you convert a triples data structure defining relationships in an ontology to a an interactive d3 visualization, demo is [is available](http://vbmis.com/bmi/share/neurovault/ontology_tree.html). Reverse inference tree also [in development](http://vbmis.com/bmi/share/neurovault/reverse_inference.html).
 
@@ -26,8 +26,9 @@ This module will generate a web report for a list of statistical maps, demo [is 
 
 histogram
 ---------
-An example histogram using python and chartJS from a sigle brain map [is available](http://vbmis.com/bmi/share/neurovault/histogram.html).
+An example histogram using python and chartJS from a single brain map [is available](http://vbmis.com/bmi/share/neurovault/histogram.html).
 
+This package is maintained by Vanessa Sochat at Stanford University, proud member of Poldracklab. Pybraincompare drives image comparison in `NeuroVault <http://www.neurovault.org>`_ and `published methods <http://journal.frontiersin.org/article/10.3389/fnins.2015.00418/abstract>`_ have also been included. Please submit bugs and feature requests on the `Github Repo <https://github.com/vsoch/pybraincompare>`_.
 
 Contents:
 
@@ -35,6 +36,9 @@ Contents:
    :maxdepth: 2
 
    installation
+   spatial_image_comparison
+   semantic_image_comparison
+   additional_tools
    modules
    GitHub repository <https://github.com/vsoch/pybraincompare>
 

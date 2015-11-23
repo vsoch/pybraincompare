@@ -11,23 +11,24 @@ from pybraincompare.ontology.graph import Node, get_json, check_pandas_columns, 
 
 # Annotate and visualize data with an ontology
 def ontology_tree_from_tsv(relationship_table,output_json=None):
-    '''ontology_tree_from_tsv: create annotation json for set of images to visualize 
-    hierarchy, with nodes being names/counts for each category.  Relationship table 
-    should be organized in the following format:
+    '''ontology_tree_from_tsv
+    create annotation json for set of images to visualize hierarchy, with nodes being names/counts for each category.  Relationship table should be organized in the following format
 
-    ROOT    CONCEPT_A    CONTRAST_1    image_file_1
-    ROOT    CONCEPT_B    CONTRAST_1    image_file_2
-    ROOT    CONCEPT_D    CONTRAST_2    image_file_3
+    ..note::
 
-    Each name corresponds to whatever the node is called, with the final column having 
-    the image names.
+        ROOT    CONCEPT_A    CONTRAST_1    image_file_1
+        ROOT    CONCEPT_B    CONTRAST_1    image_file_2
+        ROOT    CONCEPT_D    CONTRAST_2    image_file_3
+
+        Each name corresponds to whatever the node is called, with the final column having 
+        the image names.
  
-   NOTE: This format is not currently compatible with any d3 visualizations, just an   
-    option for data export!
+        NOTE This format is not currently compatible with any d3 visualizations, just an option for data export!
 
-    For d3 export, use named_ontology_tree_from_tsv
-
+        For d3 export, use named_ontology_tree_from_tsv
+    
     '''
+
     data_structure = {}
     for line in open(relationship_table,'r'):
         data = line.strip().split("\t")
@@ -48,12 +49,13 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
     return data_structure
 
 def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=None,delim="\t"):
-    '''named_ontology_tree_from_tsv: 
-    generate a tree from a data structure with the following format:
+    '''named_ontology_tree_from_tsv
+    generate a tree from a data structure with the following format
 
-    relationship_table: csv or pandas data frame 
+    :param relationship_table: csv or pandas data frame 
         either a file or pandas data frame with this format
 
+    ..note::
  
                              id             parent                          name
         0                     1               None                          BASE
@@ -65,24 +67,26 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
         The index (0-4) is not used. The head/base node should have id 1, and no parent.
         All other nodes can be unique ids that you specify, with a name.
 
-    delim: the delimiter use to separate values
+    :param delim: the delimiter use to separate values
 
-    meta_data [OPTIONAL]: dict 
-          if defined, should be a dictionary of dictionaries, with:
+    :param meta_data [OPTIONAL]: dict 
+          if defined, should be a dictionary of dictionaries, with
+
+    ..note::
 
           key = the node id
           value = a dictionary of meta data. For example:
 
-      {
-        "trm_12345":{"defined_by":"squidward","score":1.2},
-        "node_54321":{"date":"12/15/15"},
-        "category":""
-      }
+          {
+            "trm_12345":{"defined_by":"squidward","score":1.2},
+            "node_54321":{"date":"12/15/15"},
+            "category":""
+          }
 
-      Currently, if you supply meta-data, you must supply category as a field (even if 
-      blank). This is for integration with Cognitive Atlas categories.
-'''
-
+          Currently, if you supply meta-data, you must supply category as a field (even if 
+          blank). This is for integration with Cognitive Atlas categories.
+    
+    '''
     nodes = []
 
     if not isinstance(relationship_table,pandas.DataFrame):

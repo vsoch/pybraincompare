@@ -18,41 +18,35 @@ import os
 
 
 def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[0]+%s[.]",
-                            output_folder=None,node_pattern="[0-9]+",):
-    '''
-    likelihood_groups_from_tree: Function to generate likelihood groups from a pybraincompare.ontology.tree object. 
-    These groups can then be used to calculate likelihoods (eg, p(activation|cognitive process)
+                                output_folder=None,node_pattern="[0-9]+",):
+    '''likelihood_groups_from_tree
+    Function to generate likelihood groups from a pybraincompare.ontology.tree object. These groups can then be used to calculate likelihoods (eg, p(activation|cognitive process). The groups are output as pickle objects. This is done because it is ideal to calculate likelihoods on a cluster.
 
-    The groups are output as pickle objects. This is done because it is ideal to calculate likelihoods on a cluster.
-
-    Inputs
-    ======
-
-    tree: dict
+    :param tree: dict
         a dictionary of nodes, with base nodes matching a particular pattern assumed to be image (.nii.gz) files.
 
-    standard_mask: nifti image (nibabel) 
+    :param standard_mask: nifti image (nibabel) 
         standard image mask that images are registered to
 
-    output_folder: path
+    :param output_folder: path
         a folder path to save likelihood groups
 
-    input_folder: path
+    :param input_folder: path
         the folder of images to be matched to the nodes of the tree.
 
-    pattern: str 
+    :param pattern: str 
         the pattern to match to find the base image nodes. Default is a number of any length [neurovault image primary keys].
 
-    image_pattern: str
+    :param image_pattern: str
         a regular expression to find image files in images_folder. Default will match any number of leading zeros, any number, and any extension.
 
-    node_pattern: str
+    :param node_pattern: str
         a regular expression to find image nodes in the tree, matched to name
 
-    OUTPUT
-
-    likelihood_groups: pickle 
+    :return likelihood_groups: pickle 
         a pickle with the following
+
+    ..note::
 
             pbc_likelihood_groups_trm_12345.pkl
             
@@ -130,21 +124,24 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
 
 def make_range_table(mr,ranges=None):
     '''make_range_table
-    Generate a table of ranges, in format:
-                   start  stop
-    [-28.0,-27.5]  -28.0 -27.5
-    [-27.5,-27.0]  -27.5 -27.0
-    [-27.0,-26.5]  -27.0 -26.5
-    [-26.5,-26.0]  -26.5 -26.0
+    Generate a table of ranges, in format
 
-    from a table of values, where images/objects are expected in rows, 
-    and regions/voxels in columns
+    ..note::
 
-    ranges, if defined, should be a list of lists of ranges to
-    extract. eg, [[start,stop],[start,stop]] where start is the min, stop is max
+                       start  stop
+        [-28.0,-27.5]  -28.0 -27.5
+        [-27.5,-27.0]  -27.5 -27.0
+        [-27.0,-26.5]  -27.0 -26.5
+        [-26.5,-26.0]  -26.5 -26.0
 
-    The absolute min and max are used to generate a table of ranges
-    in the format above from min to max
+        from a table of values, where images/objects are expected in rows, 
+        and regions/voxels in columns
+
+        ranges, if defined, should be a list of lists of ranges to
+        extract. eg, [[start,stop],[start,stop]] where start is the min, stop is max
+
+        The absolute min and max are used to generate a table of ranges
+        in the format above from min to max
 
     '''
 
@@ -193,28 +190,27 @@ def get_likelihood_df(nid,in_images,out_images,standard_mask,range_table,
     (using a derivation of the distance from a mean image as a probability score)
     In this case, use calculate_reverse_inference_distance
  
-    nid: str
+    :param nid: str
         a unique identifier, typically a node ID from a pybraincompare.ontology.tree
 
-    in_images: list
+    :param in_images: list
         a list of files for the "in" group relevant to some concept
 
-    out_images: list
+    :param out_images: list
         the rest
 
-    standard_mask: nibabel.Nifti1Image object
+    :param standard_mask: nibabel.Nifti1Image object
         the standard mask images are in space of
 
-    range_table: pandas data frame
+    :param range_table: pandas data frame
         a data frame of ranges with "start" and "stop" to calculate
         the range is based on the mins and max of the entire set of images
         can be generated with pybraincompare.inference.make_range_table
 
-    output_folder: path
+    :param output_folder: path
         folder to save likelihood pickles [default is None]
 
-    OUTPUT:
-
+  
     If output_folder is not specified, the df objects are returned.
     If specified, will return paths to saved pickle objects:
     pbc_likelihood_trm12345_df_in.pkl
@@ -262,14 +258,13 @@ def save_likelihood_nii(input_pkl,output_folder,standard_mask):
 
     save a nii image for each threshold (column) across all voxels (rows)
 
-    input_pkl: pickle object
+    :param input_pkl: pickle object
         the input pickle with likelihood saved by pybraincompare.ontology.inference.get_likelihood_df
 
-    output_folder: path
+    :param output_folder: path
         folder for output nifti, one per threshold range
 
-    OUTPUT:
-
+   
     pbc_likelihood_trm12345_df_in_[start]_[stop].nii
     EACH VOXEL IS p(activation in voxel is in threshold) for group [in or out]
 
@@ -292,12 +287,12 @@ def save_likelihood_nii(input_pkl,output_folder,standard_mask):
 
 
 def calculate_likelihood_in_ranges(region_df,ranges_df):
-    '''calculate_likelihood_in_ranges: 
-       Function to calculate likelihood from a regionally-based df for ranges of values
+    '''calculate_likelihood_in_ranges 
+    Function to calculate likelihood from a regionally-based df for ranges of values
 
-    region_df: pandas data frame 
+    :param region_df: pandas data frame 
         a pandas data frame with voxels/regions in columns, images in rows
-    range_df: pandas data frame
+    :param range_df: pandas data frame
         a pandas data frame with columns ["start","stop"], 
         and each row corresponding to a particular range of values
     '''
@@ -317,12 +312,13 @@ def calculate_likelihood_in_ranges(region_df,ranges_df):
     return likelihood
 
 def calculate_likelihood_binary(region_df,threshold=2.96):
-    '''calculate_likelihood_binary: 
- 
+    '''calculate_likelihood_binary
     Function to calculate likelihood for activation above/below some single threshold
-    region_df: pandas data frame
+
+    :param region_df: pandas data frame
         a pandas data frame with voxels/regions in columns, images in rows
-    threshold: float
+
+    :param threshold: float
         a value that will be used to generate binary matrix (default is Z=2.96)
 
     '''
@@ -340,27 +336,29 @@ def calculate_likelihood_binary(region_df,threshold=2.96):
     return result
 
 def calculate_reverse_inference_distance(query_image,in_images,out_images,standard_mask,equal_priors=True):    
-    '''calculate_reverse_inference_distance: 
+    '''calculate_reverse_inference_distance
 
-     return reverse inference value based on generating likelihood scores using distance
-     of the query image from the group
+    return reverse inference value based on generating likelihood scores using distance
+    of the query image from the group
 
-    # Reverse Inference Calculation ------------------------------------------------------------------
-    # P(node mental process|activation) = P(activation|mental process) * P(mental process)
-    # divided by
-    # P(activation|mental process) * P(mental process) + P(A|~mental process) * P(~mental process)
-    # P(activation|mental process): my voxelwise prior map
+    ..note::
+        
+        Reverse Inference Calculation ------------------------------------------------------------------
+        P(node mental process|activation) = P(activation|mental process) * P(mental process)
+        divided by
+        P(activation|mental process) * P(mental process) + P(A|~mental process) * P(~mental process)
+        P(activation|mental process): my voxelwise prior map
 
-    query_image: nifti image path
+    :param query_image: nifti image path
         image that we want to calculate reverse inference score for
 
-    subset_in: list of nifti files
+    :param subset_in: list of nifti files
         brain maps that are defined for the concept
 
-    subset_out: list of nifti files
+    :param subset_out: list of nifti files
         the rest
 
-    equal_priors: boolean
+    :param equal_priors: boolean
         use 0.5 as a prior for each group [default True]. If set to False, the
         frequency of the concept in the total set will be used. "True" is recommended for small sets.
 
@@ -396,7 +394,7 @@ def calculate_reverse_inference_distance(query_image,in_images,out_images,standa
 
 
 def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_priors=True):
-    '''calculate_reverse_inferences_threshes: 
+    '''calculate_reverse_inferences_threshes
 
     return reverse inference value based on a likelihood matrix (no stat map as a query image)
 
@@ -406,13 +404,13 @@ def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_pri
     # P(activation|mental process) * P(mental process) + P(A|~mental process) * P(~mental process)
     # P(activation|mental process): my voxelwise prior map
 
-    p_in: pandas data frame
+    :param p_in: pandas data frame
         likelihood in table, columns are thresholds, rows are voxels
-    p_out: pandas data frame
+    :param p_out: pandas data frame
         likelihood out table, ""  ""
-    in_count: int
+    :param in_count: int
         number of brain images used to generate p_in table
-    out_count: int
+    :param out_count: int
         number of brain images used to generate p_out table
 
     '''
@@ -432,27 +430,26 @@ def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_pri
 
 
 def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_table=None,equal_priors=True):
-    '''calculate_reverse_inference: 
-    Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set). This will return one value! If a range table is provided, a reverse inference value is returned for each range defined in the table. If not, the likelihood table are assumed to be done for a binary value,
-and this value (stored in the column name of the likelihood table) is used to threshold the image, and return a score
-based on that threshold.
+    '''calculate_reverse_inference
+    Function to return reverse inference value based on particular thresholds of a brain stat map (or average of the node set). This will return one value! If a range table is provided, a reverse inference value is returned for each range defined in the table. If not, the likelihood table are assumed to be done for a binary value, and this value (stored in the column name of the likelihood table) is used to threshold the image, and return a score based on that threshold.
 
-    mrtable: pandas data frame
+    :param mrtable: pandas data frame
         should be a table, with the query image(s) in rows, and voxels/regions in columns
         if there is more than one image, a mean will be used
 
-    p_in: pandas data frame
+    :param p_in: pandas data frame
         the likelihood table for images that are relevant to the concept
 
-    p_out: pandas data frame
+    :param p_out: pandas data frame
         the likelihood table for images not relevant to the concept
 
-    in_count: int
+    :param in_count: int
         the number of images used to generate the likelihood in table
 
-    out_count: int
+    :param out_count: int
         the number of images used to generate the likelihood out table
-range_table: will be used to define ranges of interest. The image will be thresholded for these ranges.
+
+    :param range_table: will be used to define ranges of interest. The image will be thresholded for these ranges.
         if not provided, image will be thresholded using threshold defined as column name in likelihood tables
     '''
     if not isinstance(mrtable,pandas.core.frame.DataFrame):

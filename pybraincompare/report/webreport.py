@@ -202,10 +202,10 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 
         if flagged == True:
             statmap_table.append('<tr><td>%s</td><td class="center">%s</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center">%0.2f</td><td class="center"><a class="btn btn-danger" href="%s/%s.html"><i class="icon-flag zoom-in"></i></a></td></tr>' %(image_names[count],count,res[1]["mean_resamp"],res[1]["median_resamp"],res[1]["variance_resamp"],res[1]["standard_deviation_resamp"],res[1]["n_outliers_low_%ssd" %(outlier_sds)],res[1]["n_outliers_high_%ssd" %(outlier_sds)],count,count))
-          if res[1]["n_outliers_high_%ssd" %(outlier_sds)] > 0: 
-              alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier High</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
-          if res[1]["n_outliers_low_%ssd" %(outlier_sds)] > 0: 
-              alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier Low</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
+            if res[1]["n_outliers_high_%ssd" %(outlier_sds)] > 0: 
+                alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier High</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
+            if res[1]["n_outliers_low_%ssd" %(outlier_sds)] > 0: 
+                alerts_outliers.append('<div class="task medium"><div class="desc"><div class="title">Outlier Low</div><div>Image ID %s has been flagged to have a high outlier</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(count,time.strftime("%c")))
 
         # Image is passing!
         else: 
@@ -213,25 +213,25 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
             alerts_passing.append('<div class="task low"><div class="desc"><div class="title">%s</div><div>This map has no flags as determined by the standards of only this report.</div></div><div class="time"><div class="date">%s</div><div></div></div></div>' %(image_names[count],time.strftime("%c")))
         count+=1
 
-      # ALERTS ITEMS ----
+        # ALERTS ITEMS ----
  
-      # In the case of zero of any of the above
-      if len(alerts_thresh) == 0: 
-          alerts_thresh = ['<div class="task high last"><div class="desc"><div class="title">No Thresholded Maps</div><div>No images have been flagged as thresholded [percent nonzero voxels in mask <= %s]</div></div><div class="time"><div class="date">%s</div></div></div>' %(nonzero_thresh,time.strftime("%c"))]
-          number_thresh = 0
-      else:  
-          alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
-          number_thresh = len(alerts_thresh)
+        # In the case of zero of any of the above
+        if len(alerts_thresh) == 0: 
+            alerts_thresh = ['<div class="task high last"><div class="desc"><div class="title">No Thresholded Maps</div><div>No images have been flagged as thresholded [percent nonzero voxels in mask <= %s]</div></div><div class="time"><div class="date">%s</div></div></div>' %(nonzero_thresh,time.strftime("%c"))]
+            number_thresh = 0
+        else:  
+            alerts_thresh[-1] = alerts_thresh[-1].replace("task high","task high last")
+            number_thresh = len(alerts_thresh)
     
-      if len(alerts_outliers) == 0: 
-          alerts_outliers = ['<div class="task medium last"><div class="desc"><div class="title">No Outliers</div><div>No images have been flagged for outliers %s standard deviations in either direction.</div></div><div class="time"><div class="date">%s</div></div></div>' %(outlier_sds,time.strftime("%c"))]
-          number_outliers = 0
-      else:     
-          alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
-          number_outliers = len(alerts_outliers)
+        if len(alerts_outliers) == 0: 
+            alerts_outliers = ['<div class="task medium last"><div class="desc"><div class="title">No Outliers</div><div>No images have been flagged for outliers %s standard deviations in either direction.</div></div><div class="time"><div class="date">%s</div></div></div>' %(outlier_sds,time.strftime("%c"))]
+            number_outliers = 0
+        else:     
+            alerts_outliers[-1] = alerts_outliers[-1].replace("task medium","task medium last")
+            number_outliers = len(alerts_outliers)
     
-      if len(alerts_passing) == 0: 
-          alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
+        if len(alerts_passing) == 0: 
+            alerts_passing = ['<div class="task low last"><div class="desc"><div class="title">No Passing!</div><div>No images are passing! What did you do?!</div></div><div class="time"><div class="date">%s</div></div></div>' %(time.strftime("%c"))]
     
     # Alerts and summary template
     template_alerts = add_string({"ALERTS_PASSING":"\n".join(alerts_passing),

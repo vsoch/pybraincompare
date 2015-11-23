@@ -88,10 +88,10 @@ def get_voxel_range(nii_obj):
 def count_voxels(masked_in,masked_out):
     '''Count voxels in and outside the mask'''
 
-     # Here we are assuming a value of 0 == not in mask
-     count_in = len(masked_in[masked_in!=0])
-     count_out = len(masked_out[masked_out!=0])
-     return count_in,count_out
+    # Here we are assuming a value of 0 == not in mask
+    count_in = len(masked_in[masked_in!=0])
+    count_out = len(masked_out[masked_out!=0])
+    return count_in,count_out
 
 # Convert to Z Scores (return entire images) ------------------------------------------------
 def t_to_z(mr, dof):

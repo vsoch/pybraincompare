@@ -24,18 +24,19 @@ def get_json(nodes,category_groups=False, category_lookup=None):
     '''get_json
     return a json graph structure for a set of nodes
 
-        nodes: list of pybraincompare.ontology.graph.Node
-            a list of nodes. The root node should have node.nid == 1
+    :param nodes: list of pybraincompare.ontology.graph.Node
+        a list of nodes. The root node should have node.nid == 1
 
-        category_groups: boolean
-            if True, will further group nodes into some higher level parent
-            categories. (For example, concepts in the cognitive atlas have
-            parent categories that are not concepts themselves. Default is False
+    :param category_groups: boolean
+        if True, will further group nodes into some higher level parent
+        categories. (For example, concepts in the cognitive atlas have
+        parent categories that are not concepts themselves. Default is False
  
-        category_lookup: dict
-            a dictionary with key: category ID in the node meta "category" dict
-            and value the name of the category. For example:
-  
+    :param category_lookup: dict
+        a dictionary with key: category ID in the node meta "category" dict
+        and value the name of the category. For example:
+ 
+    .. note:: 
                 {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
                  'ctp_C3':'Reasoning And Decision Making',
                  'ctp_C4':'Executive-Cognitive Control',
@@ -90,7 +91,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
             new_children.append(child)
 
     # Finally, put each of children into its "category"
-    if category_groups == True
+    if category_groups == True:
 
         if category_lookup == None:
             category_lookup = {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
