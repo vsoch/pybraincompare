@@ -4,8 +4,10 @@ Functions to export images and data
 
 '''
 
-# Function to save brain images for each level of priors
 def priors_to_brain_image(priors_df,output_name,mask_image):
+    '''priors_to_brain_image
+    Function to save brain images for each level of priors
+    '''
     import numpy as np
     mask_image = nibabel.load(mask_image)
     roi = mask_image.get_data()

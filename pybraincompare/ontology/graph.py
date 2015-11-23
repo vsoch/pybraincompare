@@ -20,7 +20,33 @@ class Node(object):
         self.name = name
         self.meta = [meta] # should be dictionary!
 
-def get_json(nodes,category_groups=False):
+def get_json(nodes,category_groups=False, category_lookup=None):
+    '''get_json
+    return a json graph structure for a set of nodes
+
+        nodes: list of pybraincompare.ontology.graph.Node
+            a list of nodes. The root node should have node.nid == 1
+
+        category_groups: boolean
+            if True, will further group nodes into some higher level parent
+            categories. (For example, concepts in the cognitive atlas have
+            parent categories that are not concepts themselves. Default is False
+ 
+        category_lookup: dict
+            a dictionary with key: category ID in the node meta "category" dict
+            and value the name of the category. For example:
+  
+                {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
+                 'ctp_C3':'Reasoning And Decision Making',
+                 'ctp_C4':'Executive-Cognitive Control',
+                 'ctp_C5':'Learning and Memory',
+                 'ctp_C6':'Language','ctp_C7':'Action','ctp_C8': 'Emotion',
+                 'ctp_C9':'Social Function'}
+
+            If not specified and category_groups is true, the above will be used
+            (if you want cognitive atlas categories)
+
+    '''
     tree = dict()
     # Make an empty node object for each node
     for node in nodes:
@@ -65,7 +91,9 @@ def get_json(nodes,category_groups=False):
 
     # Finally, put each of children into its "category"
     if category_groups == True
-        category_lookup = {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
+
+        if category_lookup == None:
+            category_lookup = {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
                        'ctp_C3':'Reasoning And Decision Making',
                        'ctp_C4':'Executive-Cognitive Control',
                        'ctp_C5':'Learning and Memory',
@@ -98,11 +126,18 @@ def get_json(nodes,category_groups=False):
 
 # Utils
 def check_pandas_columns(df,column_names):
+    '''check_pandas_columns
+    will check that a list of columns is in a data frame
+    '''
     for column_name in column_names:
         if column_name not in df.columns:
             raise ValueError('column %s is missing from relationship table.' %(column_name))
             
+
 def find_circular_reference(relationship_table):
+    '''find_circular_reference
+    checks to see that there are no circular references between nodes
+    '''
     unique_nodes = relationship_table.id.unique().tolist()
     for node in unique_nodes:
         parents = relationship_table.parent[relationship_table.id==node].tolist()
@@ -113,8 +148,11 @@ def find_circular_reference(relationship_table):
                 raise ValueError("ERROR: circular reference between %s and %s" %(node,parent))
     
 
-# This function will "grab" a node by the name ( a subset of the tree )
 def get_node_by_name(myjson,name):
+    '''get_node_by_name
+    
+    This function will "grab" a node by the name ( a subset of the tree )
+    '''
     if myjson.get('name',None) == name:
         return myjson
     for child in myjson.get('children',[]):
@@ -123,8 +161,11 @@ def get_node_by_name(myjson,name):
             return result
     return None
 
-# This function will get all the names of the nodes
 def get_node_fields(myjson,field="name",nodes=[]):
+    '''get_node_fields
+    
+    This function will get all the names of the nodes
+    '''
     if myjson.get(field,None) == None:
         return nodes
     else: 
