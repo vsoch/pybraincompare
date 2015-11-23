@@ -79,7 +79,7 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
         name = relationship_table.name[relationship_table.id==node].unique().tolist()
         if len(name) > 1:
             raise ValueError("Error, node %s is defined with multiple names." %node)
-        meta = ""
+        meta = {'category': ''}
         if meta_data:
            if node in meta_data:
                meta = meta_data[node]
