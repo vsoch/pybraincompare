@@ -60,22 +60,22 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
                 atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
                                                          interpolation="nearest")
 
-        atlas_vector = do_mask(atlas_nii,mask=mask)[0]
-        atlas_labels =  ['"%s"' %(atlas.labels[str(int(x))].label) for x in atlas_vector]
-        atlas_colors = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in atlas_labels]
+            atlas_vector = do_mask(atlas_nii,mask=mask)[0]
+            atlas_labels =  ['"%s"' %(atlas.labels[str(int(x))].label) for x in atlas_vector]
+            atlas_colors = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in atlas_labels]
 
-        # Need to check here if we have overlap!
-        if not np.isnan(atlas_vector).all():
-            corr = calculate_atlas_correlation(image_vector1=masked[0],
+            # Need to check here if we have overlap!
+            if not np.isnan(atlas_vector).all():
+                corr = calculate_atlas_correlation(image_vector1=masked[0],
                                                image_vector2=masked[1],
                                                atlas_vector=atlas_vector,
                                                atlas_labels=atlas_labels,
                                                atlas_colors=atlas_colors,
                                                corr_type=corr_type,
                                                summary=summary)
-        else:
-            corr = np.nan
-        return corr
+            else:
+                corr = np.nan
+    return corr
 
 def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",
                                    atlas_vector=None):   
