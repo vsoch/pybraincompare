@@ -93,109 +93,110 @@ class atlas:
   
         with make_tmp_folder() as temp_dir: 
     
-           # Get all unique regions (may not be present in every slice)
-           regions = [ x for x in numpy.unique(mr) if x != 0]
+            # Get all unique regions (may not be present in every slice)
+            regions = [ x for x in numpy.unique(mr) if x != 0]
 
-           # Get colors - will later be changed
-           colors = get_colors(len(self.labels),"decimal")
+            # Get colors - will later be changed
+            colors = get_colors(len(self.labels),"decimal")
         
-           # Generate an axial, sagittal, coronal view
-           slices = dict()
-           for v in views:
-               # Keep a list of region names that correspond to paths
-               region_names = []
+            # Generate an axial, sagittal, coronal view
+            slices = dict()
+            for v in views:
+                # Keep a list of region names that correspond to paths
+                region_names = []
         
-               # Generate each of the views
-               if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],2)
-               elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],2)
-               elif v == "coronal" : slices[v] = numpy.rot90(mr[:,middles[2],:],2)
+                # Generate each of the views
+                if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],2)
+                elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],2)
+                elif v == "coronal" : slices[v] = numpy.rot90(mr[:,middles[2],:],2)
 
-               # For each region in the view, but not 0
-               regions = [ x for x in numpy.unique(slices[v]) if x != 0]
+                # For each region in the view, but not 0
+                regions = [ x for x in numpy.unique(slices[v]) if x != 0]
 
-               # Write svg to temporary file
-               output_file = '%s/%s_atlas.svg' %(temp_dir,v)
-               fo = file(output_file, 'wb')
+                # Write svg to temporary file
+                output_file = '%s/%s_atlas.svg' %(temp_dir,v)
+                fo = file(output_file, 'wb')
 
-               # Set up the "context" - what cairo calls a canvas
-               width, height  = numpy.shape(slices[v])
-               surface = cairo.SVGSurface (fo, width*3, height*3)
-               ctx = cairo.Context (surface)
-               ctx.scale(3.,3.)    
+                # Set up the "context" - what cairo calls a canvas
+                width, height  = numpy.shape(slices[v])
+                surface = cairo.SVGSurface (fo, width*3, height*3)
+                ctx = cairo.Context (surface)
+                ctx.scale(3.,3.)    
 
-               # 90 degree rotation matrix
-               rotation_matrix = cairo.Matrix.init_rotate(numpy.pi/2)
+                # 90 degree rotation matrix
+                rotation_matrix = cairo.Matrix.init_rotate(numpy.pi/2)
+     
+                for rr in range(0,len(regions)):
+                    index_value = regions[rr]
+                    #region_name = self.labels[str(index_value)].label
+                    filtered = numpy.zeros(numpy.shape(slices[v]))
+                    filtered[slices[v] == regions[rr]] = 1
+                    region = img_as_float(find_boundaries(filtered)) # We aren't using Canny anymore...
+
+                    ctx.set_source_rgb (float(colors[index_value-1][0]), float(colors[index_value-1][1]), float(colors[index_value-1][2])) # Solid color
+
+                    # Segment!
+                    segments_fz = felzenszwalb(region, scale=100, sigma=0.1, min_size=10)
+
+                    # For each cluster in the region, skipping value of 0
+                    for c in range(1,len(numpy.unique(segments_fz))):
+                        cluster = numpy.zeros(numpy.shape(region))
+                        cluster[segments_fz==c] = 1
+                        # Create distance matrix for points
+                        x,y = numpy.where(cluster==1)
+                        points = [[x[i],y[i]] for i in range(0,len(x))]
+                        disty = squareform(pdist(points, 'euclidean'))
+                        # This keeps track of which we have already visited
+                        visited = []; row = 0; current = points[row]
+                        visited.append(row)
     
-               for rr in range(0,len(regions)):
-                   index_value = regions[rr]
-                   #region_name = self.labels[str(index_value)].label
-                   filtered = numpy.zeros(numpy.shape(slices[v]))
-                   filtered[slices[v] == regions[rr]] = 1
-                   region = img_as_float(find_boundaries(filtered)) # We aren't using Canny anymore...
+                        # We need to remember the first point, for the last one
+                        fp = current
 
-                   ctx.set_source_rgb (float(colors[index_value-1][0]), float(colors[index_value-1][1]), float(colors[index_value-1][2])) # Solid color
-
-                   # Segment!
-                   segments_fz = felzenszwalb(region, scale=100, sigma=0.1, min_size=10)
-
-                   # For each cluster in the region, skipping value of 0
-                   for c in range(1,len(numpy.unique(segments_fz))):
-                       cluster = numpy.zeros(numpy.shape(region))
-                       cluster[segments_fz==c] = 1
-                       # Create distance matrix for points
-                       x,y = numpy.where(cluster==1)
-                       points = [[x[i],y[i]] for i in range(0,len(x))]
-                       disty = squareform(pdist(points, 'euclidean'))
-                       # This keeps track of which we have already visited
-                       visited = []; row = 0; current = points[row]
-                       visited.append(row)
+                        while len(visited) != len(points):
+                            thisx = current[0]
+                            thisy = current[1]
+                            ctx.move_to(thisx, thisy)
+                            # Find closest point, only include columns we have not visited
+                            distances = disty[row,:]
+                            distance_lookup = dict()
+                            # We need to preserve indices but still eliminate visited 
+                            for j in range(0,len(distances)):
+                                if j not in visited: distance_lookup[j] = distances[j]
+                            # Get key minimum distance
+                            row = min(distance_lookup, key=distance_lookup.get)
+                            next = points[row]
+                            nextx = next[0]
+                            nexty = next[1]
+                            # If the distance is more than N pixels, close the path
+                            # This resolves some of the rough edges too
+                            if min(distance_lookup) > 70:
+                                ctx.line_to(fp[0],fp[1])
+                                #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+                                #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
+                                ctx.set_line_width(1)
+                                ctx.close_path()
+                                fp = next
+                            else:    
+                                #cp = [(current[0]+nextx)/2,(current[1]+nexty)/2] 
+                                #ctx.curve_to(nextx,nexty,cp[0],cp[1],cp[0],cp[1])
+                                ctx.line_to(nextx, nexty)
+                                # Set next point to be current
+                            visited.append(row)
+                            current = next
     
-                       # We need to remember the first point, for the last one
-                       fp = current
-
-                       while len(visited) != len(points):
-                           thisx = current[0]
-                           thisy = current[1]
-                           ctx.move_to(thisx, thisy)
-                           # Find closest point, only include columns we have not visited
-                           distances = disty[row,:]
-                           distance_lookup = dict()
-                           # We need to preserve indices but still eliminate visited 
-                           for j in range(0,len(distances)):
-                               if j not in visited: distance_lookup[j] = distances[j]
-                           # Get key minimum distance
-                           row = min(distance_lookup, key=distance_lookup.get)
-                           next = points[row]
-                           nextx = next[0]
-                           nexty = next[1]
-                           # If the distance is more than N pixels, close the path
-                           # This resolves some of the rough edges too
-                           if min(distance_lookup) > 70:
-                               ctx.line_to(fp[0],fp[1])
-                               #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
-                               #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
-                               ctx.set_line_width(1)
-                               ctx.close_path()
-                               fp = next
-                           else:    
-                               #cp = [(current[0]+nextx)/2,(current[1]+nexty)/2] 
-                               #ctx.curve_to(nextx,nexty,cp[0],cp[1],cp[0],cp[1])
-                               ctx.line_to(nextx, nexty)
-                               # Set next point to be current
-                           visited.append(row)
-                           current = next
-    
-                       # Go back to the first point
-                       ctx.move_to(current[0],current[1])
-                       #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
-                       #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
-                       ctx.line_to(fp[0],fp[1])
-                       # Close the path
-                       ctx.set_line_width (1)
-                       ctx.stroke()
-               # Finish the surface
-               surface.finish()
-               fo.close()
+                        # Go back to the first point
+                        ctx.move_to(current[0],current[1])
+                        #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+                        #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
+                        ctx.line_to(fp[0],fp[1])
+                        # Close the path
+                        ctx.set_line_width (1)
+                        ctx.stroke()
+                             
+                # Finish the surface
+                surface.finish()
+                fo.close()
 
                 # Now grab the file, set attributes 
                 # Give group name based on atlas, region id based on matching color
@@ -223,8 +224,8 @@ class atlas:
         return svg_data, svg_data_partial, svg_data_file
 
 
-    '''Save svg data to file'''
     def save_svg(self,output_folder,views=None):
+        '''Save svg data to file'''
         if not views: views = self.views
         if not output_folder:
             print "Please specify an output directory"
@@ -235,8 +236,8 @@ class atlas:
                 filey.writelines(self.svg_file[v])
                 filey.close()
 
-    '''Internal function to add/change svg attributes'''
     def set_attributes(self,path,attributes,new_values):
+        '''Internal function to add/change svg attributes'''
         if isinstance(attributes,str): attributes = [attributes]
         if isinstance(new_values,str): new_values = [new_values]
         if len(attributes) == len(new_values):
@@ -245,14 +246,14 @@ class atlas:
         else:
             print "Please provide list of attributes with equal length to values."
 
-    '''Internal function to remove svg attributes'''
     def remove_attributes(self,path,attributes):
+        '''Internal function to remove svg attributes'''
         if isinstance(attributes,str): attributes = [attributes]
         for attribute in attributes:
             path.removeAttribute(attribute)
 
-    '''Create color lookup table corresponding to regions'''
     def make_color_lookup(self,new_colors):
+        '''Create color lookup table corresponding to regions'''
         color_lookup = dict()
         new_color = new_colors[:]
         for index,region in self.labels.iteritems():
