@@ -6,9 +6,9 @@ Subpackages
 
 .. toctree::
 
-    pybraincompare.annotate
     pybraincompare.compare
     pybraincompare.mr
+    pybraincompare.ontology
     pybraincompare.report
     pybraincompare.template
     pybraincompare.testing

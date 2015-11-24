@@ -16,8 +16,8 @@ def get_data_directory():
     return mr_directory
 
 # Return paths to pybraincompare atlas
-'''Returns path to MNI atlas in MNI 152 space'''
 def get_mni_atlas(voxdims=["2","8"],views=None):
+    '''Returns path to MNI atlas in MNI 152 space'''
     atlas_directory = get_data_directory()
     atlas_xml = "%s/MNI.xml" %(atlas_directory)
     atlases = dict()
