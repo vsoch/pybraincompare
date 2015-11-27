@@ -10,4 +10,4 @@ nibabel
 pandas
 matplotlib
 scikit-image
-cairocffi
+cairo
