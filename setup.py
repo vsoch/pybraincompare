@@ -25,5 +25,5 @@ setup(
     license="LICENSE.txt",
     description="image-based meta analysis and comparison for neuroimaging in python",
 
-    install_requires = ['six','pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image','cairo']
+    install_requires = ['six','pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image']
 )
