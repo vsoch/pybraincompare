@@ -5,7 +5,7 @@ setup(
     name="pybraincompare",
 
     # Version number (initial):
-    version="0.1.11",
+    version="0.1.13",
 
     # Application author details:
     author="Vanessa Sochat",
@@ -25,5 +25,5 @@ setup(
     license="LICENSE.txt",
     description="image-based meta analysis and comparison for neuroimaging in python",
 
-    install_requires = ['six','pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image','cairocffi']
+    install_requires = ['six','pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image','cairo']
 )
