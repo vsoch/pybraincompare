@@ -3,7 +3,7 @@ transformation.py: part of pybraincompare package
 Return transformations of images
 
 '''
-from pybraincompare.mr.datasets import get_standard_brain
+from pybraincompare.mr.datasets import get_standard_mask
 from pybraincompare.compare.mrutils import get_nii_obj
 from nilearn.image import resample_img
 import nibabel as nib
@@ -15,7 +15,7 @@ def make_resampled_transformation_vector(nii_obj,resample_dim=[4,4,4],standard_m
 
     resamp_nii = make_resampled_transformation(nii_obj,resample_dim,standard_mask)
     if standard_mask:
-        standard = get_standard_brain(voxdim=resample_dim[0])
+        standard = get_standard_mask(voxdim=resample_dim[0])
         return resamp_nii.get_data()[standard.get_data()!=0]
     else:
         return resamp_nii.get_data().flatten()
@@ -36,7 +36,7 @@ def make_resampled_transformation(nii_obj,resample_dim=[4,4,4],standard_mask=Tru
     
     # Standard brain masking
     if standard_mask == True:
-        standard = get_standard_brain(voxdim=resample_dim[0])
+        standard = get_standard_mask(voxdim=resample_dim[0])
         true_zeros = resample_img(true_zeros,target_affine=standard.get_affine(), 
                                   target_shape=standard.shape)
       
