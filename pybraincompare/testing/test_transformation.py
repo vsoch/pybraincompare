@@ -31,7 +31,7 @@ def test_unmasked_transformation():
     image1_vector = make_resampled_transformation_vector(image1,resample_dim=[2,2,2],standard_mask=False)
     assert_equal(nonzero_voxels,len(image1_vector))
 
-    brain_4mm = get_standard_brain(4)
+    brain_4mm = get_standard_mask(4)
     nonzero_voxels = len(brain_4mm.get_data().flatten())
     image1_vector = make_resampled_transformation_vector(image1,resample_dim=[4,4,4],standard_mask=False)
     assert_equal(nonzero_voxels,len(image1_vector))
