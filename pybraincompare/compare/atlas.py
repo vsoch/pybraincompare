@@ -13,7 +13,6 @@ from maths import percent_to_float
 from nilearn import plotting
 from xml.dom import minidom
 import pylab as pl
-import cairo
 import nibabel
 import pandas
 import numpy
@@ -61,10 +60,10 @@ class atlas:
             for lab in dom.getElementsByTagName("label"):
                 # Caution - the index is 1 less than image value
                 labels[str(int(lab.getAttribute("index"))+1)] = region(lab.lastChild.nodeValue.replace(" ","_"), (int(lab.getAttribute("index"))+1), lab.getAttribute("x"), lab.getAttribute("y"), lab.getAttribute("z"))
-            return labels    
+            return labels
         else:
             print "ERROR: xml file atlas name does not match given atlas name!"
-  
+
     def get_static_svg(self):
         '''Generate static svg of atlas (cannot manipulate in d3)'''
         svg_data = []
@@ -78,33 +77,34 @@ class atlas:
 
     def make_svg(self,views):
         '''Generate path-based svg of atlas (paths we can manipulate in d3)'''
+        import cairo
          # We will save complete svg (for file), partial (for embedding), and paths
         svg_data = dict(); svg_data_partial = dict(); svg_data_file = dict();
-        if isinstance(views,str): 
+        if isinstance(views,str):
             views = [views]
         views = [v.lower() for v in views]
         self.views = views
-        mr = self.mr.get_data()      
-        middles = [numpy.round(x/2) for x in self.mr.get_shape()]         
+        mr = self.mr.get_data()
+        middles = [numpy.round(x/2) for x in self.mr.get_shape()]
 
         # Create a color lookup table
         colors_html = get_colors(len(self.labels),"hex")
         self.color_lookup = self.make_color_lookup(colors_html)
-  
-        with make_tmp_folder() as temp_dir: 
-    
+
+        with make_tmp_folder() as temp_dir:
+
             # Get all unique regions (may not be present in every slice)
             regions = [ x for x in numpy.unique(mr) if x != 0]
 
             # Get colors - will later be changed
             colors = get_colors(len(self.labels),"decimal")
-        
+
             # Generate an axial, sagittal, coronal view
             slices = dict()
             for v in views:
                 # Keep a list of region names that correspond to paths
                 region_names = []
-        
+
                 # Generate each of the views
                 if v == "axial": slices[v] = numpy.rot90(mr[:,:,middles[0]],2)
                 elif v == "sagittal" : slices[v] = numpy.rot90(mr[middles[1],:,:],2)
@@ -121,11 +121,11 @@ class atlas:
                 width, height  = numpy.shape(slices[v])
                 surface = cairo.SVGSurface (fo, width*3, height*3)
                 ctx = cairo.Context (surface)
-                ctx.scale(3.,3.)    
+                ctx.scale(3.,3.)
 
                 # 90 degree rotation matrix
                 rotation_matrix = cairo.Matrix.init_rotate(numpy.pi/2)
-     
+
                 for rr in range(0,len(regions)):
                     index_value = regions[rr]
                     #region_name = self.labels[str(index_value)].label
@@ -149,7 +149,7 @@ class atlas:
                         # This keeps track of which we have already visited
                         visited = []; row = 0; current = points[row]
                         visited.append(row)
-    
+
                         # We need to remember the first point, for the last one
                         fp = current
 
@@ -160,7 +160,7 @@ class atlas:
                             # Find closest point, only include columns we have not visited
                             distances = disty[row,:]
                             distance_lookup = dict()
-                            # We need to preserve indices but still eliminate visited 
+                            # We need to preserve indices but still eliminate visited
                             for j in range(0,len(distances)):
                                 if j not in visited: distance_lookup[j] = distances[j]
                             # Get key minimum distance
@@ -172,33 +172,33 @@ class atlas:
                             # This resolves some of the rough edges too
                             if min(distance_lookup) > 70:
                                 ctx.line_to(fp[0],fp[1])
-                                #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+                                #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2]
                                 #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
                                 ctx.set_line_width(1)
                                 ctx.close_path()
                                 fp = next
-                            else:    
-                                #cp = [(current[0]+nextx)/2,(current[1]+nexty)/2] 
+                            else:
+                                #cp = [(current[0]+nextx)/2,(current[1]+nexty)/2]
                                 #ctx.curve_to(nextx,nexty,cp[0],cp[1],cp[0],cp[1])
                                 ctx.line_to(nextx, nexty)
                                 # Set next point to be current
                             visited.append(row)
                             current = next
-    
+
                         # Go back to the first point
                         ctx.move_to(current[0],current[1])
-                        #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2] 
+                        #cp = [(current[0]+fp[0])/2,(current[1]+fp[1])/2]
                         #ctx.curve_to(fp[0],fp[1],cp[0],cp[1],cp[0],cp[1])
                         ctx.line_to(fp[0],fp[1])
                         # Close the path
                         ctx.set_line_width (1)
                         ctx.stroke()
-                             
+
                 # Finish the surface
                 surface.finish()
                 fo.close()
 
-                # Now grab the file, set attributes 
+                # Now grab the file, set attributes
                 # Give group name based on atlas, region id based on matching color
                 dom = minidom.parse(output_file)
                 for group in dom.getElementsByTagName("g"):
@@ -220,7 +220,7 @@ class atlas:
                 svg_data_file[v] = dom.toxml()
                 svg_data[v] = dom.toxml().replace("<?xml version=\"1.0\" ?>","") # get rid of just xml tag
                 svg_data_partial[v] = "/n".join(dom.toxml().split("\n")[1:-1])
-    
+
         return svg_data, svg_data_partial, svg_data_file
 
 
