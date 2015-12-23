@@ -168,12 +168,14 @@ raw = {"val1":[INPUT_DATA_ONE],
       .style("fill-opacity",0.7)
       // Mouseover tool tips
       .on("mouseover.tip", function(d) {
+          if (d3.select(this).classed("pbchidden") == false) {
           tooltip.transition()
                .duration(200)
                .style("opacity", .9);
           tooltip.html(d.labels + ":<br>image 1: " + (d.val1).toFixed(2) + "<br>image 2: " + (d.val2).toFixed(2))
                .style("left", (d3.event.pageX + 5) + "px")
                .style("top", (d3.event.pageY - 28) + "px");
+          } 
       })
       .on("mouseout.tip", function(d) {
           tooltip.transition()
