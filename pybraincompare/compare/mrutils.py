@@ -19,7 +19,7 @@ import os
 def get_standard_mask(software):
     '''Returns reference mask from FSL or FREESURFER'''
     if software == "FSL":
-        reference = os.path.join(os.environ['FSL_DIR'],'data', 'standard', 'MNI152_T1_2mm_brain_mask.nii.gz')
+        reference = os.path.join(os.environ['FSLDIR'],'data', 'standard', 'MNI152_T1_2mm_brain_mask.nii.gz')
     elif software == "FREESURFER":
         reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brainmask.mgz')
     return reference
@@ -28,7 +28,7 @@ def get_standard_mask(software):
 def get_standard_brain(software):
     '''Returns reference brain from FSL or FREESURFER'''  
     if software == "FSL":
-        reference = os.path.join(os.environ['FSL_DIR'],'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
+        reference = os.path.join(os.environ['FSLDIR'],'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
     elif software == "FREESURFER":
         reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brain.mgz')
     return reference

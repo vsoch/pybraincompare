@@ -86,7 +86,8 @@ var svg = d3.selectAll("pybrain").append("svg")
 // add the tooltip area to the webpage
 var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
-    .style("opacity", 0);
+    .style("opacity", 0)
+    .style("visibility","hidden");
 
  // Adjust size of atlas images to match image width
    // Change colors to match colors of regions
@@ -171,7 +172,9 @@ raw = {"val1":[INPUT_DATA_ONE],
           if (d3.select(this).classed("pbchidden") == false) {
           tooltip.transition()
                .duration(200)
-               .style("opacity", .9);
+               .style("opacity", .9)
+               .style("visibility","visible");
+
           tooltip.html(d.labels + ":<br>image 1: " + (d.val1).toFixed(2) + "<br>image 2: " + (d.val2).toFixed(2))
                .style("left", (d3.event.pageX + 5) + "px")
                .style("top", (d3.event.pageY - 28) + "px");
@@ -180,7 +183,9 @@ raw = {"val1":[INPUT_DATA_ONE],
       .on("mouseout.tip", function(d) {
           tooltip.transition()
                .duration(500)
-               .style("opacity", 0);
+               .style("opacity", 0)
+               .style("visibility","hidden");
+
       })
       // Mouseover region highlight
       .on("mouseover.highlight", function(d) {
@@ -246,6 +251,7 @@ raw = {"val1":[INPUT_DATA_ONE],
             d3.selectAll("circle." + d.label)
               .style("stroke-opacity",0)
               .style("fill-opacity",0)
+              .classed("pbchidden",true)
             d3.select(this).style("fill","#F5F5F5")
             d3.selectAll(".legend_corr_" + d.label )
               .style("stroke","black")
@@ -259,6 +265,7 @@ raw = {"val1":[INPUT_DATA_ONE],
             d3.selectAll("circle." + d.label)
               .style("stroke-opacity",1)
               .style("fill-opacity",0.7)
+              .classed("pbchidden",false)
             d3.select(this).style("fill",function(d){ return d.color })
             d3.selectAll(".legend_corr_" + d.label )
               .style("stroke","white")
