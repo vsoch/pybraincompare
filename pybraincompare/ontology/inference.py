@@ -43,7 +43,7 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
     :param node_pattern: str
         a regular expression to find image nodes in the tree, matched to name
 
-    :return likelihood_groups: pickle 
+    :return groups: pickle 
         a pickle with the following
 
     ..note::
@@ -92,12 +92,12 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
 
     range_table = make_range_table(mr)
 
-    # LIKELIHOOD GROUPS ----------------------------------------------------
-    # Find likelihood groups for image sets at each node (**node names must be unique) 
+    # GROUPS ----------------------------------------------------
+    # Find groups for image sets at each node (**node names must be unique) 
     # This is images at (and in lower levels) of node vs. everything else
     # will be used to calculate p([activation in range | region (voxel)]
 
-    likelihood_groups = []
+    groups = []
 
     for concept_node in concept_nodes:
         node = get_node_by_name(tree,concept_node)
@@ -108,7 +108,7 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
             children_in = [child for child in all_children if child in files.index]
             children_out = [child for child in files.index if child not in children_in]
             if len(children_in) > 0 and len(children_out) > 0:
-                print "Generating likelihood group for concept node %s" %(concept_node)
+                print "Generating group for concept node %s" %(concept_node)
                 group = {"in": files.path.loc[children_in].unique().tolist(),
                          "out": files.path.loc[children_out].unique().tolist(),
                          "range_table": range_table,
@@ -116,11 +116,11 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
                          "nid": node_id,
                          "name": concept_node}                
 
-                likelihood_groups.append(group)
+                groups.append(group)
                 if output_folder != None:
-                    pickle.dump(group,open("%s/pbc_likelihood_group_%s.pkl" %(output_folder,node_id),"wb"))
+                    pickle.dump(group,open("%s/pbc_group_%s.pkl" %(output_folder,node_id),"wb"))
 
-    return likelihood_groups
+    return groups
 
 def make_range_table(mr,ranges=None):
     '''make_range_table
