@@ -249,8 +249,7 @@ raw = {"val1":[INPUT_DATA_ONE],
       .on("click",function(d){
           if (d3.select(this).classed("pbchidden") == false) {
             d3.selectAll("circle." + d.label)
-              .style("stroke-opacity",0)
-              .style("fill-opacity",0)
+              .style("visibility", "hidden")
               .classed("pbchidden",true)
             d3.select(this).style("fill","#F5F5F5")
             d3.selectAll(".legend_corr_" + d.label )
@@ -263,8 +262,7 @@ raw = {"val1":[INPUT_DATA_ONE],
            } 
          else {
             d3.selectAll("circle." + d.label)
-              .style("stroke-opacity",1)
-              .style("fill-opacity",0.7)
+              .style("visibility", "visible")
               .classed("pbchidden",false)
             d3.select(this).style("fill",function(d){ return d.color })
             d3.selectAll(".legend_corr_" + d.label )
@@ -303,8 +301,7 @@ raw = {"val1":[INPUT_DATA_ONE],
        // On click, show or hide ALL the points
       .on("click",function(){
             d3.selectAll("circle")
-              .style("stroke-opacity",0)
-              .style("fill-opacity",0)
+              .style("visibility", "hidden")
             d3.selectAll(".legend_box")
               .style("fill","#F5F5F5")
               .classed("pbchidden",true)
