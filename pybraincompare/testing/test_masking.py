@@ -29,7 +29,7 @@ def test_binary_deletion_mask():
     image1 = numpy.zeros(brain_mask.shape)
     image2 = numpy.zeros(brain_mask.shape)
     x,y,z = numpy.where(brain_mask.get_data()==1)
-    idx = zip(x,y,z)
+    idx = list(zip(x,y,z))
     numpy.random.shuffle(idx) 
     number_voxels = len(idx)
     number_overlap_voxels = int(numpy.floor(overlap*number_voxels))
@@ -68,7 +68,7 @@ def test_binary_deletion_mask():
     nii2 = nibabel.Nifti1Image(image2,affine=brain_mask.get_affine(),header=brain_mask.get_header())
     pdmask = make_binary_deletion_mask([nii1,nii2]) 
     actual_overlap = len(numpy.where(pdmask!=0)[0])
-    print "Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap)
+    print("Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap))
     assert_equal(actual_overlap,number_overlap_voxels)
 
 '''Test that returned image is binary, no nans, infs'''
@@ -96,7 +96,7 @@ def test_binary_deletion_vector():
     image_vector2 = numpy.zeros((vector_length))
     number_overlap_voxels = int(numpy.floor(overlap*vector_length))
     remaining_voxels = int(vector_length - number_overlap_voxels)
-    idx = range(0,vector_length)
+    idx = list(range(0,vector_length))
     # We break the remaining voxels into 4 groups:
     # - nans that will overlap
     # - zeros that will overlap (no change to images here, already zeros)
@@ -105,31 +105,31 @@ def test_binary_deletion_vector():
     group_size = remaining_voxels/4
     if overlap != 0.0:
       # Here are the overlapping voxels for each image
-      overlap_idx = range(0,number_overlap_voxels)
+      overlap_idx = list(range(0,number_overlap_voxels))
       image_vector1[overlap_idx] = 1
       image_vector2[overlap_idx] = 1 
     if overlap != 1.0: 
       # Nans that will overlap
-      nans_overlap_idx = range(number_overlap_voxels,(number_overlap_voxels+group_size))
+      nans_overlap_idx = list(range(number_overlap_voxels,(number_overlap_voxels+group_size)))
       image_vector1[nans_overlap_idx] = numpy.nan
       image_vector2[nans_overlap_idx] = numpy.nan
       # Nans in image1, random sample of values in image 2
       start = number_overlap_voxels+group_size
       end = number_overlap_voxels+2*group_size
       nans_image1 = idx[start:end]
-      values_image2 = range(nans_image1[-1],(nans_image1[-1] + int(group_size/2)))
+      values_image2 = list(range(nans_image1[-1],(nans_image1[-1] + int(group_size/2))))
       image_vector1[nans_image1] = numpy.nan
       image_vector2[values_image2] = 0.5
       # Zeros in image2, random sample of values in image 1
       start = number_overlap_voxels+2*group_size
       end = number_overlap_voxels+3*group_size
       zeros_image2 = idx[start:end]
-      values_image1 = range(zeros_image2[-1],(zeros_image2[-1] + int(group_size/2)))
+      values_image1 = list(range(zeros_image2[-1],(zeros_image2[-1] + int(group_size/2))))
       image_vector1[values_image1] = 0.75
     # Create nifti images and pdmask
     pdmask = make_binary_deletion_vector([image_vector1,image_vector2]) 
     actual_overlap = len(numpy.where(pdmask!=0)[0])
-    print "Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap)
+    print("Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap))
     assert_equal(actual_overlap,number_overlap_voxels)
    
     # Also check that is binary

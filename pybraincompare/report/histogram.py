@@ -7,7 +7,7 @@ from pybraincompare.template.templates import get_template, add_string
 from pybraincompare.template.visual import view
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
 from pybraincompare.compare.mrutils import get_nii_obj
-from colors import random_colors
+from .colors import random_colors
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.figure import Figure

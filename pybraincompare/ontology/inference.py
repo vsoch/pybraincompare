@@ -75,13 +75,13 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
         if len(idx) > 1:
             raise ValueError("ERROR: found %s images that match pattern %s." %len(idx),find_file.pattern)
         elif len(idx) == 0:
-            print "Did not find file for %s, will not be included in analysis." %(node)
+            print("Did not find file for %s, will not be included in analysis." %(node))
         else:
             file_lookup[node] = contender_files[idx[0]]
 
     # Use pandas dataframe to not risk weird dictionary iteration orders
-    files = pandas.DataFrame(file_lookup.values(),columns=["path"])
-    files.index = file_lookup.keys()
+    files = pandas.DataFrame(list(file_lookup.values()),columns=["path"])
+    files.index = list(file_lookup.keys())
  
     # The remaining nodes in the tree (that are not images) will have a RI score
     concept_nodes = [x for x in nodes if x not in image_nodes] 
@@ -108,7 +108,7 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
             children_in = [child for child in all_children if child in files.index]
             children_out = [child for child in files.index if child not in children_in]
             if len(children_in) > 0 and len(children_out) > 0:
-                print "Generating group for concept node %s" %(concept_node)
+                print("Generating group for concept node %s" %(concept_node))
                 group = {"in": files.path.loc[children_in].unique().tolist(),
                          "out": files.path.loc[children_out].unique().tolist(),
                          "range_table": range_table,

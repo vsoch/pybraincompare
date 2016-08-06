@@ -22,10 +22,9 @@ def connectogram(matrix_file,groups,threshold,network_names=None):
     '''
     conn_df = pandas.read_csv(matrix_file,sep="\t")
     if conn_df.shape[0] != conn_df.shape[1]:
-        print "Matrix is size [%s,%s], please check file formatting!" %(conn_df.shape[0],conn_df.shape[1])
+        print("Matrix is size [%s,%s], please check file formatting!" %(conn_df.shape[0],conn_df.shape[1]))
         return
-  
-     if not network_names:
+    if not network_names:
          network_names = groups
 
     # Fill NaN with 0 in matrix

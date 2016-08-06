@@ -7,9 +7,9 @@ based on an anatomical (MNI) atlas
 
 '''
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources, save_template
-from mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
+from .mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
 from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
-from maths import calculate_correlation, calculate_atlas_correlation
+from .maths import calculate_correlation, calculate_atlas_correlation
 from pybraincompare.template.visual import run_webserver
 from pybraincompare.mr.datasets import get_mni_atlas
 from nilearn.masking import apply_mask
@@ -213,7 +213,7 @@ def make_scatterplot_interface(corr_df,elements,error=None,remove_scripts=None):
 
     # We want to return only regions with 3+ points
     counts =  dict(collections.Counter(corr_df.ATLAS_LABELS.tolist()))
-    regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
+    regions_to_eliminate = [x for x,y in counts.items() if y < 3]
     corr_df = corr_df[corr_df.ATLAS_LABELS.isin(regions_to_eliminate)==False]
 
     # Error: If all regions have fewer than 3 values

@@ -35,10 +35,10 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
 
         current = data_structure
         for item in data[:-1]:
-            if not current.has_key(item):
+            if item not in current:
                 current[item] = {}
             current = current[item]
-        if not current.has_key(data[-1]):
+        if data[-1] not in current:
             current[data[-1]] = 1
         else:
             current[data[-1]] += 1
@@ -98,7 +98,7 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
 
     # Generate nodes
     unique_nodes = relationship_table.id.unique().tolist()
-    print "%s unique nodes found." %(len(unique_nodes))
+    print("%s unique nodes found." %(len(unique_nodes)))
     for node in unique_nodes:
         parents = relationship_table.parent[relationship_table.id==node].tolist()
         name = relationship_table.name[relationship_table.id==node].unique().tolist()
