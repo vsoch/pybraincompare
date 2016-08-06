@@ -36,7 +36,7 @@ def test_scatterplot_error_message():
   image1 = numpy.zeros(standard.shape)
   image2 = numpy.zeros(standard.shape)
   x,y,z = numpy.where(standard.get_data()==1)
-  idx = zip(x,y,z)
+  idx = list(zip(x,y,z))
   image1_voxels = unzip(idx[0:500])
   image2_voxels = unzip(idx[1500:2000])
   image1[image1_voxels] = data1
@@ -56,7 +56,7 @@ def test_scatterplot_error_message():
   image1 = numpy.zeros(standard.shape)
   image2 = numpy.zeros(standard.shape)
   x,y,z = numpy.where(standard.get_data()==1)
-  idx = zip(x,y,z)
+  idx = list(zip(x,y,z))
   idx = unzip(idx[10:12])
   image1[idx] = data1
   image2[idx] = data2
@@ -75,7 +75,7 @@ def test_scatterplot_error_message():
   image1 = numpy.zeros(standard.shape)
   image2 = numpy.zeros(standard.shape)
   x,y,z = numpy.where(standard.get_data()==1)
-  idx = zip(x,y,z)
+  idx = list(zip(x,y,z))
   idx = unzip(idx[10:13])
   image1[idx] = data1
   image2[idx] = data2

@@ -4,8 +4,8 @@ Functions to visualize in browser
 
 '''
 from pybraincompare.template.futils import make_tmp_folder
-import SimpleHTTPServer
-import SocketServer
+import http.server
+import socketserver
 import webbrowser
 
 
@@ -23,13 +23,13 @@ def internal_view(html_snippet,tmp_file):
   html_file.close()
   url = 'file://%s' %(tmp_file)
   webbrowser.open_new_tab(url)
-  raw_input("Press Enter to finish...")
+  input("Press Enter to finish...")
 
 '''Web server (for Papaya Viewer in QA report'''
 def run_webserver(PORT=8000,html_page="index.html"):
-  Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-  httpd = SocketServer.TCPServer(("", PORT), Handler)
-  print "Serving pybraincompare at port", PORT
+  Handler = http.server.SimpleHTTPRequestHandler
+  httpd = socketserver.TCPServer(("", PORT), Handler)
+  print("Serving pybraincompare at port", PORT)
   webbrowser.open("http://localhost:%s/%s" %(PORT,html_page))
   httpd.serve_forever()
 
