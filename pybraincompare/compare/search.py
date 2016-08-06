@@ -4,10 +4,10 @@ Generate search interfaces to compare images
 
 '''
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
-from mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
+from .mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
 from pybraincompare.template.futils import unwrap_list_unique
 from pybraincompare.mr.datasets import get_mni_atlas
-from maths import calculate_correlation
+from .maths import calculate_correlation
 import numpy as np
 import collections
 import pandas
@@ -42,15 +42,15 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
     template = get_template("similarity_search")
 
     if query_id not in image_ids:
-        print "ERROR: Query id must be in list of image ids!"
+        print("ERROR: Query id must be in list of image ids!")
         return
 
     if len(tags) != len(png_paths) != len(image_ids):
-        print "ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal"
+        print("ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal")
         return
 
     if query_png not in png_paths: 
-        print "ERROR: Query image png path must be in data frame 'png' paths!" 
+        print("ERROR: Query image png path must be in data frame 'png' paths!") 
         return
 
     corr_df = pandas.DataFrame() 

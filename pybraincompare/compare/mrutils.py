@@ -141,7 +141,7 @@ def do_mask(images,mask):
         masked_data = apply_mask(images, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
         return masked_data
     except ValueError:
-        print "Reference and images affines do not match, or given mask and images, all data is masked." 
+        print("Reference and images affines do not match, or given mask and images, all data is masked.") 
         return numpy.nan
   
 def make_binary_deletion_mask(images):

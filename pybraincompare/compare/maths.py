@@ -4,10 +4,10 @@ Simple math functions
 
 '''
 
-from mrutils import resample_images_ref, apply_threshold, generate_thresholds, do_mask
+from .mrutils import resample_images_ref, apply_threshold, generate_thresholds, do_mask
 from scipy.stats import pearsonr, spearmanr, norm, t
 import numpy as np
-import maths
+from . import maths
 import pandas
 import nibabel
 import sys
@@ -206,7 +206,7 @@ def TtoZ(t_stat_map,output_nii,dof):
         degrees of freedom (typically number subjects - 2)
 
     '''
-    print "Converting map %s to Z-Scores..." %(t_stat_map)
+    print("Converting map %s to Z-Scores..." %(t_stat_map))
   
     mr = nibabel.load(t_stat_map)
     data = mr.get_data()
