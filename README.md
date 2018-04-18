@@ -20,14 +20,14 @@ sudo python setup.py install
 pip install pybraincompare
 ```
 
-The current version is for Python 3, the first of which is released on pip as `0.1.18`. If you want Python 2 only, use `0.1.17`:
+The current version is for Python 3, the first of which is released on pip as `0.1.19`. If you want Python 2 only, use `0.1.18`:
 
 ```bash
 # Python 2
-pip install pybraincompare==0.1.17
+pip install pybraincompare==0.1.18
 
 # Python 3
-pip install pybraincompare==0.1.18
+pip install pybraincompare==0.1.19
 ```
 
 For examples and demos, please see the [documentation](http://pybraincompare.readthedocs.org/). Submit bugs and feature requests as [issues](https://github.com/vsoch/pybraincompare/issues).
