@@ -5,6 +5,7 @@ graph.py: part of pybraincompare package
 Functions to work with ontology graphs
 
 '''
+from builtins import object
 import re
 import sys
 import json
@@ -63,7 +64,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
         node = tree[current.nid]
         # Remove child from the tree
         new_tree = dict() # This has to be done for python 2.6 support
-        for k,v in tree.iteritems():
+        for k,v in tree.items():
            if k != current.nid:
                new_tree[k] = v
         tree = new_tree
@@ -102,7 +103,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
                        'ctp_C9':'Social Function'}
 
         category_nodes = dict()
-        for category,name in category_lookup.iteritems():
+        for category,name in category_lookup.items():
             category_nodes[category] = {"nid":category, "name":name, "meta":[],"children":[]}
 
         # Nodes without categories will just be orphans
@@ -114,7 +115,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
                 orphans.append(child)    
 
         # Put them all into the same house!
-        for category,category_node in category_nodes.iteritems():
+        for category,category_node in category_nodes.items():
             orphans.append(category_node)
 
     else:

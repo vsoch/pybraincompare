@@ -5,6 +5,7 @@ Generate search interfaces to compare images
 '''
 from __future__ import print_function
 from __future__ import absolute_import
+from builtins import range
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
 from .mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
 from pybraincompare.template.futils import unwrap_list_unique

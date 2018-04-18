@@ -214,7 +214,7 @@ def make_scatterplot_interface(corr_df,elements,error=None,remove_scripts=None):
 
     # We want to return only regions with 3+ points
     counts =  dict(collections.Counter(corr_df.ATLAS_LABELS.tolist()))
-    regions_to_eliminate = [x for x,y in counts.iteritems() if y < 3]
+    regions_to_eliminate = [x for x,y in counts.items() if y < 3]
     corr_df = corr_df[corr_df.ATLAS_LABELS.isin(regions_to_eliminate)==False]
 
     # Error: If all regions have fewer than 3 values

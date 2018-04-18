@@ -4,6 +4,7 @@ Functions for histograms
 
 '''
 from __future__ import absolute_import
+from builtins import range
 from pybraincompare.template.templates import get_template, add_string
 from pybraincompare.template.visual import view
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map

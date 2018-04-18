@@ -4,7 +4,10 @@ Functions to calculate reverse inference
 
 '''
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 from pybraincompare.ontology.graph import get_node_fields, get_node_by_name
 from pybraincompare.compare.maths import calculate_pairwise_correlation
 from pybraincompare.compare.mrutils import get_images_df
@@ -81,8 +84,8 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
             file_lookup[node] = contender_files[idx[0]]
 
     # Use pandas dataframe to not risk weird dictionary iteration orders
-    files = pandas.DataFrame(file_lookup.values(),columns=["path"])
-    files.index = file_lookup.keys()
+    files = pandas.DataFrame(list(file_lookup.values()),columns=["path"])
+    files.index = list(file_lookup.keys())
  
     # The remaining nodes in the tree (that are not images) will have a RI score
     concept_nodes = [x for x in nodes if x not in image_nodes] 
@@ -309,7 +312,7 @@ def calculate_likelihood_in_ranges(region_df,ranges_df):
         numerator = bin_df.sum(axis=0)
         numerator_laplace_smoothed = numerator + 1
         denominator = numpy.sum(numerator) + bin_df.shape[1]
-        likelihood[row[0]] = numerator_laplace_smoothed / denominator
+        likelihood[row[0]] = old_div(numerator_laplace_smoothed, denominator)
     return likelihood
 
 def calculate_likelihood_binary(region_df,threshold=2.96):
@@ -332,7 +335,7 @@ def calculate_likelihood_binary(region_df,threshold=2.96):
     numerator = bin_df.sum(axis=0)
     numerator_laplace_smoothed = numerator + 1
     denominator = numpy.sum(numerator) + bool_df.shape[1]
-    result = pandas.DataFrame(numerator_laplace_smoothed / denominator)
+    result = pandas.DataFrame(old_div(numerator_laplace_smoothed, denominator))
     result.columns = [threshold] # store threshold with data frame
     return result
 
@@ -378,8 +381,8 @@ def calculate_reverse_inference_distance(query_image,in_images,out_images,standa
         in_count = len(in_images)
         out_count = len(out_images) 
         total = in_count + out_count              # total number of nifti images
-        p_process_in = float(in_count) / total    # percentage of niftis in
-        p_process_out = float(out_count) / total  # percentage out
+        p_process_in = old_div(float(in_count), total)    # percentage of niftis in
+        p_process_out = old_div(float(out_count), total)  # percentage out
     # Read in the query image
     query = get_images_df(file_paths=query_image,mask=standard_mask)
     # Generate a mean image for each group
@@ -391,7 +394,7 @@ def calculate_reverse_inference_distance(query_image,in_images,out_images,standa
     # Calculate inference
     numerators = p_in * p_process_in
     denominators = (p_in * p_process_in) + (p_out * p_process_out)
-    return (numerators / denominators)
+    return (old_div(numerators, denominators))
 
 
 def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_priors=True):
@@ -420,14 +423,14 @@ def calculate_reverse_inference_threshes(p_in,p_out,in_count,out_count,equal_pri
         p_process_in = 0.5
         p_process_out = 0.5
     else:
-        p_process_in = float(in_count) / total   # percentage of niftis in
-        p_process_out = float(out_count) / total # percentage out    
+        p_process_in = old_div(float(in_count), total)   # percentage of niftis in
+        p_process_out = old_div(float(out_count), total) # percentage out    
     # If we multiply, we will get 0, so we take sum of logs
     p_in_log = numpy.log(p_in)
     p_out_log = numpy.log(p_out)
     numerators = p_in_log.sum(axis=0) * p_process_in
     denominators = (p_in_log.sum(axis=0) * p_process_in) + (p_out_log.sum(axis=0) * p_process_out)
-    return (numerators / denominators)
+    return (old_div(numerators, denominators))
 
 
 def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_table=None,equal_priors=True):
@@ -461,8 +464,8 @@ def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_tabl
         p_process_in = 0.5
         p_process_out = 0.5
     else:
-        p_process_in = float(in_count) / total   # percentage of niftis in
-        p_process_out = float(out_count) / total # percentage out
+        p_process_in = old_div(float(in_count), total)   # percentage of niftis in
+        p_process_out = old_div(float(out_count), total) # percentage out
     # If we multiply, we will get 0, so we take sum of logs
     if mrtable.shape[1]>1:
         mrtable = pandas.DataFrame(mrtable.mean())
@@ -488,7 +491,7 @@ def calculate_reverse_inference(mrtable,p_in,p_out,in_count,out_count,range_tabl
     if numerator == 0.0 and denominator == 0.0:
         return 0.0
     else: 
-        return (numerator / denominator)
+        return (old_div(numerator, denominator))
 
 def _calculate_reverse_inference_vectors_ranges(mrtable,p_in,p_out,in_count,out_count,range_table):
     '''

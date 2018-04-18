@@ -5,6 +5,7 @@ Functions to work with html templates
 '''
 from __future__ import absolute_import
 
+from builtins import str
 from .futils import get_package_dir
 import pandas
 import os
@@ -49,7 +50,7 @@ def read_template(html_name):
 '''Add strings (eg, svg code) to a template - the key of the atlas_svg should correspond to replacement text. eg, svg["coronal"] will replace [coronal] tag in template!'''
 def add_string(svg,template):
   # If the number of svgs is != text_substitutions, we add them all to same spot
-  for tag,code in svg.iteritems():
+  for tag,code in svg.items():
     template = [t.replace("[%s]" %(tag),"%s" %(code)) for t in template]
   return template
 

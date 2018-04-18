@@ -5,7 +5,11 @@ Simple math functions
 '''
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from .mrutils import resample_images_ref, apply_threshold, generate_thresholds, do_mask
 from scipy.stats import pearsonr, spearmanr, norm, t
 import numpy as np
@@ -17,7 +21,7 @@ import os
 
 
 def percent_to_float(x):
-    return float(x.strip('%'))/100
+    return old_div(float(x.strip('%')),100)
 
 def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="pearson"):
     '''calculate_correlation

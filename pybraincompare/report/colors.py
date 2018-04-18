@@ -4,7 +4,10 @@ Color stuffs
 
 '''
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 import random
 
 def random_colors(N):
@@ -23,7 +26,7 @@ def get_colors(N,color_format="decimal"):
     if color_format == "hex":
         colors = ["#7AC5CD","#473C8B","#FF6347","#76EE00","#6495ED","#FF7F24","#8B0000","#FF3030","#228B22","#00CED1","#A020F0","#EEC900","#595959","#EE1289","#CDB38B","#FF0000"]
     elif color_format == "decimal":
-        colors = [[round(x/255.0,1) for x in c] for c in colors ]
+        colors = [[round(old_div(x,255.0),1) for x in c] for c in colors ]
     else:   
         print("%s is not a valid format." %(color_format))
         return

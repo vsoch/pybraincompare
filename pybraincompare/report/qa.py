@@ -3,6 +3,8 @@ qa.py: part of pybraincompare package
 Functions to check quality of statistical maps
 
 '''
+from __future__ import division
+from past.utils import old_div
 import numpy as np
 import nibabel
 
@@ -50,7 +52,7 @@ def get_percent_nonzero(masked_in):
 
     number_zeros = len(np.where(masked_in==0)[0])
     nonzeros = len(masked_in) - number_zeros
-    return nonzeros / float(len(masked_in))
+    return old_div(nonzeros, float(len(masked_in)))
 
 def is_thresholded(nii_obj,brain_mask,threshold=0.95):
     '''Is a nifti image thresholded?
@@ -67,7 +69,7 @@ def is_thresholded(nii_obj,brain_mask,threshold=0.95):
     inside_brain = brain_mask.get_data().astype("bool")
     missing_mask = zero_mask | nan_mask
     missing_inside_brain = missing_mask & inside_brain
-    ratio_bad = float(missing_inside_brain.sum())/float(inside_brain.sum())
+    ratio_bad = old_div(float(missing_inside_brain.sum()),float(inside_brain.sum()))
     ratio_good = 1-ratio_bad
     if ratio_good < threshold:
         return (True, ratio_good)

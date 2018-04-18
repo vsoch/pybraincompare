@@ -5,6 +5,11 @@ Functions to integrate atlases in image comparison
 '''
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 from skimage.segmentation import mark_boundaries, find_boundaries
 from pybraincompare.template.futils import make_tmp_folder
 from scipy.spatial.distance import pdist, squareform
@@ -22,7 +27,7 @@ import os
 import re
 
 
-class region:
+class region(object):
     def __init__(self,label,index,x,y,z):
         self.label = label
         self.index = index
@@ -31,7 +36,7 @@ class region:
         self.z = z
 
 
-class atlas:
+class atlas(object):
     '''
     Atlas object to hold a nifti object and xml labels
     '''
@@ -45,7 +50,7 @@ class atlas:
 
     def get_region_names(self):
         regions = dict()
-        for value,region in self.labels.iteritems():
+        for value,region in self.labels.items():
             regions[value] = region.label
         return regions
 
@@ -87,7 +92,7 @@ class atlas:
         views = [v.lower() for v in views]
         self.views = views
         mr = self.mr.get_data()
-        middles = [numpy.round(x/2) for x in self.mr.get_shape()]
+        middles = [numpy.round(old_div(x,2)) for x in self.mr.get_shape()]
 
         # Create a color lookup table
         colors_html = get_colors(len(self.labels),"hex")
@@ -126,7 +131,7 @@ class atlas:
                 ctx.scale(3.,3.)
 
                 # 90 degree rotation matrix
-                rotation_matrix = cairo.Matrix.init_rotate(numpy.pi/2)
+                rotation_matrix = cairo.Matrix.init_rotate(old_div(numpy.pi,2))
 
                 for rr in range(0,len(regions)):
                     index_value = regions[rr]
@@ -258,6 +263,6 @@ class atlas:
         '''Create color lookup table corresponding to regions'''
         color_lookup = dict()
         new_color = new_colors[:]
-        for index,region in self.labels.iteritems():
+        for index,region in self.labels.items():
             color_lookup[region.label] = new_color.pop()
         return color_lookup
