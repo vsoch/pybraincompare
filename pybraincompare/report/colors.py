@@ -3,6 +3,7 @@ colors.py: part of pybraincompare package
 Color stuffs
 
 '''
+from __future__ import print_function
 
 import random
 
@@ -24,14 +25,14 @@ def get_colors(N,color_format="decimal"):
     elif color_format == "decimal":
         colors = [[round(x/255.0,1) for x in c] for c in colors ]
     else:   
-        print "%s is not a valid format." %(color_format)
+        print("%s is not a valid format." %(color_format))
         return
 
     if N <= len(colors):  
         colors = colors[0:N]
         return colors
     else:
-        print "Current colorscale only has %s colors! Add more!" %(len(colors))
+        print("Current colorscale only has %s colors! Add more!" %(len(colors)))
 
 
 def peterson_roi_labels(colors=True):

@@ -3,8 +3,9 @@ image.py: part of pybraincompare package
 Functions for static images
 
 '''
+from __future__ import absolute_import
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
-from colors import random_colors
+from .colors import random_colors
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.figure import Figure

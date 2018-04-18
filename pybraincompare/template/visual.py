@@ -3,6 +3,7 @@ visual.py: part of pybraincompare package
 Functions to visualize in browser
 
 '''
+from __future__ import print_function
 from pybraincompare.template.futils import make_tmp_folder
 import SimpleHTTPServer
 import SocketServer
@@ -29,7 +30,7 @@ def internal_view(html_snippet,tmp_file):
 def run_webserver(PORT=8000,html_page="index.html"):
   Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
   httpd = SocketServer.TCPServer(("", PORT), Handler)
-  print "Serving pybraincompare at port", PORT
+  print("Serving pybraincompare at port", PORT)
   webbrowser.open("http://localhost:%s/%s" %(PORT,html_page))
   httpd.serve_forever()
 

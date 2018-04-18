@@ -3,6 +3,7 @@ network.py: part of pybraincompare package
 Functions for visualization of functional MRI
 
 '''
+from __future__ import print_function
 from pybraincompare.template.templates import get_template, add_string
 from pybraincompare.report.colors import random_colors
 from pybraincompare.template.futils import get_name
@@ -20,13 +21,15 @@ def connectogram(matrix_file,groups,threshold,network_names=None):
     groups: a list of connection groups, whatever names you want
     threshold: a 99% (.99) threhsold means we include the top 1% of negative and positive values
     '''
-    conn_df = pandas.read_csv(matrix_file,sep="\t")
+    conn_df = pandas.read_csv(matrix_file, sep="\t")
     if conn_df.shape[0] != conn_df.shape[1]:
-        print "Matrix is size [%s,%s], please check file formatting!" %(conn_df.shape[0],conn_df.shape[1])
+        print()
+        "Matrix is size [%s,%s], please check file formatting!" % (
+        conn_df.shape[0], conn_df.shape[1])
         return
-  
-     if not network_names:
-         network_names = groups
+
+    if not network_names:
+        network_names = groups
 
     # Fill NaN with 0 in matrix
     conn_df = conn_df.fillna(0)

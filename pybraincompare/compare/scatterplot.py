@@ -6,10 +6,11 @@ A scatterplot comparison will compare two images by way of a scatterplot, and co
 based on an anatomical (MNI) atlas
 
 '''
+from __future__ import absolute_import
 from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources, save_template
-from mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
+from .mrutils import get_standard_mask, make_binary_deletion_mask, make_binary_deletion_vector, resample_images_ref, get_nii_obj
 from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
-from maths import calculate_correlation, calculate_atlas_correlation
+from .maths import calculate_correlation, calculate_atlas_correlation
 from pybraincompare.template.visual import run_webserver
 from pybraincompare.mr.datasets import get_mni_atlas
 from nilearn.masking import apply_mask

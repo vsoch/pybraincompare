@@ -3,13 +3,15 @@ atlas.py: part of pybraincompare package
 Functions to integrate atlases in image comparison
 
 '''
+from __future__ import print_function
+from __future__ import absolute_import
 from skimage.segmentation import mark_boundaries, find_boundaries
 from pybraincompare.template.futils import make_tmp_folder
 from scipy.spatial.distance import pdist, squareform
 from pybraincompare.report.colors import get_colors
 from skimage.segmentation import felzenszwalb
 from skimage.util import img_as_float
-from maths import percent_to_float
+from .maths import percent_to_float
 from nilearn import plotting
 from xml.dom import minidom
 import pylab as pl
@@ -62,7 +64,7 @@ class atlas:
                 labels[str(int(lab.getAttribute("index"))+1)] = region(lab.lastChild.nodeValue.replace(" ","_"), (int(lab.getAttribute("index"))+1), lab.getAttribute("x"), lab.getAttribute("y"), lab.getAttribute("z"))
             return labels
         else:
-            print "ERROR: xml file atlas name does not match given atlas name!"
+            print("ERROR: xml file atlas name does not match given atlas name!")
 
     def get_static_svg(self):
         '''Generate static svg of atlas (cannot manipulate in d3)'''
@@ -228,7 +230,7 @@ class atlas:
         '''Save svg data to file'''
         if not views: views = self.views
         if not output_folder:
-            print "Please specify an output directory"
+            print("Please specify an output directory")
         else:
             atlas_name = os.path.split(self.file)[-1].replace("[.]","-")
             for v in views:
@@ -244,7 +246,7 @@ class atlas:
             for a in range(0,len(attributes)):
                 path.setAttribute(attributes[a],new_values[a])
         else:
-            print "Please provide list of attributes with equal length to values."
+            print("Please provide list of attributes with equal length to values.")
 
     def remove_attributes(self,path,attributes):
         '''Internal function to remove svg attributes'''

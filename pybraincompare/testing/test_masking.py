@@ -3,6 +3,7 @@
 """
 Test that pairwise deletion mask (intersection) returns expected values
 """
+from __future__ import print_function
 from pybraincompare.mr.datasets import get_pair_images, get_data_directory
 from pybraincompare.compare.mrutils import make_binary_deletion_mask, make_binary_deletion_vector
 from pybraincompare.mr.datasets import get_data_directory
@@ -68,7 +69,7 @@ def test_binary_deletion_mask():
     nii2 = nibabel.Nifti1Image(image2,affine=brain_mask.get_affine(),header=brain_mask.get_header())
     pdmask = make_binary_deletion_mask([nii1,nii2]) 
     actual_overlap = len(numpy.where(pdmask!=0)[0])
-    print "Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap)
+    print("Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap))
     assert_equal(actual_overlap,number_overlap_voxels)
 
 '''Test that returned image is binary, no nans, infs'''
@@ -129,7 +130,7 @@ def test_binary_deletion_vector():
     # Create nifti images and pdmask
     pdmask = make_binary_deletion_vector([image_vector1,image_vector2]) 
     actual_overlap = len(numpy.where(pdmask!=0)[0])
-    print "Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap)
+    print("Overlap %s percent: should have %s, actual %s" %(overlap,number_overlap_voxels,actual_overlap))
     assert_equal(actual_overlap,number_overlap_voxels)
    
     # Also check that is binary

@@ -3,6 +3,7 @@ inference.py: part of pybraincompare package
 Functions to calculate reverse inference
 
 '''
+from __future__ import print_function
 
 from pybraincompare.ontology.graph import get_node_fields, get_node_by_name
 from pybraincompare.compare.maths import calculate_pairwise_correlation
@@ -75,7 +76,7 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
         if len(idx) > 1:
             raise ValueError("ERROR: found %s images that match pattern %s." %len(idx),find_file.pattern)
         elif len(idx) == 0:
-            print "Did not find file for %s, will not be included in analysis." %(node)
+            print("Did not find file for %s, will not be included in analysis." %(node))
         else:
             file_lookup[node] = contender_files[idx[0]]
 
@@ -108,7 +109,7 @@ def likelihood_groups_from_tree(tree,standard_mask,input_folder,image_pattern="[
             children_in = [child for child in all_children if child in files.index]
             children_out = [child for child in files.index if child not in children_in]
             if len(children_in) > 0 and len(children_out) > 0:
-                print "Generating group for concept node %s" %(concept_node)
+                print("Generating group for concept node %s" %(concept_node))
                 group = {"in": files.path.loc[children_in].unique().tolist(),
                          "out": files.path.loc[children_out].unique().tolist(),
                          "range_table": range_table,

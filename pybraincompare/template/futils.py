@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 import os
 import tempfile
 import shutil
 import contextlib
-import futils
+from . import futils
 import zipfile
 import numpy as np
 
