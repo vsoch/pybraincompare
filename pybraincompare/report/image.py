@@ -7,7 +7,13 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import str
 from past.utils import old_div
-from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
+from nilearn.plotting import (
+    plot_glass_brain, 
+    plot_roi, 
+    plot_img, 
+    plot_anat, 
+    plot_stat_map
+)
 from .colors import random_colors
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab

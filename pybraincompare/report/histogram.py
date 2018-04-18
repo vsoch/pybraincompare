@@ -7,7 +7,13 @@ from __future__ import absolute_import
 from builtins import range
 from pybraincompare.template.templates import get_template, add_string
 from pybraincompare.template.visual import view
-from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
+from nilearn.plotting import (
+    plot_glass_brain, 
+    plot_roi, 
+    plot_img, 
+    plot_anat, 
+    plot_stat_map
+)
 from pybraincompare.compare.mrutils import get_nii_obj
 from .colors import random_colors
 import matplotlib.pyplot as plt
@@ -18,7 +24,15 @@ from pylab import cm
 import numpy as np
 import pylab as P
 
-def get_histogram_data(data,width=12,height=4,color=None,ylabel="frequency",xlabel="map intensity value bins",title="Histogram of Intensity Values for Image",bins=25,remove_zeros=True):
+def get_histogram_data(data,width=12,
+                       height=4,
+                       color=None,
+                       ylabel="frequency",
+                       xlabel="map intensity value bins",
+                       title="Histogram of Intensity Values for Image",
+                       bins=25,
+                       remove_zeros=True):
+
     '''Get histogram data for an image (for d3)'''
     if not color: color = random_colors(1)[0]
     data = data.flatten()
@@ -31,7 +45,16 @@ def get_histogram_data(data,width=12,height=4,color=None,ylabel="frequency",xlab
     return {"n":n,"bins":bins,"patches":patches,"counts":counts}
 
 
-def histogram_image(masked_data,remove_zero=False,title=None,line_value=None,xlabel=None,width=11,height=4,png_img_file=None,threshold=0.001):
+def histogram_image(masked_data,
+                    remove_zero=False,
+                    title=None,
+                    line_value=None,
+                    xlabel=None,
+                    width=11,
+                    height=4,
+                    png_img_file=None,
+                    threshold=0.001):
+
     '''make histogram figure
     adopted from chrisfilo https://github.com/chrisfilo/mriqc'''
 
@@ -52,7 +75,14 @@ def histogram_image(masked_data,remove_zero=False,title=None,line_value=None,xla
     if png_img_file: fig.savefig(png_img_file)  
     return fig
 
-def plot_histogram(image,title="Image Histogram",height=400,width=1000,view_in_browser=True,bins=25,remove_zeros=True):
+def plot_histogram(image,
+                   title="Image Histogram",
+                   height=400,
+                   width=1000,
+                   view_in_browser=True,
+                   bins=25,
+                   remove_zeros=True):
+
     '''plot interactive histogram (in browser)'''
 
     image = get_nii_obj(image)[0]

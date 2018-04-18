@@ -21,43 +21,71 @@ import os
 def get_standard_mask(software):
     '''Returns reference mask from FSL or FREESURFER'''
     if software == "FSL":
-        reference = os.path.join(os.environ['FSLDIR'],'data', 'standard', 'MNI152_T1_2mm_brain_mask.nii.gz')
+        reference = os.path.join(os.environ['FSLDIR'],
+                                 'data', 
+                                 'standard', 
+                                 'MNI152_T1_2mm_brain_mask.nii.gz')
+
     elif software == "FREESURFER":
-        reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brainmask.mgz')
+        reference = os.path.join(os.environ['FREESURFER_HOME'],
+                                 'subjects',
+                                 'fsaverage',
+                                 'mri',
+                                 'brainmask.mgz')
     return reference
 
 
 def get_standard_brain(software):
     '''Returns reference brain from FSL or FREESURFER'''  
     if software == "FSL":
-        reference = os.path.join(os.environ['FSLDIR'],'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
+        reference = os.path.join(os.environ['FSLDIR'],
+                                'data',
+                                'standard',
+                                'MNI152_T1_2mm_brain.nii.gz')
+
     elif software == "FREESURFER":
-        reference = os.path.join(os.environ['FREESURFER_HOME'],'subjects', 'fsaverage', 'mri', 'brain.mgz')
+        reference = os.path.join(os.environ['FREESURFER_HOME'],
+                                'subjects',
+                                'fsaverage',
+                                'mri',
+                                'brain.mgz')
     return reference
 
 def get_standard_mat(software):
     '''Return MNI transformations for registration'''
     if software == "FREESURFER":
-        return os.path.join(os.environ['FREESURFER_HOME'],'average', 'mni152.register.dat')
+        return os.path.join(os.environ['FREESURFER_HOME'],
+                            'average',
+                            'mni152.register.dat')
 
 def get_nii_obj(images):
-    '''Returns nibabel nifti objects from a list of filenames and/or nibabel objects'''
+    '''Returns nibabel nifti objects from a list of filenames/nibabel objects'''
     images_nii = []
+
     if isinstance(images,str): 
         images = [images]
-    if isinstance(images,nibabel.nifti1.Nifti1Image):
+
+    if isinstance(images, nibabel.nifti1.Nifti1Image):
         return [images]
+
     for i in range(0,len(images)):
         image = images[i]    
+
         if not isinstance(image,nibabel.nifti1.Nifti1Image): 
             image = nibabel.load(image)
         images_nii.append(image)
+
     return images_nii
 
-    mr = get_images_df(file_paths=files.path,mask=standard_mask)
 
-def get_images_df(file_paths,mask,dtype="f",smoothing_fwhm=None,ensure_finite=True):
-    return pandas.DataFrame(apply_mask(file_paths, mask, dtype, smoothing_fwhm,ensure_finite))
+def get_images_df(file_paths, 
+                  mask,
+                  dtype="f", 
+                  smoothing_fwhm=None,
+                  ensure_finite=True):
+
+    return pandas.DataFrame(apply_mask(file_paths, mask, dtype, 
+                                       smoothing_fwhm,ensure_finite))
 
 
 def make_nii(data_vector,mask_template):
@@ -94,7 +122,8 @@ def resample_images_ref(images,reference,interpolation,resample_dim=None):
     for image in images_nii:
         # Only resample if the image is different from the reference
         if not (image.get_affine() == reference.get_affine()).all():
-            resampled_img = resample_img(image,target_affine=reference.get_affine(), 
+            resampled_img = resample_img(image,
+                                         target_affine=reference.get_affine(), 
                                          target_shape=reference.shape,
                                          interpolation=interpolation)
         else: 
@@ -110,13 +139,16 @@ def squeeze_fourth_dimension(images):
     if any(v is True for v in shapes):
         squeezed=[]
         for image in images:
-            squeezed_image = nibabel.Nifti1Image(numpy.squeeze(image.get_data()),affine=image.get_affine(),header=image.get_header())
+            squeezed_image = nibabel.Nifti1Image(numpy.squeeze(image.get_data()),
+                                                 affine=image.get_affine(),
+                                                 header=image.get_header())
             squeezed.append(squeezed_image)
         return squeezed
     else:
         return images
 
-# MASKING --------------------------------------------------------------------------------
+# MASKING ----------------------------------------------------------------------
+
 def do_mask(images,mask):
     '''do_mask
     Mask registered images - should already be in same space
@@ -129,25 +161,33 @@ def do_mask(images,mask):
     '''
 
     # If we only have one image
-    if isinstance(images,nibabel.nifti1.Nifti1Image): images = [images]
+    if isinstance(images,nibabel.nifti1.Nifti1Image):
+        images = [images]
 
     # Make sure images are 3d (squeeze out extra dimension)
     images = squeeze_fourth_dimension(images)
 
     # Don't trust that mask is binary  
     mask_bin = mask.get_data().astype(bool).astype(int)
-    mask = nibabel.nifti1.Nifti1Image(mask_bin,affine=mask.get_affine(),header=mask.get_header())
+    mask = nibabel.nifti1.Nifti1Image(mask_bin,
+                                      affine=mask.get_affine(),
+                                      header=mask.get_header())
 
     # if ensure_finite is True, nans and infs get replaced by zeros
+
     try:
-        masked_data = apply_mask(images, mask, dtype='f', smoothing_fwhm=None, ensure_finite=False)
+        masked_data = apply_mask(images, mask, dtype='f',
+                                 smoothing_fwhm=None, ensure_finite=False)
         return masked_data
+
     except ValueError:
-        print("Reference and images affines do not match, or given mask and images, all data is masked.") 
+        print("Reference and images affines do not match, or all data masked.") 
         return numpy.nan
   
 def make_binary_deletion_mask(images):
-    '''Make binary deletion mask (pairwise deletion) - intersection of nonzero and non-nan values'''
+    '''Make binary deletion mask (pairwise deletion) - 
+       intersection of nonzero and non-nan values
+    '''
     if isinstance(images, nibabel.nifti1.Nifti1Image):
         images = [images]
     images_data = [numpy.squeeze(image.get_data()) for image in images]
@@ -157,33 +197,52 @@ def make_binary_deletion_mask(images):
     return mask
 
 def make_binary_deletion_vector(image_vectors):
-    '''Make binary deletion vector (pairwise deletion) - intersection of nonzero and non-nan values'''
+    '''Make binary deletion vector (pairwise deletion) - 
+       intersection of nonzero and non-nan values
+    '''
     mask = numpy.ones(image_vectors[0].shape)
     mask *= (image_vectors[0] != 0) & ~numpy.isnan(image_vectors[0])
     mask *= (image_vectors[1] != 0) & ~numpy.isnan(image_vectors[1])
     return mask
 
-def make_in_out_mask(mask_bin,mr_folder,masked_in,masked_out,img_dir,save_png=True):
-    '''make_in_out_mask
-     Generate masked image, return two images: voxels in mask, and voxels outside
+def make_in_out_mask(mask_bin,
+                     mr_folder,
+                     masked_in,
+                     masked_out,
+                     img_dir,
+                     save_png=True):
+
+    '''generate masked image, return two images:
+                voxels in mask, and voxels outside
     '''
     mr_in_mask = numpy.zeros(mask_bin.shape)
     mr_out_mask = numpy.zeros(mask_bin.shape)
     mr_out_mask[mask_bin.get_data()==0] = masked_out
-    mr_out_mask = nibabel.Nifti1Image(mr_out_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
+
+    mr_out_mask = nibabel.Nifti1Image(mr_out_mask,
+                                      affine=mask_bin.get_affine(),
+                                      header=mask_bin.get_header())
     mr_in_mask[mask_bin.get_data()!=0] = masked_in
-    mr_in_mask = nibabel.Nifti1Image(mr_in_mask,affine=mask_bin.get_affine(),header=mask_bin.get_header())
+
+    mr_in_mask = nibabel.Nifti1Image(mr_in_mask,
+                                     affine=mask_bin.get_affine(),
+                                     header=mask_bin.get_header())
+
     nibabel.save(mr_in_mask,"%s/masked.nii" %(mr_folder))
     nibabel.save(mr_out_mask,"%s/masked_out.nii" %(mr_folder))
+
     if save_png:
-        make_anat_image("%s/masked.nii" %(mr_folder),png_img_file="%s/masked.png" %(img_dir))
-        make_anat_image("%s/masked_out.nii" %(mr_folder),png_img_file="%s/masked_out.png" %(img_dir))
+        make_anat_image("%s/masked.nii" %(mr_folder),
+                        png_img_file="%s/masked.png" %(img_dir))
+        make_anat_image("%s/masked_out.nii" %(mr_folder),
+                        png_img_file="%s/masked_out.png" %(img_dir))
     os.remove("%s/masked_out.nii" %(mr_folder))
     return mr_in_mask,mr_out_mask
 
-# THRESHOLDING --------------------------------------------------------------------------------
+# THRESHOLDING -----------------------------------------------------------------
 
 # Generate thresholds
+
 def generate_thresholds(lower=0,upper=4,by=0.01):
     thresholds = []
     for ii in range(lower,upper):

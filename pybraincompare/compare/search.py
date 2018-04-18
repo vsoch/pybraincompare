@@ -6,8 +6,21 @@ Generate search interfaces to compare images
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import range
-from pybraincompare.template.templates import get_template, add_string, add_javascript_function, remove_resources
-from .mrutils import get_standard_mask, do_mask, make_binary_deletion_mask, resample_images_ref, get_nii_obj
+
+from pybraincompare.template.templates import (
+    get_template,
+    add_string,
+    add_javascript_function,
+    remove_resources
+)
+from .mrutils import ( 
+    do_mask,
+    get_nii_obj,
+    get_standard_mask,
+    make_binary_deletion_mask,
+    resample_images_ref
+)
+
 from pybraincompare.template.futils import unwrap_list_unique
 from pybraincompare.mr.datasets import get_mni_atlas
 from .maths import calculate_correlation
@@ -21,23 +34,39 @@ import os
 # SIMILARITY SEARCH ###############################################################################################
 
 # Search interface to show images most similar to a query
-def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,image_url,image_ids,
-                     max_results=100,absolute_value=True,top_text=None,bottom_text=None,
-                     container_width=940,remove_scripts=None):
+def similarity_search(image_scores,
+                      tags,
+                      png_paths,
+                      query_png,
+                      query_id,
+                      button_url,
+                      image_url,
+                      image_ids,
+                      max_results=100,
+                      absolute_value=True,
+                      top_text=None,
+                      bottom_text=None,
+                      container_width=940,
+                      remove_scripts=None):
+
     """similarity_search: interface to see most similar brain images.
     image_scores: list of image scores
     tags: a list of lists of tags, one for each image, in same order as data
-    png_paths: a list of pre-generated png images, one for each image, in same order as data
+    png_paths: a list of pre-generated png images, one per image, in same order
     query_png: full path to query png image. Must be in png_paths
     query_id: id of query image, must be in image_ids
-    button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
-    image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
-    image_ids: all image ids that correspond to same order of png paths, tags, and scores
+    button_url: prefix of url that the "compare" button will link to. 
+                format will be prefix/[query_id]/[other_id]
+    image_url: prefix of the url that the "view" button will link to. 
+                format will be prefix/[other_id]
+    image_ids: all image ids that correspond to same order of png paths, 
+                tags, and scores
     max_results: maximum number of results to return
     absolute_value: return absolute value of score (default=True)
     top_text: a list of text labels to show on top of images [OPTIONAL]
     bottom_text: a list of text labels to show on bottoms of images [OPTIONAL]
-    remove_scripts: list of strings corresponding to js or css template tags to remove [OPTIONAL]
+    remove_scripts: list of strings corresponding to js or css template 
+                    tags to remove [OPTIONAL]
     """
 
 
@@ -49,7 +78,7 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
         return
 
     if len(tags) != len(png_paths) != len(image_ids):
-        print("ERROR: Number of image paths, tags, number of rows and columns in data frame must be equal")
+        print("ERROR: Number of image paths, tags, image_ids must be equal")
         return
 
     if query_png not in png_paths: 
@@ -65,29 +94,50 @@ def similarity_search(image_scores,tags,png_paths,query_png,query_id,button_url,
     corr_df["bottom_text"] = bottom_text
     corr_df.index = image_ids
 
-    html_snippet = calculate_similarity_search(template=template,corr_df=corr_df,query_png=query_png,
-                                              query_id=query_id,button_url=button_url,image_url=image_url,
-                                              max_results=max_results,absolute_value=absolute_value,
-                                              container_width=container_width)
+    html_snippet = calculate_similarity_search(template=template,
+                                               corr_df=corr_df,
+                                               query_png=query_png,
+                                               query_id=query_id,
+                                               button_url=button_url,
+                                               image_url=image_url,
+                                               max_results=max_results,
+                                               absolute_value=absolute_value,
+                                               container_width=container_width)
 
     if remove_scripts != None:
-        if isinstance(remove_scripts,str): remove_scripts = [remove_scripts]
-        html_snippet = remove_resources(html_snippet,script_names=remove_scripts)
+        if isinstance(remove_scripts,str): 
+            remove_scripts = [remove_scripts]
+        html_snippet = remove_resources(html_snippet,
+                                        script_names=remove_scripts)
+
     return html_snippet
 
 
-def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,
-                                image_url,max_results,absolute_value,container_width,responsive=True):
+def calculate_similarity_search(template,
+                                query_png,
+                                query_id,
+                                corr_df,
+                                button_url,
+                                image_url,
+                                max_results,
+                                absolute_value,
+                                container_width,
+                                responsive=True):
+
     """Generate web interface for similarity search
     template: html template (similarity_search)
-    query_png: image png (must be in "png" column) that the others will be compared to
+    query_png: image png (must be in "png" column) that others compared to
     query_id: id of the query image, to look up in corr_df
-    corr_df: matrix of correlation values for images, with "png" column corresponding to image paths, "tags" corresponding to 
-    button_url: prefix of url that the "compare" button will link to. format will be prefix/[query_id]/[other_id]
-    image_url: prefix of the url that the "view" button will link to. format will be prefix/[other_id]
+    corr_df: matrix of correlation values for images, with "png" column 
+             corresponding to image paths, "tags" corresponding to 
+    button_url: prefix of url that the "compare" button will link to.
+                format will be prefix/[query_id]/[other_id]
+    image_url: prefix of the url that the "view" button will link to.
+               format will be prefix/[other_id]
     max_results: maximum number of results to return
     absolute_value: return absolute value of score (default=True)
-    responsive: for larger number of returned results: will load images only when scrolled to.
+    responsive: for larger number of returned results: will load
+                images only when scrolled to.
     """
 
     query_row = corr_df[corr_df["png"] == query_png]
@@ -97,11 +147,13 @@ def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,
         query_similar = corr_df["scores"].abs()
         query_similar.sort(ascending=False)
         query_similar = corr_df.loc[query_similar.index]
-    else: query_similar = corr_df.sort(columns="scores",ascending=False)
+    else: 
+        query_similar = corr_df.sort(columns="scores", ascending=False)
   
     # Remove the query image, and cut down to 100 results
     query_similar = query_similar[query_similar.index != query_id]
-    if query_similar.shape[0] > max_results: query_similar = query_similar[0:max_results]
+    if query_similar.shape[0] > max_results:
+        query_similar = query_similar[0:max_results]
 
     # Prepare data for show_similarity_search
     image_ids = query_similar.image_ids.tolist()
@@ -120,19 +172,34 @@ def calculate_similarity_search(template,query_png,query_id,corr_df,button_url,
     button_urls = ["%s/%s/%s" %(button_url,query_id,x) for x in image_ids]
     image_urls = ["%s/%s" %(image_url,x) for x in image_ids]
 
-    portfolio = create_glassbrain_portfolio(image_paths=png_images,all_tags=all_tags,unique_tags=unique_tags,
-                                            placeholders=placeholders,values=scores,button_urls=button_urls,
-                                            image_urls=image_urls,top_text=top_text,bottom_text=bottom_text)
+    portfolio = create_glassbrain_portfolio(image_paths=png_images,
+                                            all_tags=all_tags,
+                                            unique_tags=unique_tags,
+                                            placeholders=placeholders,
+                                            values=scores,
+                                            button_urls=button_urls,
+                                            image_urls=image_urls,
+                                            top_text=top_text,
+                                            bottom_text=bottom_text)
 
-    elements = {"SIMILARITY_PORTFOLIO":portfolio,"CONTAINER_WIDTH":container_width}
+    elements = {"SIMILARITY_PORTFOLIO":portfolio,
+                "CONTAINER_WIDTH":container_width}
     template = add_string(elements,template)
     html_snippet = add_string({"QUERY_IMAGE":query_png},template)
     return html_snippet
 
 
-def create_glassbrain_portfolio(image_paths,all_tags,unique_tags,placeholders,values=None,
-                                button_urls=None,image_urls=None,top_text=None,bottom_text=None):
-    '''Base brainglass portfolio for image comparison or brainglass interface standalone'''
+def create_glassbrain_portfolio(image_paths,
+                                all_tags,
+                                unique_tags,
+                                placeholders,values=None,
+                                button_urls=None,
+                                image_urls=None,
+                                top_text=None,
+                                bottom_text=None):
+
+    '''Base brainglass portfolio for image comparison'''
+
     # Create portfolio filters
     portfolio_filters = '<div class="row"><div class="col-md-8" style="padding-left:20px"><ul class="portfolio-filter">\n<li><a class="btn btn-default active" href="#" data-filter="*">All</a></li>'     
 
@@ -140,13 +207,15 @@ def create_glassbrain_portfolio(image_paths,all_tags,unique_tags,placeholders,va
     glass_brain_loading = "http://placehold.it/324x128&text=Loading..."
 
     for t in range(0,len(unique_tags)):
-        tag = unique_tags[t]; placeholder = placeholders[tag]      
-        portfolio_filters = '%s<li><a class="btn btn-default" href="#" data-filter=".%s">%s</a></li>\n' %(portfolio_filters,placeholder,tag) 
+        tag = unique_tags[t]; 
+        placeholder = placeholders[tag]      
+        portfolio_filters = '%s<li><a class="btn btn-default" href="#" data-filter=".%s">%s</a></li>\n' %(portfolio_filters, placeholder, tag) 
     portfolio_filters = '%s</ul><!--/#portfolio-filter--></div><div>\n' %(portfolio_filters)
     portfolio_filters = '%s<img class = "query_image" src="[QUERY_IMAGE]"/></div></div>' %(portfolio_filters)
 
     # Create portfolio items
     portfolio_items = '<ul class="portfolio-items col-3">'
+
     for i in range(0,len(image_paths)):
         image = image_paths[i]    
         portfolio_items = '%s<li class="portfolio-item ' %(portfolio_items) 

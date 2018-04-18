@@ -10,7 +10,12 @@ from __future__ import division
 from builtins import str
 from builtins import range
 from past.utils import old_div
-from .mrutils import resample_images_ref, apply_threshold, generate_thresholds, do_mask
+from .mrutils import (
+    apply_threshold,
+    do_mask,
+    generate_thresholds,
+    resample_images_ref
+)
 from scipy.stats import pearsonr, spearmanr, norm, t
 import numpy as np
 from . import maths
@@ -23,7 +28,12 @@ import os
 def percent_to_float(x):
     return old_div(float(x.strip('%')),100)
 
-def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="pearson"):
+def calculate_correlation(images,
+                          mask=None,
+                          atlas=None,
+                          summary=False, 
+                          corr_type="pearson"):
+
     '''calculate_correlation
     Calculate a correlation between two images
     
@@ -49,42 +59,57 @@ def calculate_correlation(images,mask=None,atlas=None,summary=False,corr_type="p
     '''
     if mask != None:
         masked = do_mask(images=images,mask=mask)
-    else: # No mask means we include all voxels, including outside brain
-        masked =  np.vstack((np.array(images[0].get_data().flatten()),
-                         np.array(images[1].get_data().flatten())))
 
-    # A return value of "nan" indicates that there was not overlap between mask and images
+    # No mask means we include all voxels, including outside brain
+    else:
+        masked =  np.vstack((np.array(images[0].get_data().flatten()),
+                             np.array(images[1].get_data().flatten())))
+
+    # A return value of "nan" indicates that there was not overlap
     if np.isnan(masked).all():
         corr = np.nan
+
     else:
         # If we want a whole brain correlation score, (no atlas specified)
         if atlas == None:
-            corr = calculate_pairwise_correlation(masked[0],masked[1],corr_type=corr_type)
+            corr = calculate_pairwise_correlation(masked[0],
+                                                  masked[1],
+                                                  corr_type=corr_type)
+
         else:  
             atlas_nii = nibabel.load(atlas.file)
+
             if not (atlas_nii.get_affine() == images[0].get_affine()).all():  
-                atlas_nii, ref_nii = resample_images_ref(images=atlas.file,reference=images[0],
-                                                         interpolation="nearest")
+                atlas_nii, _ = resample_images_ref(images=atlas.file,
+                                                   reference=images[0],
+                                                   interpolation="nearest")
 
             atlas_vector = do_mask(atlas_nii,mask=mask)[0]
-            atlas_labels =  ['"%s"' %(atlas.labels[str(int(x))].label) for x in atlas_vector]
-            atlas_colors = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) for x in atlas_labels]
+            atlas_labels =  ['"%s"' %(atlas.labels[str(int(x))].label) 
+                             for x in atlas_vector]
+            atlas_colors = ['"%s"' %(atlas.color_lookup[x.replace('"',"")]) 
+                             for x in atlas_labels]
 
             # Need to check here if we have overlap!
+
             if not np.isnan(atlas_vector).all():
                 corr = calculate_atlas_correlation(image_vector1=masked[0],
-                                               image_vector2=masked[1],
-                                               atlas_vector=atlas_vector,
-                                               atlas_labels=atlas_labels,
-                                               atlas_colors=atlas_colors,
-                                               corr_type=corr_type,
-                                               summary=summary)
+                                                   image_vector2=masked[1],
+                                                   atlas_vector=atlas_vector,
+                                                   atlas_labels=atlas_labels,
+                                                   atlas_colors=atlas_colors,
+                                                   corr_type=corr_type,
+                                                   summary=summary)
             else:
                 corr = np.nan
+
     return corr
 
-def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearson",
+def calculate_pairwise_correlation(image_vector1,
+                                   image_vector2,
+                                   corr_type="pearson",
                                    atlas_vector=None):   
+
     '''calculate_pairwise_correlation
     Calculate a correlation value for two vectors
     
@@ -117,15 +142,21 @@ def calculate_pairwise_correlation(image_vector1,image_vector2,corr_type="pearso
 
     else:
         if corr_type == "pearson": 
-            corr,pval = pearsonr(image_vector1,image_vector2)
+            corr,pval = pearsonr(image_vector1, image_vector2)
             correlations = corr
         elif corr_type == "spearman": 
-            corr,pval = spearmanr(image_vector1,image_vector2)
+            corr,pval = spearmanr(image_vector1, image_vector2)
             correlations = corr 
     return correlations
 
-def calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_labels,
-                                atlas_colors,corr_type="pearson",summary=False):
+def calculate_atlas_correlation(image_vector1,
+                                image_vector2,
+                                atlas_vector,
+                                atlas_labels,
+                                atlas_colors,
+                                corr_type="pearson",
+                                summary=False):
+
     '''calculate_atlas_correlation
     Return regional correlations from an atlas object:
 
@@ -163,6 +194,7 @@ def calculate_atlas_correlation(image_vector1,image_vector2,atlas_vector,atlas_l
     corrs = calculate_pairwise_correlation(image_vector1,image_vector2,
                                            atlas_vector=atlas_vector,
                                            corr_type=corr_type)
+
     df["ATLAS_CORR"] = [corrs[str(int(x))] for x in atlas_vector]
     df["ATLAS_COLORS"] = atlas_colors   
   
@@ -245,10 +277,13 @@ def TtoZ(t_stat_map,output_nii,dof):
     # Write new image to file
     empty_nii = np.zeros(mr.shape)
     empty_nii[mr.get_data()!=0] = Z
-    Z_nii_fixed = nibabel.nifti1.Nifti1Image(empty_nii,affine=mr.get_affine(),header=mr.get_header())
+    Z_nii_fixed = nibabel.nifti1.Nifti1Image(empty_nii,
+                                             affine=mr.get_affine(),
+                                             header=mr.get_header())
     nibabel.save(Z_nii_fixed,output_nii)
 
 # From Chrisfilo alleninf
+
 def nifti_file(string):
     if not os.path.exists(string):
         msg = "%r does not exist" % string

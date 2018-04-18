@@ -34,7 +34,8 @@ def central_tendency(data):
 
 def outliers(masked_data,n_std=6):
     '''Outliers
-    outliers (e.g., more than ~6 SD from the mean, maybe less depending on the action)
+    outliers (e.g., more than ~6 SD from the mean, maybe less 
+             depending on the action)
     '''
 
     mean = masked_data.mean()
@@ -47,7 +48,8 @@ def outliers(masked_data,n_std=6):
 
 def get_percent_nonzero(masked_in):
     '''Estimate thresholded
-    We basically check to see if number of zero voxels exceeds some percentage (not thresholded)
+    We basically check to see if number of zero voxels exceeds some 
+       percentage (not thresholded)
     '''
 
     number_zeros = len(np.where(masked_in==0)[0])
@@ -69,7 +71,8 @@ def is_thresholded(nii_obj,brain_mask,threshold=0.95):
     inside_brain = brain_mask.get_data().astype("bool")
     missing_mask = zero_mask | nan_mask
     missing_inside_brain = missing_mask & inside_brain
-    ratio_bad = old_div(float(missing_inside_brain.sum()),float(inside_brain.sum()))
+    ratio_bad = old_div(float(missing_inside_brain.sum()),
+                        float(inside_brain.sum()))
     ratio_good = 1-ratio_bad
     if ratio_good < threshold:
         return (True, ratio_good)
@@ -95,7 +98,7 @@ def count_voxels(masked_in,masked_out):
     count_out = len(masked_out[masked_out!=0])
     return count_in,count_out
 
-# Convert to Z Scores (return entire images) ------------------------------------------------
+# Convert to Z Scores (return entire images) -----------------------------------
 def t_to_z(mr, dof):
   
     data = mr.get_data()
@@ -128,5 +131,7 @@ def t_to_z(mr, dof):
     # Create new nifti
     empty_nii = np.zeros(mr.shape)
     empty_nii[mr.get_data()!=0] = Z
-    Z_nii_fixed = nib.nifti1.Nifti1Image(empty_nii,affine=mr.get_affine(),header=mr.get_header())
+    Z_nii_fixed = nib.nifti1.Nifti1Image(empty_nii,
+                                         affine=mr.get_affine(),
+                                         header=mr.get_header())
     return Z_nii_fixed
