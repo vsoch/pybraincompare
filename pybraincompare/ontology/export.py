@@ -4,6 +4,7 @@ Functions to export images and data
 
 '''
 
+from builtins import range
 def priors_to_brain_image(priors_df,output_name,mask_image):
     '''priors_to_brain_image
     Function to save brain images for each level of priors

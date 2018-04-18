@@ -5,6 +5,7 @@ graph.py: part of pybraincompare package
 Functions to work with ontology graphs
 
 '''
+from builtins import object
 import re
 import sys
 import json
@@ -37,11 +38,15 @@ def get_json(nodes,category_groups=False, category_lookup=None):
         and value the name of the category. For example:
  
     .. note:: 
-                {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
+                {'ctp_C1':'Perception',
+                 'ctp_C10':'Motivation',
+                 'ctp_C2':'Attention',
                  'ctp_C3':'Reasoning And Decision Making',
                  'ctp_C4':'Executive-Cognitive Control',
                  'ctp_C5':'Learning and Memory',
-                 'ctp_C6':'Language','ctp_C7':'Action','ctp_C8': 'Emotion',
+                 'ctp_C6':'Language',
+                 'ctp_C7':'Action',
+                 'ctp_C8': 'Emotion',
                  'ctp_C9':'Social Function'}
 
             If not specified and category_groups is true, the above will be used
@@ -51,7 +56,11 @@ def get_json(nodes,category_groups=False, category_lookup=None):
     tree = dict()
     # Make an empty node object for each node
     for node in nodes:
-        tree[node.nid] = {"nid":node.nid, "name":node.name, "meta":node.meta,"children":[]}
+        tree[node.nid] = {"nid":node.nid,
+                          "name":node.name,
+                          "meta":node.meta,
+                          "children":[]}
+
     # Add base nodes to the queue
     expression = re.compile("node_*")
     queue = [child for child in nodes if expression.search(child.nid)]
@@ -63,7 +72,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
         node = tree[current.nid]
         # Remove child from the tree
         new_tree = dict() # This has to be done for python 2.6 support
-        for k,v in tree.iteritems():
+        for k,v in tree.items():
            if k != current.nid:
                new_tree[k] = v
         tree = new_tree
@@ -94,16 +103,24 @@ def get_json(nodes,category_groups=False, category_lookup=None):
     if category_groups == True:
 
         if category_lookup == None:
-            category_lookup = {'ctp_C1':'Perception','ctp_C10':'Motivation','ctp_C2':'Attention',
-                       'ctp_C3':'Reasoning And Decision Making',
-                       'ctp_C4':'Executive-Cognitive Control',
-                       'ctp_C5':'Learning and Memory',
-                       'ctp_C6':'Language','ctp_C7':'Action','ctp_C8': 'Emotion',
-                       'ctp_C9':'Social Function'}
+            category_lookup = {'ctp_C1':'Perception',
+                               'ctp_C10':'Motivation',
+                               'ctp_C2':'Attention',
+                               'ctp_C3':'Reasoning And Decision Making',
+                               'ctp_C4':'Executive-Cognitive Control',
+                               'ctp_C5':'Learning and Memory',
+                               'ctp_C6':'Language',
+                               'ctp_C7':'Action',
+                               'ctp_C8': 'Emotion',
+                               'ctp_C9':'Social Function'}
 
         category_nodes = dict()
-        for category,name in category_lookup.iteritems():
-            category_nodes[category] = {"nid":category, "name":name, "meta":[],"children":[]}
+        for category,name in category_lookup.items():
+
+            category_nodes[category] = {"nid":category,
+                                        "name":name,
+                                        "meta":[],
+                                        "children":[]}
 
         # Nodes without categories will just be orphans
         orphans = []
@@ -114,7 +131,7 @@ def get_json(nodes,category_groups=False, category_lookup=None):
                 orphans.append(child)    
 
         # Put them all into the same house!
-        for category,category_node in category_nodes.iteritems():
+        for category,category_node in category_nodes.items():
             orphans.append(category_node)
 
     else:

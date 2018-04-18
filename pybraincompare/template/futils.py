@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+from builtins import range
 import os
 import tempfile
 import shutil
 import contextlib
-import futils
+from . import futils
 import zipfile
 import numpy as np
 

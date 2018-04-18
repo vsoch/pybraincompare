@@ -3,6 +3,7 @@
 """
 Test regional and whole brain correlation scores
 """
+from builtins import range
 from pybraincompare.compare.mrutils import make_binary_deletion_mask,do_mask
 from numpy.testing import assert_array_equal, assert_almost_equal, assert_equal
 from pybraincompare.compare.maths import calculate_correlation

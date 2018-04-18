@@ -5,7 +5,7 @@ setup(
     name="pybraincompare",
 
     # Version number (initial):
-    version="0.1.18",
+    version="0.1.19",
 
     # Application author details:
     author="Vanessa Sochat",
@@ -15,7 +15,8 @@ setup(
     packages=find_packages(),
 
     # Data
-    package_data = {'pybraincompare.template':['html/*.html','static/*.zip','js/*.js','css/*.css','img/*'],
+    package_data = {'pybraincompare.template':['html/*.html','static/*.zip',
+                                               'js/*.js','css/*.css','img/*'],
                     'pybraincompare.testing':['data/*.tsv','data/*.csv'],
                     'pybraincompare.mr':['*.nii','*.nii.gz','*.xml']},
 
@@ -23,7 +24,9 @@ setup(
     url="http://www.github.com/vsoch/pybraincompare",
 
     license="LICENSE.txt",
-    description="image-based meta analysis and comparison for neuroimaging in python",
+    description="meta analysis and comparison for neuroimaging in python",
 
-    install_requires = ['six','pydicom','Cython','networkx','numpy','scipy','scikit-learn','nibabel','nilearn','pandas','matplotlib','scikit-image']
+    install_requires = ['six', 'pydicom', 'Cython','networkx', 'numpy',
+                        'scipy', 'scikit-learn', 'nibabel', 'nilearn',
+                        'pandas','matplotlib', 'scikit-image','future']
 )

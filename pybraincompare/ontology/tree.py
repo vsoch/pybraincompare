@@ -3,16 +3,27 @@ tree.py: part of pybraincompare package
 Functions to visualize ontology trees
 
 '''
+from __future__ import print_function
 import sys
 import json
 import pandas
-from pybraincompare.template.templates import get_package_dir, get_template, add_string
-from pybraincompare.ontology.graph import Node, get_json, check_pandas_columns, find_circular_reference
+from pybraincompare.template.templates import ( 
+    get_package_dir, 
+    get_template, 
+    add_string
+)
+from pybraincompare.ontology.graph import (
+    Node, 
+    get_json, 
+    check_pandas_columns, 
+    find_circular_reference
+)
 
-# Annotate and visualize data with an ontology
 def ontology_tree_from_tsv(relationship_table,output_json=None):
     '''ontology_tree_from_tsv
-    create annotation json for set of images to visualize hierarchy, with nodes being names/counts for each category.  Relationship table should be organized in the following format
+    create annotation json for set of images to visualize hierarchy, with nodes
+    being names/counts for each category.  Relationship table should be 
+    organized in the following format
 
     ..note::
 
@@ -20,10 +31,11 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
         ROOT    CONCEPT_B    CONTRAST_1    image_file_2
         ROOT    CONCEPT_D    CONTRAST_2    image_file_3
 
-        Each name corresponds to whatever the node is called, with the final column having 
-        the image names.
+        Each name corresponds to whatever the node is called, 
+        with the final column having the image names.
  
-        NOTE This format is not currently compatible with any d3 visualizations, just an option for data export!
+        NOTE This format is not currently compatible with any d3 visualizations,
+             just an option for data export!
 
         For d3 export, use named_ontology_tree_from_tsv
     
@@ -35,10 +47,10 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
 
         current = data_structure
         for item in data[:-1]:
-            if not current.has_key(item):
+            if item not in current:
                 current[item] = {}
             current = current[item]
-        if not current.has_key(data[-1]):
+        if data[-1] not in current:
             current[data[-1]] = 1
         else:
             current[data[-1]] += 1
@@ -48,7 +60,11 @@ def ontology_tree_from_tsv(relationship_table,output_json=None):
 
     return data_structure
 
-def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=None,delim="\t"):
+def named_ontology_tree_from_tsv(relationship_table,
+                                 output_json=None,
+                                 meta_data=None,
+                                 delim="\t"):
+
     '''named_ontology_tree_from_tsv
     generate a tree from a data structure with the following format
 
@@ -64,7 +80,8 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
         3     trm_4a3fd79d096f0  trm_4a3fd79d0a746            abstract knowledge
         4     trm_4a3fd79d096fc                  1               acoustic coding
     
-        The index (0-4) is not used. The head/base node should have id 1, and no parent.
+        The index (0-4) is not used. The head/base node should have id 1, 
+        and no parent.
         All other nodes can be unique ids that you specify, with a name.
 
     :param delim: the delimiter use to separate values
@@ -83,8 +100,9 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
             "category":""
           }
 
-          Currently, if you supply meta-data, you must supply category as a field (even if 
-          blank). This is for integration with Cognitive Atlas categories.
+          Currently, if you supply meta-data, you must supply category as a 
+          field (even if blank). This is for integration with 
+          Cognitive Atlas categories.
     
     '''
     nodes = []
@@ -93,12 +111,13 @@ def named_ontology_tree_from_tsv(relationship_table,output_json=None,meta_data=N
         relationship_table = pandas.read_csv(relationship_table,sep="\t")
 
     # check for correct columns and circular references
-    check_pandas_columns(df=relationship_table,column_names=["id","name","parent"])
+    check_pandas_columns(df=relationship_table,
+                         column_names=["id","name","parent"])
     find_circular_reference(relationship_table)
 
     # Generate nodes
     unique_nodes = relationship_table.id.unique().tolist()
-    print "%s unique nodes found." %(len(unique_nodes))
+    print("%s unique nodes found." %(len(unique_nodes)))
     for node in unique_nodes:
         parents = relationship_table.parent[relationship_table.id==node].tolist()
         name = relationship_table.name[relationship_table.id==node].unique().tolist()

@@ -3,8 +3,18 @@ image.py: part of pybraincompare package
 Functions for static images
 
 '''
-from nilearn.plotting import plot_glass_brain, plot_roi, plot_img, plot_anat, plot_stat_map
-from colors import random_colors
+from __future__ import absolute_import
+from __future__ import division
+from builtins import str
+from past.utils import old_div
+from nilearn.plotting import (
+    plot_glass_brain, 
+    plot_roi, 
+    plot_img, 
+    plot_anat, 
+    plot_stat_map
+)
+from .colors import random_colors
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.figure import Figure
@@ -60,7 +70,7 @@ def plot_vline(cur_val, label, ax):
     '''from chrisfilo https://github.com/chrisfilo/mriqc'''
     ax.axvline(cur_val)
     ylim = ax.get_ylim()
-    vloc = (ylim[0] + ylim[1]) / 2.0
+    vloc = old_div((ylim[0] + ylim[1]), 2.0)
     xlim = ax.get_xlim()
-    pad = (xlim[0] + xlim[1]) / 100.0
+    pad = old_div((xlim[0] + xlim[1]), 100.0)
     ax.text(cur_val - pad, vloc, label, color="blue", rotation=90, verticalalignment='center', horizontalalignment='right')

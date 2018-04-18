@@ -3,6 +3,10 @@ webreport.py: part of pybraincompare package
 Functions to generate reports using qa tools
 
 '''
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import os
 import time
 import pandas
@@ -18,7 +22,7 @@ from pybraincompare.template.templates import get_template, add_string, save_tem
 from pybraincompare.template.futils import make_tmp_folder, make_dir, unzip, get_package_dir
 from pybraincompare.report.image import make_glassbrain_image, make_anat_image, make_stat_image
 from pybraincompare.report.histogram import get_histogram_data
-from qa import header_metrics, central_tendency, outliers, get_percent_nonzero, count_voxels, is_thresholded
+from .qa import header_metrics, central_tendency, outliers, get_percent_nonzero, count_voxels, is_thresholded
 from pybraincompare.compare.mrutils import do_mask, resample_images_ref, get_standard_brain, get_standard_mask, make_in_out_mask
 from nilearn.image import resample_img
 
@@ -37,7 +41,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
     '''
 
     # First resample to standard space
-    print "Resampling all data to %s using %s standard brain..." %(voxdim,software)
+    print("Resampling all data to %s using %s standard brain..." %(voxdim,software))
     reference_file = get_standard_brain(software)
     mask_file = get_standard_mask(software)
     images_resamp, reference_resamp = resample_images_ref(mr_paths,reference_file,resample_dim=voxdim,interpolation="continuous")
@@ -66,7 +70,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
 
     # Calculate a mean image for the entire set
     if calculate_mean_image == True:
-        print "Calculating mean image..."
+        print("Calculating mean image...")
         all_masked_data = apply_mask(images_resamp, mask_bin, dtype='f', smoothing_fwhm=None, ensure_finite=True)
         mean_image = np.zeros(mask_bin.shape)
         mean_image[mask_bin.get_data()==1] = np.mean(all_masked_data,axis=0)
@@ -89,7 +93,7 @@ def run_qa(mr_paths,html_dir,software="FSL",voxdim=[2,2,2],outlier_sds=6,investi
         mr = images_resamp[m]
         mr_original = nib.load(mr_paths[m])
         image_name = os.path.split(mr_paths[m])[1]
-        print "Generating qa report for %s" %(mr_paths[m])
+        print("Generating qa report for %s" %(mr_paths[m]))
       
         # Output folder generation
         mr_folder = "%s/%s" %(html_dir,m)
