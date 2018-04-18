@@ -9,16 +9,16 @@ test:
 dependencies:
   pre:
     - echo "Pybraincompare!"
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
     - ./miniconda.sh -b
-    - echo "export PATH=$HOME/miniconda2/bin:\\$PATH" >> $HOME/.bashrc
-    - echo "export PATH=$HOME/miniconda2/bin:\\$PATH" >> $HOME/.env
+    - echo "export PATH=$HOME/miniconda3/bin:\\$PATH" >> $HOME/.bashrc
+    - echo "export PATH=$HOME/miniconda3/bin:\\$PATH" >> $HOME/.env
     - source $HOME/.bashrc
     - conda update --yes conda
-    - conda create --yes -n condaenv python=2.7
+    - conda create --yes -n condaenv python=3.6
     - conda install --yes -n condaenv pip
     - source activate condaenv
-    - $HOME/miniconda2/bin/pip install setuptools
-    - $HOME/miniconda2/bin/conda install --yes pip numpy scipy nose pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr
-    - $HOME/miniconda2/bin/conda install --yes -c dan_blanchard python-coveralls
+    - $HOME/miniconda3/bin/pip install setuptools
+    - $HOME/miniconda3/bin/conda install --yes pip numpy scipy nose pandas cython scikit-learn scikit-image matplotlib h5py lxml numexpr future
+    - $HOME/miniconda3/bin/conda install --yes -c dan_blanchard python-coveralls

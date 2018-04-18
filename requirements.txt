@@ -10,3 +10,4 @@ nibabel
 pandas
 matplotlib
 scikit-image
+future
